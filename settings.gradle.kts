@@ -13,6 +13,8 @@ pluginManagement {
     }
 
     plugins {
+        id("org.gradle.toolchains.foojay-resolver-convention").version("0.4.0")
+
         val kotlinVersion = extra["kotlin.version"] as String
         val agpVersion = extra["agp.version"] as String
         val composeVersion = extra["compose.version"] as String
@@ -20,6 +22,9 @@ pluginManagement {
         kotlin("jvm").version(kotlinVersion)
         kotlin("multiplatform").version(kotlinVersion)
         kotlin("android").version(kotlinVersion)
+        kotlin("plugin.serialization").version(kotlinVersion)
+        kotlin("native.cocoapods").version(kotlinVersion)
+
 
         id("com.android.application").version(agpVersion)
         id("com.android.library").version(agpVersion)

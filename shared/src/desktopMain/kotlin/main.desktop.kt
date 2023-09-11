@@ -1,9 +1,17 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
+import de.xorg.gsapp.GSApp
+import de.xorg.gsapp.data.di.mainModule
+import de.xorg.gsapp.data.di.repositoryModule
+import org.kodein.di.compose.withDI
 
 actual fun getPlatformName(): String = "Desktop"
 
-@Composable fun MainView() = App()
+@Composable fun MainView() = withDI({
+    import(mainModule)
+}) {
+    GSApp()
+}
 
 @Preview
 @Composable
