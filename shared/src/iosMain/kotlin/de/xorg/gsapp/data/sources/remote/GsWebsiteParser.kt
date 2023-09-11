@@ -10,6 +10,9 @@ import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
+import platform.Foundation.NSString
+import platform.Foundation.allKeys
+import platform.Foundation.allValues
 import platform.Foundation.array
 
 
@@ -90,11 +93,11 @@ actual class GsWebsiteParser {
     actual suspend fun parseTeachersNumPages(html: String): Int {
         val doc = HTMLDocument.documentWithString(html)
         return try {
-            val attrMap = doc
-                .querySelector("table[class=\\\"eAusgeben\\\"] > tbody " +
-                        "> tr:last-child > td > a:nth-last-child(2)")
-                ?.attributes!! as MutableMap<String, String>
-            attrMap["href"]!!.substringAfter("seite=").toInt()
+            val lastRow = doc.querySelectorAll("table[class=\"eAusgeben\"] > tbody > tr")
+                .last() as HTMLElement
+            val attrMap = lastRow.querySelector("td > a:nth-last-child(2)")?.attributes!!
+            val hrefAttr = attrMap.allValues.get(attrMap.allKeys.indexOf("href")) as String
+            hrefAttr.substringAfter("seite=").toInt()
         } catch(ex: Exception) {
             ex.printStackTrace()
             0
@@ -107,8 +110,7 @@ actual class GsWebsiteParser {
         list: MutableList<Teacher>
     ) {
         val doc = HTMLDocument.documentWithString(html)
-        for(row: Any? in doc.querySelectorAll("table.eAusgeben > tbody " +
-                "> tr:not(:first-child,:last-child)")) {
+        for(row: Any? in doc.querySelectorAll("table.eAusgeben > tbody > tr")) {
             if(row !is HTMLElement) {
                 println(
                     "Row in document is not" +

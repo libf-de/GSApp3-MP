@@ -45,6 +45,7 @@ android {
 }
 
 dependencies {
-    implementation("org.kodein.di:kodein-di-framework-android-x:7.19.0")
-    implementation("org.kodein.di:kodein-di-conf:7.19.0")
+    /*implementation("org.kodein.di:kodein-di-framework-android-x:7.19.0")
+    implementation("org.kodein.di:kodein-di-conf:7.19.0")*/
+    implementation("org.kodein.di:kodein-di-framework-compose:7.19.0")
 }

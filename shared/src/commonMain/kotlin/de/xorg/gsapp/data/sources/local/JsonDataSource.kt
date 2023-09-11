@@ -28,9 +28,8 @@ import io.github.xxfast.kstore.KStore
 import io.github.xxfast.kstore.file.storeOf
 
 
-class JsonDataSource : LocalDataSource {
+class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
 
-    private var pathSrc = PathSource()
     private var substitutionStore: KStore<SubstitutionSet> = storeOf(
         filePath = pathSrc.getSubstitutionPath())
     private var subjectsStore: KStore<List<Subject>> = storeOf(

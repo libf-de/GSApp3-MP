@@ -6,9 +6,7 @@ import org.kodein.di.DIAware
 import org.kodein.di.instance
 import java.io.File
 
-actual class PathSource : DIAware {
-
-    override val di: DI by DI.lazy { }
+actual class PathSource actual constructor(override val di: DI) : DIAware {
 
     private val cacheManager by di.instance<CacheManager>()
 

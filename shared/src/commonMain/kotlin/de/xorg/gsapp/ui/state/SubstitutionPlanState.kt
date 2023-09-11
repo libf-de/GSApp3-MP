@@ -18,7 +18,6 @@
 
 package de.xorg.gsapp.ui.state
 
-import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionDisplay
 
 data class SubstitutionPlanState(

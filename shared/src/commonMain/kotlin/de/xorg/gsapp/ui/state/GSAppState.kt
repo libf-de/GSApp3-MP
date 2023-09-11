@@ -25,8 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.model.SubstitutionDisplay
+import de.xorg.gsapp.data.model.Teacher
 
 class GSAppState {
     var substitutionState by mutableStateOf(UiState.EMPTY)

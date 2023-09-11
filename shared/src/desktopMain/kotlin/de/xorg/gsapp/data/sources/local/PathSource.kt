@@ -1,8 +1,10 @@
 package de.xorg.gsapp.data.sources.local
 
 import net.harawata.appdirs.AppDirsFactory
+import org.kodein.di.DI
+import org.kodein.di.DIAware
 
-actual class PathSource {
+actual class PathSource actual constructor(override val di: DI) : DIAware {
 
     val appDir: String = AppDirsFactory.getInstance().getUserCacheDir("gsapp", "3", "de.xorg")
 

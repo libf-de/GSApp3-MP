@@ -9,6 +9,8 @@ import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
+import org.kodein.di.DI
+import org.kodein.di.DIAware
 import platform.Foundation.NSArray
 import platform.Foundation.NSCachesDirectory
 import platform.Foundation.NSFileManager
@@ -19,7 +21,7 @@ import platform.Foundation.NSUserDomainMask
 import platform.Foundation.arrayWithObjects
 import platform.Foundation.pathWithComponents
 
-actual class PathSource {
+actual class PathSource actual constructor(override val di: DI) : DIAware {
 
     private val paths =
         NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true);
