@@ -18,8 +18,6 @@ import platform.Foundation.NSString
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.arrayWithObjects
 import platform.Foundation.pathWithComponents
-import platform.Foundation.string
-import platform.Foundation.stringWithString
 
 actual class PathSource {
 

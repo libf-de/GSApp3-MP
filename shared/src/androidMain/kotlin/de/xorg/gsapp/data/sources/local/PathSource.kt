@@ -1,7 +1,6 @@
 package de.xorg.gsapp.data.sources.local
 
 import de.xorg.gsapp.data.cache.CacheManager
-import de.xorg.gsapp.data.di.cacheModule
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.instance
@@ -9,9 +8,7 @@ import java.io.File
 
 actual class PathSource : DIAware {
 
-    override val di: DI by DI.lazy {
-        import(cacheModule) // Importiere das Repository-Modul
-    }
+    override val di: DI by DI.lazy { }
 
     private val cacheManager by di.instance<CacheManager>()
 

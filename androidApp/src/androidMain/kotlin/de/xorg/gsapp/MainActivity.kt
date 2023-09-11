@@ -1,4 +1,4 @@
-package com.myapplication
+package de.xorg.gsapp
 
 import MainView
 import android.os.Bundle
@@ -10,7 +10,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MainView()
+            MainView(applicationContext)
         }
     }
 }
