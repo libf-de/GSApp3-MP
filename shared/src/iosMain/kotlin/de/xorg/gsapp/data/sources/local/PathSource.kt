@@ -12,11 +12,14 @@ import kotlinx.cinterop.value
 import platform.Foundation.NSArray
 import platform.Foundation.NSCachesDirectory
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSHomeDirectory
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSString
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.arrayWithObjects
 import platform.Foundation.pathWithComponents
+import platform.Foundation.string
+import platform.Foundation.stringWithString
 
 actual class PathSource {
 
@@ -50,30 +53,35 @@ actual class PathSource {
     fun getPath(fileName: String): String {
         return NSString.pathWithComponents(
             NSArray.arrayWithObjects(
-                paths.first().toString(),
-                "gsapp".cstr,
-                fileName.cstr
+                paths.first().toString() as NSString,
+                "gsapp" as NSString,
+                fileName as NSString
             )
         )
     }
 
     actual fun getSubstitutionPath(): String {
-        return getPath("substitutions.json")
+        //return "${paths.first().toString()}/gsapp/substitutions.json"
+        return "${NSHomeDirectory()}/substitutions.json"
     }
 
     actual fun getSubjectsPath(): String {
-        return getPath("subjects.json")
+        //return "${paths.first().toString()}/gsapp/subjects.json"
+        return "${NSHomeDirectory()}/subjects.json"
     }
 
     actual fun getTeachersPath(): String {
-        return getPath("teachers.json")
+        //return "${paths.first().toString()}/gsapp/teachers.json"
+        return "${NSHomeDirectory()}/teachers.json"
     }
 
     actual fun getFoodplanPath(): String {
-        return getPath("foodplan.json")
+        //return "${paths.first().toString()}/gsapp/foodplan.json"
+        return "${NSHomeDirectory()}/foodplan.json"
     }
 
     actual fun getAdditivesPath(): String {
-        return getPath("additives.json")
+        //return "${paths.first().toString()}/gsapp/additives.json"
+        return "${NSHomeDirectory()}/additives.json"
     }
 }

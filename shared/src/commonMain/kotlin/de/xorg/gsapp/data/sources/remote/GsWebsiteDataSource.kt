@@ -37,6 +37,7 @@ class GsWebsiteDataSource : RemoteDataSource {
     private val TAG = "GsWebsiteDataSource"
 
     private val parser = GsWebsiteParser()
+    private val client = HttpClient()
 
     /*@Throws(ArrayIndexOutOfBoundsException::class)
     private fun parseResponse(result: String): Result<SubstitutionSet> {
@@ -253,26 +254,31 @@ class GsWebsiteDataSource : RemoteDataSource {
     }*/
 
     override suspend fun loadSubstitutionPlan(): Result<SubstitutionSet> {
-        val client = HttpClient(CIO)
-        val response: HttpResponse = client.get("https://www.gymnasium-sonneberg.de/Informationen/vp.php5")
+        try {
+            val response: HttpResponse =
+                client.get("https://www.gymnasium-sonneberg.de/Informationen/vp.php5")
+            if (response.status.value !in 200..299) return Result.failure(
+                UnexpectedStatusCodeException("Unexpected code $response")
+            )
 
-        if(response.status.value !in 200..299) return Result.failure(
-            UnexpectedStatusCodeException("Unexpected code $response")
-        )
-
-        return try {
-            parser.parseSubstitutionTable(response.body())
-            //parseResponse(response.body())
-            //return parseResponse(response.body!!.string());
-        }catch(ex: Exception){
-            ex.printStackTrace()
-            Result.failure(ex)
-            /*try {
-                fallbackLoad(response.body())
-            }catch(ex2: Exception) {
-                ex2.printStackTrace()
-                Result.failure(ex);
-            }*/
+            return try {
+                parser.parseSubstitutionTable(response.body())
+                //parseResponse(response.body())
+                //return parseResponse(response.body!!.string());
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                Result.failure(ex)
+                /*try {
+                    fallbackLoad(response.body())
+                }catch(ex2: Exception) {
+                    ex2.printStackTrace()
+                    Result.failure(ex);
+                }*/
+            }
+        } catch(ex2: Exception) {
+            println("Outer ex2 occurred in loadSubstitutionPlan")
+            ex2.printStackTrace()
+            return Result.failure(ex2)
         }
     }
 
@@ -308,7 +314,6 @@ class GsWebsiteDataSource : RemoteDataSource {
     }*/
 
     override suspend fun loadTeachers(): Result<List<Teacher>> {
-        val client = HttpClient(CIO)
         val response: HttpResponse = client.get(
             urlString = "https://www.gymnasium-sonneberg.de/Kontakt/Sprech/ausgeben.php5?seite=1"
         )
@@ -369,7 +374,6 @@ class GsWebsiteDataSource : RemoteDataSource {
 
     override suspend fun loadFoodPlan(): Result<List<FoodOffer>> {
         try {
-            val client = HttpClient(CIO)
             val response: HttpResponse = client.get("https://schulkueche-bestellung.de/de/menu/14")
 
             if(response.status.value !in 200..299) return Result.failure(
