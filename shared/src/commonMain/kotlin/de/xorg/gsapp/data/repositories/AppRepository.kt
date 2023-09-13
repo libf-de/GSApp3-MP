@@ -66,15 +66,9 @@ class AppRepository(
                 substitutions = it.substitutions.map { sub ->
                     SubstitutionDisplay(
                         primitive = sub,
-                        origSubject = subjects.getOrNull()?.firstOrNull {
-                                s -> s.shortName.lowercase() == sub.origSubject.lowercase()
-                        } ?: Subject(sub.origSubject),
-                        substTeacher = teachers.getOrNull()?.firstOrNull {
-                                tea -> tea.shortName.lowercase() == sub.substTeacher.lowercase()
-                        } ?: Teacher(sub.substTeacher),
-                        substSubject = subjects.getOrNull()?.firstOrNull {
-                                s -> s.shortName.lowercase() == sub.substSubject.lowercase()
-                        } ?: Subject(sub.substSubject)
+                        origSubject = findSubjectInResult(subjects, sub.origSubject),
+                        substTeacher = findTeacherInResult(teachers, sub.substTeacher),
+                        substSubject = findSubjectInResult(subjects, sub.substSubject)
                     )
                 }
             )
@@ -105,14 +99,20 @@ class AppRepository(
         emit(Result.failure(Exception("No valid DataSource :(")))*/
     }
 
-    suspend fun getSubjectByShort(value: String): Result<Subject> {
-        val subs = subjects.first()
-        if(subs.isFailure) return Result.failure(subs.exceptionOrNull()!!)
+    private fun findTeacherInResult(results: Result<List<Teacher>>, value: String): Teacher {
+        if(value.isBlank()) return Teacher("", "(kein)")
 
+        return results.getOrNull()?.firstOrNull {
+                s -> s.shortName.lowercase() == value.lowercase()
+        } ?: Teacher(value)
+    }
 
-        return Result.success(subs.getOrNull()!!.firstOrNull {
-            it.shortName.lowercase() == value.lowercase()
-        } ?: Subject(value, value, Color.Magenta))
+    private fun findSubjectInResult(results: Result<List<Subject>>, value: String): Subject {
+        if(value.isBlank()) return Subject("", "(kein)", Color.Black)
+
+        return results.getOrNull()?.firstOrNull {
+                s -> s.shortName.lowercase() == value.lowercase()
+        } ?: Subject(value)
     }
 
     suspend fun addSubject(value: Subject): Result<Boolean> {

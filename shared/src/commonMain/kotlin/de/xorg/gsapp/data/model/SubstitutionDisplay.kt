@@ -32,6 +32,7 @@ data class SubstitutionDisplay(
     val notes: String,
     val isNew: Boolean
 ) {
+
     constructor(primitive: Substitution,
                 origSubject: Subject,
                 substTeacher: Teacher,
@@ -47,11 +48,11 @@ data class SubstitutionDisplay(
                         SubstitutionType.BREASTFEED
                     else
                         SubstitutionType.NORMAL,
-                    klass = primitive.klass,
-                    lessonNr = primitive.lessonNr,
+                    klass = primitive.klass.ifBlank { "(kein)" },
+                    lessonNr = primitive.lessonNr.ifBlank { "?" },
                     origSubject = origSubject,
                     substTeacher = substTeacher,
-                    substRoom = primitive.substRoom,
+                    substRoom = primitive.substRoom.ifBlank { "(kein)" },
                     substSubject = substSubject,
                     notes = primitive.notes,
                     isNew = primitive.isNew

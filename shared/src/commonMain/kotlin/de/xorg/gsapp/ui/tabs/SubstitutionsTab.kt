@@ -12,8 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.GSAppViewModel
 import de.xorg.gsapp.ui.components.SubstitutionCard
+import dev.icerock.moko.resources.compose.stringResource
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
 
@@ -24,7 +26,7 @@ object SubstitutionsTab : Tab {
     override val options: TabOptions
         @Composable
         get() {
-            val title = "Substitutions" //stringResource(R.)
+            val title = stringResource(MR.strings.tab_substitutions)
             val icon = rememberVectorPainter(Icons.Filled.School)
 
             return remember {

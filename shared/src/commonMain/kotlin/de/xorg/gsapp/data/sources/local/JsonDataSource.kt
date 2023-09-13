@@ -42,7 +42,7 @@ class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
         filePath = pathSrc.getAdditivesPath())
 
     override suspend fun loadSubstitutionPlan(): Result<SubstitutionSet> {
-        println("loading from $")
+        println("loading from ${pathSrc.getSubstitutionPath()}")
         val mayStored: SubstitutionSet?
         try {
             mayStored = substitutionStore.get()

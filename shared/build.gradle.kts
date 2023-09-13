@@ -4,6 +4,7 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.compose")
     kotlin("plugin.serialization")
+    id("dev.icerock.mobile.multiplatform-resources")
 }
 
 kotlin {
@@ -29,7 +30,12 @@ kotlin {
             baseName = "shared"
             isStatic = true
             export("io.github.hoc081098:kmp-viewmodel:0.4.0")
+            export("dev.icerock.moko:resources:0.23.0")
+            export("dev.icerock.moko:graphics:0.9.0") // toUIColor here
         }
+
+        //extraSpecAttributes["resources"] = "['src/commonMain/resources/**', 'src/iosMain/resources/**']"
+        extraSpecAttributes["resources"] = "['src/commonMain/resources/**']"
     }
 
     sourceSets {
@@ -106,4 +112,16 @@ android {
     kotlin {
         jvmToolchain(17)
     }
+}
+
+dependencies {
+    commonMainApi("dev.icerock.moko:resources:0.23.0")
+    commonMainApi("dev.icerock.moko:resources-compose:0.23.0") // for compose multiplatform
+
+    commonTestImplementation("dev.icerock.moko:resources-test:0.23.0") // for testing
+}
+
+
+multiplatformResources {
+    multiplatformResourcesPackage = "de.xorg.gsapp.res"
 }
