@@ -23,11 +23,17 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,8 +42,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import cafe.adriel.voyager.navigator.tab.CurrentTab
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabNavigator
 import de.xorg.gsapp.ui.GSAppViewModel
 import de.xorg.gsapp.ui.components.SubstitutionCard
+import de.xorg.gsapp.ui.tabs.FoodplanTab
+import de.xorg.gsapp.ui.tabs.SubstitutionsTab
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
 
@@ -57,7 +69,7 @@ fun GSApp() {
 
     val hideNavBarState = remember { MutableTransitionState(!hideNavBar) }
 
-    Scaffold(
+    /*Scaffold(
         bottomBar = {
             AnimatedVisibility(
                 visibleState = hideNavBarState,
@@ -81,5 +93,32 @@ fun GSApp() {
                 }
             }
         }
+    )*/
+
+    TabNavigator(SubstitutionsTab) {
+        Scaffold(content = { CurrentTab() }, bottomBar = {
+            /*BottomNavigation {
+                TabNavigationItem(SubstitutionsTab)
+                TabNavigationItem(FoodplanTab)
+            }*/
+            NavigationBar {
+                TabNavigationItem(SubstitutionsTab)
+                TabNavigationItem(FoodplanTab)
+            }
+        })
+    }
+}
+
+@Composable
+private fun RowScope.TabNavigationItem(tab: Tab) {
+    val tabNavigator = LocalTabNavigator.current
+
+    //BottomNavigationItem(
+    NavigationBarItem(
+        selected = tabNavigator.current == tab,
+        onClick = { tabNavigator.current = tab },
+        icon = { Icon(painter = tab.options.icon!!, contentDescription = tab.options.title) },
+        label = { Text(tab.options.title) }
     )
+
 }

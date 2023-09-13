@@ -34,6 +34,8 @@ kotlin {
 
     sourceSets {
         val ktorVersion = "2.3.4"
+        val voyagerVersion = extra["voyager.version"] as String
+
 
         val commonMain by getting {
             dependencies {
@@ -43,6 +45,11 @@ kotlin {
                 implementation(compose.material3)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
+                implementation(compose.materialIconsExtended)
+                implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
+                implementation("cafe.adriel.voyager:voyager-tab-navigator:$voyagerVersion")
+                implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
+                implementation("cafe.adriel.voyager:voyager-kodein:$voyagerVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.kodein.di:kodein-di-framework-compose:7.19.0")
                 implementation("org.kodein.di:kodein-di-conf:7.19.0")
