@@ -97,19 +97,27 @@ class GSAppViewModel(
                 )
 
                 _subStateFlow.value = sds.copy(
-                    substitutions = sds.substitutions.filter {
-                        when (uiState.filterRole) {
-                            FilterRole.STUDENT -> {
-                                it.klass.lowercase().contains(uiState.filter.lowercase())
-                            }
-                            FilterRole.TEACHER -> {
-                                it.substTeacher.shortName.lowercase() == uiState.filter.lowercase()
-                            }
-                            else -> {
-                                true
+                    substitutions = when (uiState.filterRole) {
+                        FilterRole.STUDENT -> {
+                            sds.substitutions.filterKeys { entry ->
+                                entry.lowercase().contains(uiState.filter.lowercase())
                             }
                         }
+                        FilterRole.TEACHER -> {
+                            sds.substitutions.mapValues { klassSubs ->
+                                klassSubs.value.filter { aSub ->
+                                    aSub.substTeacher.shortName.lowercase() == uiState.filter.lowercase()
+                                }
+                            }.filter { klassSubs ->
+                                klassSubs.value.isNotEmpty()
+                            }
+                        }
+                        else -> {
+                            sds.substitutions
+                        }
                     }
+
+
                 )
             }
         }

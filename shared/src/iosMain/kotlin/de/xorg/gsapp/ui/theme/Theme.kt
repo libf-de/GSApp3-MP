@@ -47,11 +47,6 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-actual fun kmpIsSystemInDarkTheme(): Boolean {
-    return isSystemInDarkTheme()
-}
-
-@Composable
 actual fun GSAppTheme(
     darkTheme: Boolean,
     // Dynamic color is available on Android 12+
