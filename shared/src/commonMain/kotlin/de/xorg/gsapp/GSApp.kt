@@ -95,15 +95,18 @@ fun GSApp() {
         }
     )*/
 
-    TabNavigator(SubstitutionsTab) {
+    TabNavigator(SubstitutionsTab()) {
         Scaffold(content = { CurrentTab() }, bottomBar = {
             /*BottomNavigation {
                 TabNavigationItem(SubstitutionsTab)
                 TabNavigationItem(FoodplanTab)
             }*/
             NavigationBar {
-                TabNavigationItem(SubstitutionsTab)
-                TabNavigationItem(FoodplanTab)
+                //This should be SubstitutionTab and FoodplanTab without (), but needs to be
+                //initialized because they are internal classes instead of objects:
+                //(https://github.com/JetBrains/compose-multiplatform/issues/3444)
+                TabNavigationItem(SubstitutionsTab())
+                TabNavigationItem(FoodplanTab())
             }
         })
     }

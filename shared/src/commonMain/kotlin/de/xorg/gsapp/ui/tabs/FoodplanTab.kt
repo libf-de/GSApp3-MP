@@ -16,8 +16,10 @@ import org.kodein.di.compose.localDI
 import org.kodein.di.instance
 import de.xorg.gsapp.res.MR
 
+//This should be an object, but to fix a "no implementation for FUN MISSING_DECLARATION" internal
+//class is used (https://github.com/JetBrains/compose-multiplatform/issues/3444)
 @OptIn(ExperimentalMaterial3Api::class)
-object FoodplanTab : Tab {
+internal class FoodplanTab : Tab {
 
     override val options: TabOptions
         @Composable
