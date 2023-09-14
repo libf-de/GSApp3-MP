@@ -18,11 +18,11 @@
 
 package de.xorg.gsapp.ui.state
 
-import de.xorg.gsapp.data.model.SubstitutionDisplay
+import de.xorg.gsapp.data.model.Substitution
 
 data class SubstitutionPlanState(
     var subState: UiState = UiState.EMPTY,
     val subDate: String = "",
     val subNotes: String = "",
-    val subList: List<SubstitutionDisplay> = listOf()
+    val subList: List<Substitution> = listOf()
 )

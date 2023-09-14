@@ -25,12 +25,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.data.model.SubstitutionDisplay
+import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.Teacher
 
 class GSAppState {
     var substitutionState by mutableStateOf(UiState.EMPTY)
-    var substitutionsList: SnapshotStateList<SubstitutionDisplay> = mutableStateListOf()
+    var substitutionsList: SnapshotStateList<Substitution> = mutableStateListOf()
     var substitutionsNotes by mutableStateOf("")
     var substitutionsDate by mutableStateOf("")
     var filterRole by mutableStateOf(FilterRole.ALL)

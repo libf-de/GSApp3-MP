@@ -25,4 +25,9 @@ data class SubstitutionSet(
     val date: String,
     val notes: String,
     val substitutions: List<Substitution>
-)
+) {
+    constructor() : this(
+        date = "",
+        notes = "",
+        substitutions = emptyList())
+}

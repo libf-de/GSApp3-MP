@@ -3,8 +3,8 @@ package de.xorg.gsapp.data.sources.remote
 import de.xorg.gsapp.data.exceptions.HolidayException
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.FoodOffer
-import de.xorg.gsapp.data.model.Substitution
-import de.xorg.gsapp.data.model.SubstitutionSet
+import de.xorg.gsapp.data.model.SubstitutionApiModel
+import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 import it.skrape.core.htmlDocument
 import it.skrape.matchers.toBePresentTimes
@@ -15,7 +15,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 
 actual class GsWebsiteParser {
-    actual suspend fun parseSubstitutionTable(result: String): Result<SubstitutionSet>  {
+    actual suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet>  {
         return htmlDocument(result) {
             var dateText = "(kein Datum)"
             findFirst("td[class*=vpUeberschr]") {
@@ -23,7 +23,7 @@ actual class GsWebsiteParser {
                     dateText = this.text.trim()
             }
 
-            if(dateText == "Beschilderung beachten!") Result.failure<SubstitutionSet>(
+            if(dateText == "Beschilderung beachten!") Result.failure<SubstitutionApiModelSet>(
                 HolidayException()
             )
 
@@ -33,7 +33,7 @@ actual class GsWebsiteParser {
                     noteText = this.text.replace("Hinweis:", "").trim()
             }
 
-            val substitutions = ArrayList<Substitution>()
+            val substitutionApiModels = ArrayList<SubstitutionApiModel>()
             var colNum: Int
             var data: Array<String>
             var isNew: Boolean
@@ -57,8 +57,8 @@ actual class GsWebsiteParser {
                     }
                 }
 
-                substitutions.add(
-                    Substitution(
+                substitutionApiModels.add(
+                    SubstitutionApiModel(
                         klass = data[0],
                         lessonNr = data[1],
                         origSubject = data[2],
@@ -71,10 +71,10 @@ actual class GsWebsiteParser {
                 )
             }
 
-            Result.success(SubstitutionSet(
+            Result.success(SubstitutionApiModelSet(
                 date = dateText,
                 notes = noteText,
-                substitutions = substitutions
+                substitutionApiModels = substitutionApiModels
             ))
 
         }

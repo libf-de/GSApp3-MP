@@ -22,25 +22,24 @@ import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.data.model.SubstitutionDisplay
-import de.xorg.gsapp.data.model.SubstitutionDisplaySet
+import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionSet
+import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sources.local.JsonDataSource
 import de.xorg.gsapp.data.sources.remote.GsWebsiteDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 
 class AppRepository(
     private val webDataSource: GsWebsiteDataSource,
     private val jsonDataSource: JsonDataSource
-) {
+) : GSAppRepository {
     //TODO: Maybe use Mutex variables to cache objects here for write operations
 
     // Substitution functions
-    private val substitutions: Flow<Result<SubstitutionSet>> = flow {
+    private val substitutions: Flow<Result<SubstitutionApiModelSet>> = flow {
         val cached = jsonDataSource.loadSubstitutionPlan()
         if(cached.isSuccess) emit(cached)
 
@@ -57,14 +56,14 @@ class AppRepository(
         emit(web)
     }
 
-    fun getSubstitutions(): Flow<Result<SubstitutionDisplaySet>> = combine(substitutions,
+    override fun getSubstitutions(): Flow<Result<SubstitutionSet>> = combine(substitutions,
         teachers, subjects) { subs, teachers, subjects ->
         subs.map {
-            SubstitutionDisplaySet(
+            SubstitutionSet(
                 date = it.date,
                 notes = it.notes,
-                substitutions = it.substitutions.map { sub ->
-                    SubstitutionDisplay(
+                substitutions = it.substitutionApiModels.map { sub ->
+                    Substitution(
                         primitive = sub,
                         origSubject = findSubjectInResult(subjects, sub.origSubject),
                         substTeacher = findTeacherInResult(teachers, sub.substTeacher),
@@ -75,7 +74,7 @@ class AppRepository(
         }
     }
 
-    val subjects: Flow<Result<List<Subject>>> = flow {
+    private val subjects: Flow<Result<List<Subject>>> = flow {
         val cached = jsonDataSource.loadSubjects()
         if(cached.isSuccess) emit(cached)
 
@@ -115,7 +114,7 @@ class AppRepository(
         } ?: Subject(value)
     }
 
-    suspend fun addSubject(value: Subject): Result<Boolean> {
+    override suspend fun addSubject(value: Subject): Result<Boolean> {
         val local = jsonDataSource.loadSubjects()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
@@ -125,7 +124,7 @@ class AppRepository(
         return Result.success(success)
     }
 
-    suspend fun deleteSubject(value: Subject): Result<Boolean> {
+    override suspend fun deleteSubject(value: Subject): Result<Boolean> {
         val local = jsonDataSource.loadSubjects()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
@@ -134,7 +133,7 @@ class AppRepository(
         return Result.success(success)
     }
 
-    suspend fun updateSubject(oldSub: Subject, newSub: Subject): Result<Subject> {
+    override suspend fun updateSubject(oldSub: Subject, newSub: Subject): Result<Subject> {
         val local = jsonDataSource.loadSubjects()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
@@ -143,7 +142,7 @@ class AppRepository(
         return Result.success(success)
     }
 
-    val teachers: Flow<Result<List<Teacher>>> = flow {
+    private val teachers: Flow<Result<List<Teacher>>> = flow {
         val cached = jsonDataSource.loadTeachers()
         if(cached.isSuccess) emit(cached)
 
@@ -162,7 +161,7 @@ class AppRepository(
         emit(web)
     }
 
-    suspend fun addTeacher(value: Teacher): Result<Boolean> {
+    override suspend fun addTeacher(value: Teacher): Result<Boolean> {
         val local = jsonDataSource.loadTeachers()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
@@ -172,7 +171,7 @@ class AppRepository(
         return Result.success(success)
     }
 
-    suspend fun deleteTeacher(value: Teacher): Result<Boolean> {
+    override suspend fun deleteTeacher(value: Teacher): Result<Boolean> {
         val local = jsonDataSource.loadTeachers()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
@@ -182,7 +181,7 @@ class AppRepository(
         return Result.success(success)
     }
 
-    suspend fun updateTeacher(oldTea: Teacher, newTea: Teacher): Result<Teacher> {
+    override suspend fun updateTeacher(oldTea: Teacher, newTea: Teacher): Result<Teacher> {
         val local = jsonDataSource.loadTeachers()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
@@ -191,7 +190,7 @@ class AppRepository(
         return Result.success(success)
     }
 
-    val foodPlan: Flow<Result<List<FoodOffer>>> = flow {
+    override val foodPlan: Flow<Result<List<FoodOffer>>> = flow {
         val cached = jsonDataSource.loadFoodPlan()
         if(cached.isSuccess) emit(cached)
 
@@ -208,7 +207,7 @@ class AppRepository(
         emit(web)
     }
 
-    val additives: Flow<Result<List<Additive>>> = flow {
+    override val additives: Flow<Result<List<Additive>>> = flow {
         val cached = jsonDataSource.loadAdditives()
         if(cached.isSuccess) emit(cached)
 

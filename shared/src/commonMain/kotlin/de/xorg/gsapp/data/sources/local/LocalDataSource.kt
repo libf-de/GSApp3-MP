@@ -21,12 +21,12 @@ package de.xorg.gsapp.data.sources.local
 import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.data.model.SubstitutionSet
+import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 
 interface LocalDataSource {
-    suspend fun loadSubstitutionPlan(): Result<SubstitutionSet>
-    suspend fun storeSubstitutionPlan(value: SubstitutionSet)
+    suspend fun loadSubstitutionPlan(): Result<SubstitutionApiModelSet>
+    suspend fun storeSubstitutionPlan(value: SubstitutionApiModelSet)
     suspend fun loadSubjects(): Result<List<Subject>>
     suspend fun storeSubjects(value: List<Subject>)
     suspend fun loadTeachers(): Result<List<Teacher>>
