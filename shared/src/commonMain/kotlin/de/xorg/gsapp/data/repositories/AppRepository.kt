@@ -69,7 +69,7 @@ class AppRepository(
                         substTeacher = findTeacherInResult(teachers, sub.substTeacher),
                         substSubject = findSubjectInResult(subjects, sub.substSubject)
                     )
-                }
+                }.groupBy { subs -> subs.klass }
             )
         }
     }

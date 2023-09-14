@@ -24,10 +24,10 @@ import kotlinx.serialization.Serializable
 data class SubstitutionSet(
     val date: String,
     val notes: String,
-    val substitutions: List<Substitution>
+    val substitutions: Map<String, List<Substitution>>
 ) {
     constructor() : this(
         date = "",
         notes = "",
-        substitutions = emptyList())
+        substitutions = emptyMap())
 }

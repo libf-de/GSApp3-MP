@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.flow
 
 class MockAppRepository : GSAppRepository {
     override fun getSubstitutions(): Flow<Result<SubstitutionSet>> = flow {
-        val subs = listOf(
-            Substitution(
+        val subs = mapOf(
+            "5.3" to listOf(Substitution(
                 type = SubstitutionType.NORMAL,
                 klass = "5.3",
                 lessonNr = "4",
@@ -35,7 +35,7 @@ class MockAppRepository : GSAppRepository {
                 ),
                 notes = "",
                 isNew = false
-            )
+            ))
         )
         val sds = SubstitutionSet(
             date = "01.01.2000",

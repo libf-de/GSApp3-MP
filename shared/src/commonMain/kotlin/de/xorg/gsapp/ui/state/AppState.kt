@@ -31,7 +31,7 @@ data class AppState(
     val currentView: ViewState = ViewState.SUBSTITUTIONS,
 
     val substitutionsFlow: StateFlow<SubstitutionSet> = MutableStateFlow(
-        SubstitutionSet("", "", emptyList())),
+        SubstitutionSet("", "", emptyMap())),
     val substitutionState: UiState = UiState.EMPTY,
     val substitutionError: Throwable = NoException(),
     @Deprecated("use flow instead") val substitutionList: List<Substitution> = listOf(),
