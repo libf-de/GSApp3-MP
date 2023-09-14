@@ -85,11 +85,17 @@ fun SubstitutionCard(
                         .clip(CircleShape)
                         .background(Color(colorRoles.accent))
                 ) {
-                    Text(" " + value.lessonNr + ".",
+                    Text(
+                        text = (if(value.lessonNr.length == 1) " " else "")
+                                + value.lessonNr + ".",
                         style = MaterialTheme.typography.titleMedium,
                         color = Color(colorRoles.onAccent),
                         overflow = TextOverflow.Clip,
-                        modifier = Modifier.padding(0.dp, 0.dp, 0.dp, (1.5f).dp))
+                        modifier = Modifier.padding(
+                            start = 0.dp,
+                            top = 0.dp,
+                            end = 0.dp,
+                            bottom = (1.5f).dp))
                 }
             }
 

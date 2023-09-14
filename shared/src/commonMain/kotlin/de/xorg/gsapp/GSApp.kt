@@ -97,10 +97,6 @@ fun GSApp() {
 
     TabNavigator(SubstitutionsTab()) {
         Scaffold(content = { CurrentTab() }, bottomBar = {
-            /*BottomNavigation {
-                TabNavigationItem(SubstitutionsTab)
-                TabNavigationItem(FoodplanTab)
-            }*/
             NavigationBar {
                 //This should be SubstitutionTab and FoodplanTab without (), but needs to be
                 //initialized because they are internal classes instead of objects:

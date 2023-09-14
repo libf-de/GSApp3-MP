@@ -1,16 +1,21 @@
 package de.xorg.gsapp.ui.tabs
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import de.xorg.gsapp.res.MR
@@ -49,17 +54,36 @@ internal class SubstitutionsTab : Tab {
         val viewModel by di.instance<GSAppViewModel>()
 
         val sds = viewModel.subStateFlow.collectAsState().value
+        var isFirst = true
 
         LazyColumn(
-            modifier = Modifier
+            modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 84.dp)
         ) {
+            item {
+                Text(
+                    text = options.title,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
             sds.substitutions.forEach {
                 item {
-                    Text(it.key)
+                    Text(
+                        text = it.key,
+                        modifier = Modifier.padding(
+                            start = 28.dp,
+                            top = if(!isFirst) 12.dp else 0.dp,
+                            end = 0.dp,
+                            bottom = 0.dp
+                        ),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
                 items(it.value) { substitution ->
                     SubstitutionCard(value = substitution)
                 }
+                isFirst = false
             }
 
         }
