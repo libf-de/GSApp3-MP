@@ -21,13 +21,8 @@ package de.xorg.gsapp.data.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SubstitutionDisplaySet(
+data class SubstitutionApiModelSet(
     val date: String,
     val notes: String,
-    val substitutions: List<SubstitutionDisplay>
-) {
-    constructor() : this(
-        date = "",
-        notes = "",
-        substitutions = emptyList())
-}
+    val substitutionApiModels: List<SubstitutionApiModel>
+)

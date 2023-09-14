@@ -59,14 +59,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.android.material.color.MaterialColors
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.data.model.SubstitutionDisplay
+import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionType
 import de.xorg.gsapp.data.model.Teacher
 
 @ExperimentalMaterial3Api
 @Composable
 actual fun SubstitutionCard(
-    value: SubstitutionDisplay
+    value: Substitution
 ) {
     val lessonNrStyle = MaterialTheme.typography.titleMedium
     val lineHeightDp: Dp = with(LocalDensity.current) {
@@ -219,7 +219,7 @@ actual fun SubstitutionCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun normalNoNotesPreview() {
-    val sampleSubDisp = SubstitutionDisplay(
+    val sampleSubDisp = Substitution(
         type = SubstitutionType.NORMAL,
         klass = "5.3",
         lessonNr = "3",
@@ -238,7 +238,7 @@ fun normalNoNotesPreview() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun normalWithNotesPreview() {
-    val sampleSubDisp = SubstitutionDisplay(
+    val sampleSubDisp = Substitution(
         type = SubstitutionType.NORMAL,
         klass = "5.3",
         lessonNr = "3",
@@ -258,7 +258,7 @@ fun normalWithNotesPreview() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun cancellationPreview() {
-    SubstitutionCard(value = SubstitutionDisplay(
+    SubstitutionCard(value = Substitution(
         type = SubstitutionType.CANCELLATION,
         klass = "5.3",
         lessonNr = "4",
@@ -275,7 +275,7 @@ fun cancellationPreview() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun workorderPreview() {
-    SubstitutionCard(value = SubstitutionDisplay(
+    SubstitutionCard(value = Substitution(
         type = SubstitutionType.WORKORDER,
         klass = "5.3",
         lessonNr = "4",
@@ -292,7 +292,7 @@ fun workorderPreview() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun roomswapPreview() {
-    SubstitutionCard(value = SubstitutionDisplay(
+    SubstitutionCard(value = Substitution(
         type = SubstitutionType.ROOMSWAP,
         klass = "5.3",
         lessonNr = "4",
@@ -309,7 +309,7 @@ fun roomswapPreview() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun breastfeedPreview() {
-    SubstitutionCard(value = SubstitutionDisplay(
+    SubstitutionCard(value = Substitution(
         type = SubstitutionType.BREASTFEED,
         klass = "5.3",
         lessonNr = "4",

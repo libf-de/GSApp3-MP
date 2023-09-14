@@ -87,6 +87,7 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.common)
+                implementation(compose.desktop.linux_x64)
                 implementation(compose.preview)
                 implementation("net.harawata:appdirs:1.2.2")
                 implementation("it.skrape:skrapeit:1.2.2")

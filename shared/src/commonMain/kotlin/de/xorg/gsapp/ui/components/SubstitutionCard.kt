@@ -20,8 +20,8 @@ package de.xorg.gsapp.ui.components
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import de.xorg.gsapp.data.model.SubstitutionDisplay
+import de.xorg.gsapp.data.model.Substitution
 
 @Composable
 @ExperimentalMaterial3Api
-expect fun SubstitutionCard(value: SubstitutionDisplay)
+expect fun SubstitutionCard(value: Substitution)

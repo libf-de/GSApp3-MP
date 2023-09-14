@@ -21,8 +21,8 @@ package de.xorg.gsapp.ui.state
 import de.xorg.gsapp.data.exceptions.NoException
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.data.model.SubstitutionDisplay
-import de.xorg.gsapp.data.model.SubstitutionDisplaySet
+import de.xorg.gsapp.data.model.Substitution
+import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,11 +30,11 @@ import kotlinx.coroutines.flow.StateFlow
 data class AppState(
     val currentView: ViewState = ViewState.SUBSTITUTIONS,
 
-    val substitutionsFlow: StateFlow<SubstitutionDisplaySet> = MutableStateFlow(
-        SubstitutionDisplaySet("", "", emptyList())),
+    val substitutionsFlow: StateFlow<SubstitutionSet> = MutableStateFlow(
+        SubstitutionSet("", "", emptyList())),
     val substitutionState: UiState = UiState.EMPTY,
     val substitutionError: Throwable = NoException(),
-    @Deprecated("use flow instead") val substitutionList: List<SubstitutionDisplay> = listOf(),
+    @Deprecated("use flow instead") val substitutionList: List<Substitution> = listOf(),
     @Deprecated("use flow instead") val substitutionDate: String = "",
     @Deprecated("use flow instead") val substitutionNotes: String = "",
 

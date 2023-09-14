@@ -23,7 +23,7 @@ import de.xorg.gsapp.data.exceptions.UnexpectedStatusCodeException
 import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.data.model.SubstitutionSet
+import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -252,7 +252,7 @@ class GsWebsiteDataSource : RemoteDataSource {
         return me.toString()
     }*/
 
-    override suspend fun loadSubstitutionPlan(): Result<SubstitutionSet> {
+    override suspend fun loadSubstitutionPlan(): Result<SubstitutionApiModelSet> {
         try {
             val response: HttpResponse =
                 client.get("https://www.gymnasium-sonneberg.de/Informationen/vp.php5")

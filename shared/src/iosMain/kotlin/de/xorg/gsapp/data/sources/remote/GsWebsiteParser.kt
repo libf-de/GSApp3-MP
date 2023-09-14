@@ -7,17 +7,16 @@ import de.xorg.gsapp.data.exceptions.HolidayException
 import de.xorg.gsapp.data.exceptions.InvalidElementTypeException
 import de.xorg.gsapp.data.exceptions.NoEntriesException
 import de.xorg.gsapp.data.model.FoodOffer
-import de.xorg.gsapp.data.model.Substitution
-import de.xorg.gsapp.data.model.SubstitutionSet
+import de.xorg.gsapp.data.model.SubstitutionApiModel
+import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
-import platform.Foundation.NSString
 import platform.Foundation.allKeys
 import platform.Foundation.allValues
 import platform.Foundation.array
 
 
 actual class GsWebsiteParser {
-    actual suspend fun parseSubstitutionTable(result: String): Result<SubstitutionSet> {
+    actual suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet> {
         val doc = HTMLDocument.documentWithString(result)
 
         val dateHead: HTMLElement? = doc.querySelector("td[class*=vpUeberschr]")
@@ -33,7 +32,7 @@ actual class GsWebsiteParser {
             if(!noteHead.isEmpty())
                 noteText = noteHead.textContent
 
-        val substitutions = ArrayList<Substitution>()
+        val substitutionApiModels = ArrayList<SubstitutionApiModel>()
         var colNum: Int
         var data: Array<String>
         var isNew: Boolean
@@ -67,8 +66,8 @@ actual class GsWebsiteParser {
                 colNum++
             }
 
-            substitutions.add(
-                Substitution(
+            substitutionApiModels.add(
+                SubstitutionApiModel(
                     klass = data[0],
                     lessonNr = data[1],
                     origSubject = data[2],
@@ -82,10 +81,10 @@ actual class GsWebsiteParser {
         }
 
         return Result.success(
-            SubstitutionSet(
+            SubstitutionApiModelSet(
             date = dateText,
             notes = noteText,
-            substitutions = substitutions
+            substitutionApiModels = substitutionApiModels
         )
         )
     }

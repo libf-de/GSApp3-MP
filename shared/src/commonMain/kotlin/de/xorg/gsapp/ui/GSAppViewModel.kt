@@ -23,8 +23,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.hoc081098.kmp.viewmodel.ViewModel
 import de.xorg.gsapp.data.di.repositoryModule
-import de.xorg.gsapp.data.model.SubstitutionDisplaySet
-import de.xorg.gsapp.data.repositories.AppRepository
+import de.xorg.gsapp.data.model.SubstitutionSet
+import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.ui.state.AppState
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.UiState
@@ -36,7 +36,7 @@ import org.kodein.di.DIAware
 
 //TODO: Wenn hier fehler, dann schau was mit dem Parameter ist.
 class GSAppViewModel(
-    private val appRepo: AppRepository
+    private val appRepo: GSAppRepository
 ) : ViewModel(), DIAware {
 
     override val di: DI by DI.lazy {
@@ -46,7 +46,7 @@ class GSAppViewModel(
     var uiState by mutableStateOf(AppState())
         private set
 
-    private val _subStateFlow = MutableStateFlow(SubstitutionDisplaySet())
+    private val _subStateFlow = MutableStateFlow(SubstitutionSet())
     val subStateFlow = _subStateFlow.asStateFlow()
 
     /*private val _uiState = MutableStateFlow(GSAppState())

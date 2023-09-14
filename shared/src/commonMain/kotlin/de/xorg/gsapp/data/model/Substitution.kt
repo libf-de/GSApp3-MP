@@ -22,12 +22,41 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Substitution(
+    val type: SubstitutionType,
     val klass: String,
     val lessonNr: String,
-    val origSubject: String,
-    val substTeacher: String,
+    val origSubject: Subject,
+    val substTeacher: Teacher,
     val substRoom: String,
-    val substSubject: String,
+    val substSubject: Subject,
     val notes: String,
     val isNew: Boolean
-)
+) {
+
+    constructor(primitive: SubstitutionApiModel,
+                origSubject: Subject,
+                substTeacher: Teacher,
+                substSubject: Subject) : this(
+                    type = if(primitive.notes.lowercase() == "ausfall")
+                        SubstitutionType.CANCELLATION
+                    else if(primitive.notes.lowercase() == "aa"
+                            || primitive.notes.lowercase().startsWith("arbeitsauftr"))
+                        SubstitutionType.WORKORDER
+                    else if(primitive.notes.lowercase() == "raumtausch")
+                        SubstitutionType.ROOMSWAP
+                    else if(primitive.notes.lowercase().startsWith("stillbesch"))
+                        SubstitutionType.BREASTFEED
+                    else
+                        SubstitutionType.NORMAL,
+                    klass = primitive.klass.ifBlank { "(kein)" },
+                    lessonNr = primitive.lessonNr.ifBlank { "?" },
+                    origSubject = origSubject,
+                    substTeacher = substTeacher,
+                    substRoom = primitive.substRoom.ifBlank { "(kein)" },
+                    substSubject = substSubject,
+                    notes = primitive.notes,
+                    isNew = primitive.isNew
+                ) {
+
+    }
+}
