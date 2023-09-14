@@ -125,4 +125,5 @@ dependencies {
 
 multiplatformResources {
     multiplatformResourcesPackage = "de.xorg.gsapp.res"
+    disableStaticFrameworkWarning = true
 }

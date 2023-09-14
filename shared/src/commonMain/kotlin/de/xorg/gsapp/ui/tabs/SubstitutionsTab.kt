@@ -19,8 +19,10 @@ import dev.icerock.moko.resources.compose.stringResource
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
 
+//This should be an object, but to fix a "no implementation for FUN MISSING_DECLARATION" internal
+//class is used (https://github.com/JetBrains/compose-multiplatform/issues/3444)
 @OptIn(ExperimentalMaterial3Api::class)
-object SubstitutionsTab : Tab {
+internal class SubstitutionsTab : Tab {
 
 
     override val options: TabOptions
