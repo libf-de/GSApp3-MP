@@ -74,9 +74,9 @@ kotlin {
                 api("androidx.activity:activity-compose:1.7.2")
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.10.1")
-                implementation("androidx.compose.ui:ui-tooling-preview-android:1.5.1")
                 implementation("it.skrape:skrapeit:1.2.2")
                 implementation("com.google.android.material:material:1.9.0")
+                implementation(compose.preview)
             }
         }
         val iosMain by getting {
@@ -87,6 +87,7 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.common)
+                implementation(compose.preview)
                 implementation("net.harawata:appdirs:1.2.2")
                 implementation("it.skrape:skrapeit:1.2.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
