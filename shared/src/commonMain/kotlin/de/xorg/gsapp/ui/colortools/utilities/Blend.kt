@@ -15,7 +15,6 @@
  */
 package de.xorg.gsapp.ui.colortools.utilities
 
-import com.google.android.material.color.utilities.ColorUtils
 import kotlin.math.min
 
 /**

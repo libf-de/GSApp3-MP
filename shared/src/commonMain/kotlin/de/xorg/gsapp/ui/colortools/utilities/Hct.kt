@@ -15,8 +15,6 @@
  */
 package de.xorg.gsapp.ui.colortools.utilities
 
-import com.google.android.material.color.utilities.ColorUtils
-
 /**
  * A color system built using CAM16 hue and chroma, and L* from L*a*b*.
  *

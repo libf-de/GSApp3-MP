@@ -44,7 +44,7 @@ data class AppState(
 
     val foodplanState: UiState = UiState.EMPTY,
     val foodplanList: List<FoodOffer> = listOf(),
-    val foodplanError: Exception = NoException(),
+    val foodplanError: Throwable = NoException(),
 
 
     val subjectsList: List<Subject> = listOf(),

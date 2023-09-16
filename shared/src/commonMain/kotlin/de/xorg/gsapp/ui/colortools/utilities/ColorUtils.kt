@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.android.material.color.utilities
+package de.xorg.gsapp.ui.colortools.utilities
 
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.ui.colortools.annotations.ColorInt
 import de.xorg.gsapp.ui.colortools.annotations.FloatRange
-import de.xorg.gsapp.ui.colortools.utilities.MathUtils
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.round
-import kotlin.native.concurrent.ThreadLocal
 
 /**
  * Color science utilities.
@@ -114,6 +114,18 @@ object ColorUtils {
         val g = delinearized(linearG)
         val b = delinearized(linearB)
         return argbFromRgb(r, g, b)
+    }
+
+    /** Converts a color from XYZ to Color.  */
+    fun colorFromXyz(x: Double, y: Double, z: Double): Color {
+        val matrix = XYZ_TO_SRGB
+        val linearR = matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z
+        val linearG = matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z
+        val linearB = matrix[2][0] * x + matrix[2][1] * y + matrix[2][2] * z
+        val r = delinearized(linearR)
+        val g = delinearized(linearG)
+        val b = delinearized(linearB)
+        return Color(r, g, b)
     }
 
     /** Converts a color from XYZ to ARGB.  */
@@ -343,6 +355,72 @@ object ColorUtils {
         val result: DoubleArray = xyzFromColor(color)
         // Luminance is the Y component
         return result[1] / 100
+    }
+
+
+    /**
+     * Source: https://stackoverflow.com/a/53095879
+     *
+     * Converts an HSL color value to RGB. Conversion formula
+     * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+     * Assumes h, s, and l are contained in the set [0, 1].
+     *
+     * @param h       The hue
+     * @param s       The saturation
+     * @param l       The lightness
+     * @return Color
+     */
+    fun hslToRgb(h: Float, s: Float, l: Float): Color {
+        val r: Float
+        val g: Float
+        val b: Float
+        if (s == 0f) {
+            b = l
+            g = b
+            r = g // achromatic
+        } else {
+            val q = if (l < 0.5f) l * (1 + s) else l + s - l * s
+            val p = 2 * l - q
+            r = hueToRgb(p, q, h + 1f / 3f)
+            g = hueToRgb(p, q, h)
+            b = hueToRgb(p, q, h - 1f / 3f)
+        }
+        return Color((r * 255).toInt(), (g * 255).toInt(), (b * 255).toInt())
+    }
+
+    /** Helper method that converts hue to rgb  */
+    private fun hueToRgb(p: Float, q: Float, t: Float): Float {
+        var t = t
+        if (t < 0f) t += 1f
+        if (t > 1f) t -= 1f
+        if (t < 1f / 6f) return p + (q - p) * 6f * t
+        if (t < 1f / 2f) return q
+        return if (t < 2f / 3f) p + (q - p) * (2f / 3f - t) * 6f else p
+    }
+
+    fun desaturate(input: Color, by: Float): Color {
+        val r = input.red / 255
+        val g = input.green / 255
+        val b = input.blue / 255
+
+        val minV = min(r, min(g, b))
+        val maxV = max(r, max(g, b))
+
+        val h: Float = when (maxV) {
+            minV -> 0f
+            r -> ((60 * (g - b) / (maxV - minV)) + 360) % 360
+            g -> (60 * (b - r) / (maxV - minV)) + 120
+            b -> (60 * (r - g) / (maxV - minV)) + 240
+            else -> 0f
+        };
+
+        val l = (maxV + minV) / 2
+
+        val s: Float = if(maxV == minV) 0f
+        else if(l <= .5f) ((maxV-minV) / (maxV+minV))
+        else ((maxV-minV) / (2-maxV-minV))
+
+        return hslToRgb(h, s*by, l)
     }
 
 

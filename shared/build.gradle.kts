@@ -47,11 +47,11 @@ kotlin {
             dependencies {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
-                implementation(compose.material)
+                //implementation(compose.material)
                 implementation(compose.material3)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
-                implementation(compose.materialIconsExtended)
+                //implementation(compose.materialIconsExtended)
                 implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
                 implementation("cafe.adriel.voyager:voyager-tab-navigator:$voyagerVersion")
                 implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
@@ -75,7 +75,9 @@ kotlin {
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.10.1")
                 implementation("it.skrape:skrapeit:1.2.2")
-                implementation("com.google.android.material:material:1.9.0")
+
+                /*implementation("com.google.android.material:material:1.9.0")*/
+                implementation("androidx.compose.ui:ui-tooling")
                 implementation(compose.preview)
             }
         }
@@ -114,6 +116,13 @@ android {
     }
     kotlin {
         jvmToolchain(17)
+    }
+
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.3"
     }
 }
 

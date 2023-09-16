@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,6 +20,7 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.GSAppViewModel
 import de.xorg.gsapp.ui.components.SubstitutionCard
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
@@ -35,7 +35,8 @@ internal class SubstitutionsTab : Tab {
         @Composable
         get() {
             val title = stringResource(MR.strings.tab_substitutions)
-            val icon = rememberVectorPainter(Icons.Filled.School)
+            //val icon = rememberVectorPainter(Icons.Filled.School)
+            val icon = painterResource(MR.images.substitutions)
 
             return remember {
                 TabOptions(

@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.hoc081098.kmp.viewmodel.ViewModel
 import de.xorg.gsapp.data.di.repositoryModule
+import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.ui.state.AppState
@@ -48,6 +49,9 @@ class GSAppViewModel(
 
     private val _subStateFlow = MutableStateFlow(SubstitutionSet())
     val subStateFlow = _subStateFlow.asStateFlow()
+
+    private val _foodStateFlow = MutableStateFlow(emptyList<FoodOffer>())
+    val foodStateFlow = _foodStateFlow.asStateFlow()
 
     /*private val _uiState = MutableStateFlow(GSAppState())
     val uiState: StateFlow<GSAppState> = _uiState.asStateFlow()*/
@@ -124,6 +128,31 @@ class GSAppViewModel(
     }
 
     private fun loadFoodplan() {
+        uiState = uiState.copy(
+            foodplanState = UiState.LOADING
+        )
 
+        viewModelScope.launch {
+            appRepo.foodPlan.collect {fpResult ->
+                if(fpResult.isFailure) {
+                    //Log.d("GSAppViewModel:loadSubs", "Error while fetching: ${sdsResult.exceptionOrNull()}")
+                    uiState = uiState.copy(
+                        foodplanState = UiState.FAILED,
+                        foodplanError = fpResult.exceptionOrNull()!!
+                    )
+                    return@collect
+                }
+
+                val foodplan = fpResult.getOrNull()!!
+                //Log.d("GSAppViewModel:loadSubs", "Got SubstitutionsDisplaySet " +
+                //        "with ${sds.substitutions} substitutions for ${sds.date}")
+
+                uiState = uiState.copy(
+                    foodplanState = if(foodplan.isEmpty()) UiState.EMPTY else UiState.NORMAL
+                )
+
+                _foodStateFlow.value = foodplan
+            }
+        }
     }
 }
