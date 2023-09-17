@@ -19,10 +19,12 @@
 package de.xorg.gsapp.data.sources.local
 
 import de.xorg.gsapp.data.model.Additive
+import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
+import kotlinx.datetime.LocalDate
 
 interface LocalDataSource {
     suspend fun loadSubstitutionPlan(): Result<SubstitutionApiModelSet>
@@ -32,8 +34,8 @@ interface LocalDataSource {
     suspend fun loadTeachers(): Result<List<Teacher>>
     suspend fun storeTeachers(value: List<Teacher>)
 
-    suspend fun loadFoodPlan(): Result<List<FoodOffer>>
-    suspend fun storeFoodPlan(value: List<FoodOffer>)
+    suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>>
+    suspend fun storeFoodPlan(value: Map<LocalDate, List<Food>>)
     suspend fun loadAdditives(): Result<List<Additive>>
     suspend fun storeAdditives(value: List<Additive>)
 }

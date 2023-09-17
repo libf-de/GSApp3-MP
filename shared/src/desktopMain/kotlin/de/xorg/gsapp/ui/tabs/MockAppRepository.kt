@@ -2,6 +2,7 @@ package de.xorg.gsapp.ui.tabs
 
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.model.Additive
+import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.Substitution
@@ -11,6 +12,7 @@ import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.LocalDate
 
 class MockAppRepository : GSAppRepository {
     override fun getSubstitutions(): Flow<Result<SubstitutionSet>> = flow {
@@ -44,7 +46,7 @@ class MockAppRepository : GSAppRepository {
         )
     }
 
-    override val foodPlan: Flow<Result<List<FoodOffer>>>
+    override val foodPlan: Flow<Result<Map<LocalDate, List<Food>>>>
         get() = TODO("Not yet implemented")
     override val additives: Flow<Result<List<Additive>>>
         get() = TODO("Not yet implemented")

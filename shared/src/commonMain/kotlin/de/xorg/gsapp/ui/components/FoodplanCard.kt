@@ -46,18 +46,20 @@ import de.xorg.gsapp.ui.colortools.utilities.ColorUtils
 @Composable
 fun FoodplanCard(
     food: Food,
-    color: Color
+    color: Color,
+    modifier: Modifier = Modifier
 ) {
     val harmonizedColor = MaterialColors.harmonize(
         color.toArgb(),
         MaterialTheme.colorScheme.primary.toArgb())
     val colorRoles = MaterialColors.getColorRoles(harmonizedColor, isSystemInDarkTheme())
+    //val colorRoles = MaterialColors.getColorRoles(color.toArgb(), isSystemInDarkTheme())
 
-    var currentRotation by remember { mutableStateOf(180f) }
+    var currentRotation by remember { mutableStateOf(0f) }
     val rotation = remember { Animatable(currentRotation) }
 
     var expanded by rememberSaveable { // Save it because it will scroll of screen
-        mutableStateOf(true)
+        mutableStateOf(false)
     }
 
     LaunchedEffect(expanded) {
@@ -77,7 +79,7 @@ fun FoodplanCard(
     }
 
     Card(
-        modifier = Modifier.padding(4.dp).clickable {
+        modifier = modifier.padding(4.dp).clickable {
             expanded = !expanded
         }.wrapContentHeight(),
         colors = CardDefaults.cardColors(containerColor = Color(colorRoles.accentContainer))

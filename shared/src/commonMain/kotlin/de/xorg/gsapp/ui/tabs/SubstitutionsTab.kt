@@ -1,5 +1,6 @@
 package de.xorg.gsapp.ui.tabs
 
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,7 +20,9 @@ import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.GSAppViewModel
+import de.xorg.gsapp.ui.components.LoadingComponent
 import de.xorg.gsapp.ui.components.SubstitutionCard
+import de.xorg.gsapp.ui.state.UiState
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import org.kodein.di.compose.localDI
@@ -35,7 +38,6 @@ internal class SubstitutionsTab : Tab {
         @Composable
         get() {
             val title = stringResource(MR.strings.tab_substitutions)
-            //val icon = rememberVectorPainter(Icons.Filled.School)
             val icon = painterResource(MR.images.substitutions)
 
             return remember {
@@ -66,27 +68,51 @@ internal class SubstitutionsTab : Tab {
                     style = MaterialTheme.typography.headlineMedium
                 )
             }
-            sds.substitutions.forEach {
-                item {
-                    Text(
-                        text = it.key,
-                        modifier = Modifier.padding(
-                            start = 28.dp,
-                            top = if(!isFirst) 12.dp else 0.dp,
-                            end = 0.dp,
-                            bottom = 0.dp
-                        ),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-                items(it.value) { substitution ->
-                    SubstitutionCard(value = substitution)
-                }
-                isFirst = false
-            }
 
+            when(viewModel.uiState.substitutionState) {
+                UiState.NORMAL -> {
+                    sds.substitutions.forEach {
+                        item {
+                            Text(
+                                text = it.key,
+                                modifier = Modifier.padding(
+                                    start = 28.dp,
+                                    top = if(!isFirst) 12.dp else 0.dp,
+                                    end = 0.dp,
+                                    bottom = 0.dp
+                                ),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        items(it.value) { substitution ->
+                            SubstitutionCard(value = substitution)
+                        }
+                        isFirst = false
+                    }
+                }
+                UiState.LOADING -> {
+                    item {
+                        LoadingComponent(modifier = Modifier.fillMaxHeight())
+                    }
+                }
+                UiState.EMPTY -> {
+                    item {
+                        Text("keine Vertretungen")
+                    }
+                }
+                UiState.NO_DATASOURCE -> {
+                    item {
+                        Text("Fehler: Keine Datenquelle :(")
+                    }
+                }
+                else -> {
+                    item {
+                        Text("Fehler: ${viewModel.uiState.substitutionError.message}")
+                    }
+                }
+            }
         }
     }
 }

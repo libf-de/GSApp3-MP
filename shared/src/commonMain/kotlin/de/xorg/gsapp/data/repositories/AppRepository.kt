@@ -20,6 +20,7 @@ package de.xorg.gsapp.data.repositories
 
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.model.Additive
+import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.Substitution
@@ -31,6 +32,7 @@ import de.xorg.gsapp.data.sources.remote.GsWebsiteDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.LocalDate
 
 class AppRepository(
     private val webDataSource: GsWebsiteDataSource,
@@ -190,8 +192,8 @@ class AppRepository(
         return Result.success(success)
     }
 
-    override val foodPlan: Flow<Result<List<FoodOffer>>> = flow {
-        val cached = jsonDataSource.loadFoodPlan()
+    override val foodPlan: Flow<Result<Map<LocalDate, List<Food>>>> = flow {
+        val cached: Result<Map<LocalDate, List<Food>>> = jsonDataSource.loadFoodPlan()
         if(cached.isSuccess) emit(cached)
 
         val web = webDataSource.loadFoodPlan()

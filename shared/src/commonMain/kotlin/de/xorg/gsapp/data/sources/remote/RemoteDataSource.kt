@@ -19,16 +19,18 @@
 package de.xorg.gsapp.data.sources.remote
 
 import de.xorg.gsapp.data.model.Additive
+import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
+import kotlinx.datetime.LocalDate
 
 interface RemoteDataSource {
     suspend fun loadSubstitutionPlan(): Result<SubstitutionApiModelSet>
     suspend fun loadSubjects(): Result<List<Subject>>
     suspend fun loadTeachers(): Result<List<Teacher>>
 
-    suspend fun loadFoodPlan(): Result<List<FoodOffer>>
+    suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>>
     suspend fun loadAdditives(): Result<List<Additive>>
 }

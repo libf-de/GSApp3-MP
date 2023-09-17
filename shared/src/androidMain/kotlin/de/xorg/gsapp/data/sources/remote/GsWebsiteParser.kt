@@ -115,85 +115,53 @@ actual class GsWebsiteParser {
         }
     }
 
-    actual suspend fun parseFoodOffers(html: String): Result<List<FoodOffer>> {
-        val foods = mutableMapOf<String, MutableList<Food>>()
-
+    actual suspend fun parseFoodOffers(html: String): Result<Map<LocalDate, List<Food>>> {
+        val foods = mutableMapOf<LocalDate, MutableList<Food>>()
         return htmlDocument(html) {
-            var kw = 0 //TODO: Remove or implement
-            var dateFrom: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
-            var dateTo: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
-            findFirst("button#time-selector-dropdown") {
-                kw = this.text.split("\\|\\|".toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray()[0].replace("\\D".toRegex(), "").toInt()
-                dateFrom = LocalDate.parse(
-                    this.text
-                        .split("\\|\\|".toRegex())
-                        .dropLastWhile { it.isEmpty() }
-                        .toTypedArray()[1]
-                        .split("-".toRegex())
-                        .dropLastWhile { it.isEmpty() }
-                        .toTypedArray()[0]
-                        .trim { it <= ' ' } +
-                            this.text
-                                .split("\\|\\|".toRegex())
-                                .dropLastWhile { it.isEmpty() }
-                                .toTypedArray()[1]
-                                .split("\\.".toRegex())
-                                .dropLastWhile { it.isEmpty() }
-                                .toTypedArray()
-                                .last()
-                ) ?: dateFrom
-                dateTo = LocalDate.parse(
-                    this.text
-                        .split("\\|\\|".toRegex())
-                        .dropLastWhile { it.isEmpty() }
-                        .toTypedArray()[1]
-                        .split("-".toRegex())
-                        .dropLastWhile { it.isEmpty() }
-                        .toTypedArray()[1]
-                        .trim { it <= ' ' }
-                ) ?: dateTo
-            }
-
             findAll("table#menu-table_KW td[mealid]") {
                 forEach { meal ->
-                    val mealDate = meal.attribute("day")
-                    val mealId = meal.attribute("mealid").toInt()
-                    var mealName = ""
-                    var mealAdditives = emptyList<String>()
+                    try {
+                        val mealDate = LocalDate.parse(meal.attribute("day"))
+                        val mealId = meal.attribute("mealid").toInt()
+                        var mealName = ""
+                        var mealAdditives = emptyList<String>()
 
-                    meal.findFirst("span[id=mealtext]") {
-                        if(this.text.isNotEmpty())
-                            mealName = this.text.trim()
-                        else
-                            Log.w("loadFoodPlan", "Got food with empty name, on html: ${meal.html}")
-                    }
+                        meal.findFirst("span[id=mealtext]") {
+                            if(this.text.isNotEmpty())
+                                mealName = this.text.trim()
+                            else
+                                println("[loadFoodPlan]: Got food with empty name, on html: ${meal.html}")
+                        }
 
-                    meal.findFirst("sub") {
-                        mealAdditives = this.text.trim().split(",").toList()
-                    }
+                        meal.findFirst("sub") {
+                            mealAdditives = this.text.trim().split(",").toList()
+                        }
 
-                    if(!foods.containsKey(mealDate)) foods[mealDate] = mutableListOf()
-                    foods[mealDate]!!.add(
-                        Food(
-                            num = mealId,
-                            name = mealName,
-                            additives = mealAdditives
+                        if(!foods.containsKey(mealDate)) foods[mealDate] = mutableListOf()
+                        foods[mealDate]!!.add(
+                            Food(
+                                num = mealId,
+                                name = mealName,
+                                additives = mealAdditives
+                            )
                         )
-                    )
+                    } catch(e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             }
 
             Result.success(
+                foods.entries.associate { it.key to it.value.toList() })/*
                 foods.entries.map {
                     FoodOffer(
                         dataFromDate=dateFrom,
                         dataTillDate=dateTo,
-                        date=LocalDate.parse(it.key)!!,
+                        date= LocalDate.parse(it.key),
                         foods=it.value
                     )
                 }
-            )
+            )*/
         }
     }
 }

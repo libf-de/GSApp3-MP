@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.hoc081098.kmp.viewmodel.ViewModel
 import de.xorg.gsapp.data.di.repositoryModule
+import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
@@ -32,6 +33,7 @@ import de.xorg.gsapp.ui.state.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 
@@ -50,7 +52,7 @@ class GSAppViewModel(
     private val _subStateFlow = MutableStateFlow(SubstitutionSet())
     val subStateFlow = _subStateFlow.asStateFlow()
 
-    private val _foodStateFlow = MutableStateFlow(emptyList<FoodOffer>())
+    private val _foodStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Food>>())
     val foodStateFlow = _foodStateFlow.asStateFlow()
 
     /*private val _uiState = MutableStateFlow(GSAppState())

@@ -41,6 +41,7 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import de.xorg.gsapp.ui.GSAppViewModel
 import de.xorg.gsapp.ui.tabs.FoodplanTab
 import de.xorg.gsapp.ui.tabs.SubstitutionsTab
+import de.xorg.gsapp.ui.theme.GSAppTheme
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
 
@@ -48,54 +49,58 @@ import org.kodein.di.instance
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun GSApp() {
-    val di = localDI()
+    GSAppTheme {
+        val di = localDI()
 
-    val viewModel by di.instance<GSAppViewModel>()
+        val viewModel by di.instance<GSAppViewModel>()
 
-    val sds = viewModel.subStateFlow.collectAsState().value
+        val sds = viewModel.subStateFlow.collectAsState().value
 
-    //val navController = rememberAnimatedNavController()
+        //val navController = rememberAnimatedNavController()
 
-    var hideNavBar by rememberSaveable { mutableStateOf(false) }
+        var hideNavBar by rememberSaveable { mutableStateOf(false) }
 
-    val hideNavBarState = remember { MutableTransitionState(!hideNavBar) }
+        val hideNavBarState = remember { MutableTransitionState(!hideNavBar) }
 
-    /*Scaffold(
-        bottomBar = {
-            AnimatedVisibility(
-                visibleState = hideNavBarState,
-                exit = slideOutVertically(
-                    targetOffsetY = { fullHeight -> fullHeight }
-                ),
-                enter = slideInVertically(
-                    initialOffsetY = { fullHeight -> fullHeight }
-                )
-            ) {
-                NavigationBar() {}
-            }
+        /*Scaffold(
+            bottomBar = {
+                AnimatedVisibility(
+                    visibleState = hideNavBarState,
+                    exit = slideOutVertically(
+                        targetOffsetY = { fullHeight -> fullHeight }
+                    ),
+                    enter = slideInVertically(
+                        initialOffsetY = { fullHeight -> fullHeight }
+                    )
+                ) {
+                    NavigationBar() {}
+                }
 
-        },
-        content = {
-            LazyColumn(
-                modifier = Modifier
-            ) {
-                items(sds.substitutions) { substitution ->
-                    SubstitutionCard(value = substitution)
+            },
+            content = {
+                LazyColumn(
+                    modifier = Modifier
+                ) {
+                    items(sds.substitutions) { substitution ->
+                        SubstitutionCard(value = substitution)
+                    }
                 }
             }
-        }
-    )*/
+        )*/
 
-    TabNavigator(SubstitutionsTab()) {
-        Scaffold(content = { CurrentTab() }, bottomBar = {
-            NavigationBar {
-                //This should be SubstitutionTab and FoodplanTab without (), but needs to be
-                //initialized because they are internal classes instead of objects:
-                //(https://github.com/JetBrains/compose-multiplatform/issues/3444)
-                TabNavigationItem(SubstitutionsTab())
-                TabNavigationItem(FoodplanTab())
-            }
-        })
+        val substitutionsTab = SubstitutionsTab()
+
+        TabNavigator(substitutionsTab) {
+            Scaffold(content = { CurrentTab() }, bottomBar = {
+                NavigationBar {
+                    //This should be SubstitutionTab and FoodplanTab without (), but needs to be
+                    //initialized because they are internal classes instead of objects:
+                    //(https://github.com/JetBrains/compose-multiplatform/issues/3444)
+                    TabNavigationItem(substitutionsTab)
+                    TabNavigationItem(FoodplanTab())
+                }
+            })
+        }
     }
 }
 

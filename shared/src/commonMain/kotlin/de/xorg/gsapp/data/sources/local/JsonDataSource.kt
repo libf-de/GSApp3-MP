@@ -20,12 +20,13 @@ package de.xorg.gsapp.data.sources.local
 
 import de.xorg.gsapp.data.exceptions.EmptyStoreException
 import de.xorg.gsapp.data.model.Additive
-import de.xorg.gsapp.data.model.FoodOffer
+import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 import io.github.xxfast.kstore.KStore
 import io.github.xxfast.kstore.file.storeOf
+import kotlinx.datetime.LocalDate
 
 
 class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
@@ -36,7 +37,7 @@ class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
         filePath = pathSrc.getSubjectsPath())
     private var teachersStore: KStore<List<Teacher>> = storeOf(
         filePath = pathSrc.getTeachersPath())
-    private var foodplanStore: KStore<List<FoodOffer>> = storeOf(
+    private var foodplanStore: KStore<Map<LocalDate, List<Food>>> = storeOf(
         filePath = pathSrc.getFoodplanPath())
     private var additivesStore: KStore<List<Additive>> = storeOf(
         filePath = pathSrc.getAdditivesPath())
@@ -108,8 +109,8 @@ class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
         }
     }
 
-    override suspend fun loadFoodPlan(): Result<List<FoodOffer>> {
-        val mayStored: List<FoodOffer>?
+    override suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>> {
+        val mayStored: Map<LocalDate, List<Food>>?
         try {
             mayStored = foodplanStore.get()
         } catch(ex: Exception) {
@@ -121,7 +122,7 @@ class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
             Result.failure(EmptyStoreException())
     }
 
-    override suspend fun storeFoodPlan(value: List<FoodOffer>) {
+    override suspend fun storeFoodPlan(value: Map<LocalDate, List<Food>>) {
         try {
             foodplanStore.set(value)
         } catch(ex: Exception) {

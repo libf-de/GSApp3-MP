@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,6 +24,7 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.CircularProgressIndicator
 //import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +63,8 @@ import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.FancyIndicator
 import de.xorg.gsapp.ui.components.Foodplan
 import de.xorg.gsapp.ui.components.FoodplanCard
+import de.xorg.gsapp.ui.components.LoadingComponent
+import de.xorg.gsapp.ui.state.UiState
 import dev.icerock.moko.resources.compose.painterResource
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -99,6 +103,9 @@ internal class FoodplanTab : Tab {
 
         val foodplan = viewModel.foodStateFlow.collectAsState().value
 
+        val fpDates = foodplan.keys.toList()
+        val fpFoods = foodplan.values.toList()
+
         /******************************************************/
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -126,18 +133,10 @@ internal class FoodplanTab : Tab {
         }
 
         // TODO: Merge this
-        val pages = (0..7).toList()
-        val pagerState = rememberPagerState(initialPage = 0) { pages.size }
-        //val menuMap = mutableMapOf<Int, SnapshotStateList<Meal>>()
-        //pages.forEach { offset ->
-        //    menuMap[offset] = remember {
-        //        mutableStateListOf()
-        //    }
-        //    menuUiStates.add(remember {
-        //        mutableStateOf(UiState.LOADING)
-        //    })
-        //}
-
+        val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+        val todayIndex = if(fpDates.contains(today)) fpDates.indexOf(today) else 0
+        val pages = (fpDates.indices).toList()
+        val pagerState = rememberPagerState(initialPage = todayIndex) { fpDates.size }
 
         with(pagerState) {
             LaunchedEffect(key1 = currentPageIndex) {
@@ -160,225 +159,111 @@ internal class FoodplanTab : Tab {
             mensaViewModel.updateOpeningHourTexts(Category.ANY)
         }*/
 
-        Scaffold(
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            topBar = {
-                TopAppBar(
-                    colors = TopAppBarDefaults.mediumTopAppBarColors(containerColor = Color.Red,
-                        scrolledContainerColor = Color.Yellow,
-                        navigationIconContentColor = Color.Green,
-                        titleContentColor = Color.Cyan,
-                        actionIconContentColor = Color.Magenta),
-                    title = {
-                        Text(
-                            text = "Helo",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                            //style = MaterialTheme.typography.headlineMedium
-                        )
-                    },
-                    scrollBehavior = scrollBehavior,
-                )
-            },
-            bottomBar = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    MaterialTheme.colorScheme.background
-                                )
+        LazyColumn(
+            modifier = Modifier,
+            state = listState,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            /*flingBehavior = flingBehavior*/
+        ) {
+            // Tabs
+            stickyHeader {
+                Column(
+                    //  modifier = Modifier.padding(top = 16.dp)
+                ) {
+                    // TODO: Check if pager support m3 tabrow
+                    ScrollableTabRow(
+                        edgePadding = 20.dp,
+                        containerColor = if (listState.firstVisibleItemIndex == 0)
+                            MaterialTheme.colorScheme.background
+                        else
+                            MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                3.dp
+                            ),
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        selectedTabIndex = pagerState.currentPage,
+                        indicator = { tabPositions ->
+                            FancyIndicator(
+                                Modifier
+                                    .tabIndicatorOffset(tabPositions[pagerState.currentPage])
                             )
-                        )
-                )
-            }
-        ) { innerPadding ->
-            LazyColumn(
-                modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
-                state = listState,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                flingBehavior = flingBehavior
-            ) {
-                item {
-                    /*DetailHeader(
-                        modifier = Modifier.padding(top = 8.dp),
-                        foodProvider = foodProvider,
-                        descriptionState = descriptionState,
-                        additionalInfoState = additionalInfoState
-                    )*/
-                }
-                // Tabs
-                stickyHeader {
-                    Column(
-                        //  modifier = Modifier.padding(top = 16.dp)
+
+                        }
                     ) {
-                        // TODO: Check if pager support m3 tabrow
-                        ScrollableTabRow(
-                            edgePadding = 20.dp,
-                            containerColor = if (listState.firstVisibleItemIndex == 0)
-                                MaterialTheme.colorScheme.background
-                            else
-                                MaterialTheme.colorScheme.surfaceColorAtElevation(
-                                    3.dp
-                                ),
-                            contentColor = MaterialTheme.colorScheme.onBackground,
-                            selectedTabIndex = pagerState.currentPage,
-                            indicator = { tabPositions ->
-                                FancyIndicator(
-                                    Modifier
-                                        .tabIndicatorOffset(tabPositions[pagerState.currentPage])
-                                )
-
-                            }
-                        ) {
-                            // Add tabs for all of our pages
-                            pages.forEach { dayOffset ->
-                                val date = Clock.System.todayIn(TimeZone.currentSystemDefault())
-                                    .plus(dayOffset.toLong(), DateTimeUnit.DAY)
-                                Tab(
-                                    modifier = Modifier.wrapContentWidth(),
-                                    text = {
-                                        val dayOfWeek = date.dayOfWeek.name
-                                        val dateFormatted =
-                                            "${date.dayOfMonth}.${date.monthNumber}.${date.year}"
-                                        Text("$dayOfWeek\n$dateFormatted")
-                                    },
-                                    selected = pagerState.currentPage == dayOffset,
-                                    onClick = {
-                                        currentPageIndex = dayOffset
-                                    }
-                                )
-                            }
+                        // Add tabs for all of our pages
+                        pages.forEach { dayOffset ->
+                            val date = fpDates[dayOffset]
+                            //val date = Clock.System.todayIn(TimeZone.currentSystemDefault())
+                            //    .plus(dayOffset.toLong(), DateTimeUnit.DAY)
+                            Tab(
+                                modifier = Modifier.wrapContentWidth(),
+                                text = {
+                                    val dayOfWeek = date.dayOfWeek.name
+                                    val dateFormatted =
+                                        "${date.dayOfMonth}.${date.monthNumber}.${date.year}"
+                                    Text("$dayOfWeek\n$dateFormatted")
+                                },
+                                selected = pagerState.currentPage == dayOffset,
+                                onClick = {
+                                    currentPageIndex = dayOffset
+                                }
+                            )
                         }
                     }
                 }
-                item {
-                    //.height(screenHeight - 64.dp), // 64dp is the height of the top appbar
-                    //count = pages.size,
-                    HorizontalPager(
+            }
+            item {
+                HorizontalPager(
+                    modifier = Modifier
+                        .fillParentMaxHeight(),
+                    state = pagerState,
+                    verticalAlignment = Alignment.Top
+                ) { page ->
+                    Column(
                         modifier = Modifier
-                            .fillParentMaxHeight(),
-                        state = pagerState,
-                        verticalAlignment = Alignment.Top
-                    ) { page ->
-                        LaunchedEffect(key1 = "$page" + "menus") {
-                            /*scope.*/launch {
+                            .padding(horizontal = 20.dp)
+                            .verticalScroll(
+                                rememberScrollState(),
+                                enabled = isScrolledDownState.currentState
+                            ),
+                        verticalArrangement = Arrangement.Top
+                    ) {
 
-                            //var menuUiState by mutableStateOf(UiState.LOADING)
-                            //menuUiStates[page].value = UiState.LOADING
 
-                            /*val menu = mensaViewModel.getMenu(
-                                foodProvider.id!!,
-                                page
-                            )*/
+                        when (viewModel.uiState.foodplanState) {
+                            UiState.NORMAL -> {
+                                var foodNum = 0
+                                fpFoods[page].forEach {
+                                    val color = Color.hsl((240/fpFoods[page].size)*foodNum.toFloat(),
+                                        0.6f, 0.5f)
+                                    println("on page $foodNum -> ${(240/fpFoods[page].size)*foodNum.toFloat()}")
 
-                            /*val meals = if (menu.isSuccess) {
-                                val temp = menu.getOrThrow().meals
-                                menuUiStates[page].value = if (temp.isEmpty()) {
-                                    UiState.NO_INFO
-                                } else {
-                                    UiState.NORMAL
+                                    FoodplanCard(it, color, Modifier.padding(bottom = 8.dp))
+                                    foodNum++
                                 }
-                                temp
-                            } else {
-                                UiState.ERROR
-                                emptyList()
                             }
-
-                            menuMap[page]!!.clear()
-                            menuMap[page]!!.addAll(meals)*/
-
+                            UiState.EMPTY -> {
+                                Column(
+                                    modifier = Modifier.fillMaxHeight(),
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text("(kein Speiseplan)")
+                                }
+                            }
+                            UiState.LOADING -> {
+                                LoadingComponent(modifier = Modifier.fillMaxHeight())
+                            }
+                            else -> {
+                                Column(
+                                    modifier = Modifier.fillMaxHeight(),
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text("Fehler: ${viewModel.uiState.foodplanError.message}")
+                                }
+                            }
                         }
-                        }
-                        Column(
-                            modifier = Modifier
-                                .padding(horizontal = 20.dp)
-                                .verticalScroll(
-                                    rememberScrollState(),
-                                    enabled = isScrolledDownState.currentState
-                                ),
-                            verticalArrangement = Arrangement.Top
-                            // contentPadding = PaddingValues(vertical = 16.dp)
-                        ) {
-                            LaunchedEffect(listState) {
-                                snapshotFlow { listState.firstVisibleItemIndex }
-                                    .collect { isScrolledDownState.targetState = it != 0 }
-                            }
-
-                            AnimatedVisibility(
-                                modifier = Modifier.clip(RoundedCornerShape(corner = CornerSize(28.dp))), // Looks better
-                                visibleState = isScrolledDownState
-                            ) {
-                                Spacer(modifier = Modifier.height(48.dp))
-                            }
-
-                            foodplan[page].foods.forEach {
-                                val color = Color.hsl((360/foodplan[page].foods.size)*page.toFloat(),
-                                    1.0f, 1.0f)
-
-                                FoodplanCard(it, color)
-                            }
-
-                            /*when (menuUiStates[page].value) {
-                                UiState.NORMAL -> {
-                                    menuMap[page]?.forEach { meal ->
-                                        MealCard(
-                                            modifier = Modifier.padding(bottom = 8.dp),
-                                            meal = meal,
-                                            role = mensaViewModel.role
-                                        )
-                                    }
-                                }
-                                UiState.NO_INFO -> {
-                                    Column(
-                                        modifier = Modifier.fillMaxHeight(),
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        LottieWithInfo(
-                                            lottie = R.raw.no_info,
-                                            iterations = 1,
-                                            description = stringResource(
-                                                id = R.string.text_lottie_no_meals
-                                            )
-                                        )
-                                    }
-                                }
-                                UiState.LOADING -> {
-                                    Column(
-                                        modifier = Modifier.fillMaxHeight(),
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        LottieWithInfo(
-                                            lottie = R.raw.loading_menus,
-                                            description = stringResource(
-                                                id = R.string.text_lottie_fetching_meals
-                                            )
-                                        )
-                                    }
-                                }
-                                else -> {
-                                    Column(
-                                        modifier = Modifier.fillMaxHeight(),
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        LottieWithInfo(
-                                            lottie = R.raw.error,
-                                            description = stringResource(
-                                                id = R.string.text_lottie_error
-                                            )
-                                        )
-                                    }
-                                }
-                            }*/
-                            Spacer(modifier = Modifier.height(80.dp))
-                        }
-
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
-
             }
         }
     }

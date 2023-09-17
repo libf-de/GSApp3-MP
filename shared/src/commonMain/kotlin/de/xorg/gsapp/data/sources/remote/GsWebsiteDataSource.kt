@@ -21,6 +21,7 @@ package de.xorg.gsapp.data.sources.remote
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.exceptions.UnexpectedStatusCodeException
 import de.xorg.gsapp.data.model.Additive
+import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
@@ -29,6 +30,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
+import kotlinx.datetime.LocalDate
 
 
 class GsWebsiteDataSource : RemoteDataSource {
@@ -371,7 +373,7 @@ class GsWebsiteDataSource : RemoteDataSource {
         )
     }
 
-    override suspend fun loadFoodPlan(): Result<List<FoodOffer>> {
+    override suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>> {
         try {
             val response: HttpResponse = client.get("https://schulkueche-bestellung.de/de/menu/14")
 
