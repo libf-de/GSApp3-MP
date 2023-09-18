@@ -19,6 +19,14 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
+    js(IR) {
+        browser()
+    }
+
+    wasm {
+        browser()
+    }
+
     cocoapods {
         version = "1.0.0"
         summary = "Some description for the Shared Module"
@@ -96,6 +104,20 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
             }
         }
+        val jsWasmMain by creating {
+            dependsOn(commonMain)
+        }
+
+        val jsMain by getting {
+            dependsOn(jsWasmMain)
+            dependencies {
+                implementation("io.ktor:ktor-client-core:$ktorVersion")
+            }
+        }
+
+        val wasmMain by getting {
+            dependsOn(jsWasmMain)
+        }
     }
 }
 
@@ -137,4 +159,11 @@ dependencies {
 multiplatformResources {
     multiplatformResourcesPackage = "de.xorg.gsapp.res"
     disableStaticFrameworkWarning = true
+}
+
+compose {
+    val composeVersion = project.property("compose.wasm.version") as String
+    kotlinCompilerPlugin.set(composeVersion)
+    val kotlinVersion = project.property("kotlin.version") as String
+    kotlinCompilerPluginArgs.add("suppressKotlinVersionCompatibilityCheck=$kotlinVersion")
 }
