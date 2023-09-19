@@ -1,4 +1,4 @@
-rootProject.name = "MyApplication"
+rootProject.name = "GSApp3-MP"
 
 include(":androidApp")
 include(":shared")
