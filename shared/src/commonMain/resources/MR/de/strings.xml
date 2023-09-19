@@ -3,4 +3,25 @@
     <string name="app_name">GSApp</string>
     <string name="tab_substitutions">Vertretungsplan</string>
     <string name="tab_foodplan">Speiseplan</string>
+
+    <!-- Weekdays, long form -->
+    <string name="wd_mo_lo">Montag</string>
+    <string name="wd_tu_lo">Dienstag</string>
+    <string name="wd_we_lo">Mittwoch</string>
+    <string name="wd_th_lo">Donnerstag</string>
+    <string name="wd_fr_lo">Freitag</string>
+    <string name="wd_sa_lo">Samstag</string>
+    <string name="wd_su_lo">Sonntag</string>
+
+    <!-- Weekdays, short form -->
+    <string name="wd_mo_sh">Mo</string>
+    <string name="wd_tu_sh">Di</string>
+    <string name="wd_we_sh">Mi</string>
+    <string name="wd_th_sh">Do</string>
+    <string name="wd_fr_sh">Fr</string>
+    <string name="wd_sa_sh">Sa</string>
+    <string name="wd_su_sh">So</string>
+
+    <!-- Date format (d=day, m=month, y=year) -->
+    <string name="date_format">d.m.y</string>
 </resources>
