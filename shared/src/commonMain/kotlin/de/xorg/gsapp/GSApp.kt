@@ -18,78 +18,26 @@
 
 package de.xorg.gsapp
 
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
-import de.xorg.gsapp.ui.GSAppViewModel
 import de.xorg.gsapp.ui.tabs.FoodplanTab
 import de.xorg.gsapp.ui.tabs.SubstitutionsTab
 import de.xorg.gsapp.ui.theme.GSAppTheme
-import org.kodein.di.compose.localDI
-import org.kodein.di.instance
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun GSApp() {
     GSAppTheme {
-        val di = localDI()
-
-        val viewModel by di.instance<GSAppViewModel>()
-
-        val sds = viewModel.subStateFlow.collectAsState().value
-
-        //val navController = rememberAnimatedNavController()
-
-        var hideNavBar by rememberSaveable { mutableStateOf(false) }
-
-        val hideNavBarState = remember { MutableTransitionState(!hideNavBar) }
-
-        /*Scaffold(
-            bottomBar = {
-                AnimatedVisibility(
-                    visibleState = hideNavBarState,
-                    exit = slideOutVertically(
-                        targetOffsetY = { fullHeight -> fullHeight }
-                    ),
-                    enter = slideInVertically(
-                        initialOffsetY = { fullHeight -> fullHeight }
-                    )
-                ) {
-                    NavigationBar() {}
-                }
-
-            },
-            content = {
-                LazyColumn(
-                    modifier = Modifier
-                ) {
-                    items(sds.substitutions) { substitution ->
-                        SubstitutionCard(value = substitution)
-                    }
-                }
-            }
-        )*/
-
         val substitutionsTab = SubstitutionsTab()
-
         TabNavigator(substitutionsTab) {
             Scaffold(content = { CurrentTab() }, bottomBar = {
                 NavigationBar {
