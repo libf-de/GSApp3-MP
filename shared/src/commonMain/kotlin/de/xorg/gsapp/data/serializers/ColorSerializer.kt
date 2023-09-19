@@ -19,6 +19,7 @@
 package de.xorg.gsapp.data.serializers
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -28,11 +29,11 @@ import kotlinx.serialization.encoding.Encoder
 
 object ColorSerializer : KSerializer<Color> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Color",
-        PrimitiveKind.LONG)
+        PrimitiveKind.INT)
 
-    override fun serialize(encoder: Encoder, value: Color) = encoder.encodeLong(value.value.toLong())
+    override fun serialize(encoder: Encoder, value: Color) = encoder.encodeInt(value.toArgb())
 
     override fun deserialize(decoder: Decoder): Color {
-        return Color(decoder.decodeLong())
+        return Color(decoder.decodeInt())
     }
 }
