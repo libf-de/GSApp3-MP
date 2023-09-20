@@ -83,6 +83,7 @@ kotlin {
         }
         val iosMain by getting {
             dependencies {
+                dependsOn(commonMain)
                 implementation("io.ktor:ktor-client-darwin:$ktorVersion")
             }
         }

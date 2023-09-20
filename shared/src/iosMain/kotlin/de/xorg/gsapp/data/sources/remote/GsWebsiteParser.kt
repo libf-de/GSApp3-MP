@@ -133,6 +133,38 @@ actual class GsWebsiteParser {
     }
 
     actual suspend fun parseFoodOffers(html: String): Result<Map<LocalDate, List<Food>>> {
-        return Result.failure(NoEntriesException())
+        val foods = mutableMapOf<LocalDate, MutableList<Food>>()
+        val doc = HTMLDocument.documentWithString(html)
+        for(meals: Any? in doc.querySelectorAll("table#menu-table_KW td[mealid]")) {
+            try {
+                if(meals !is HTMLElement) {
+                    return Result.failure(ElementNotFoundException("meals not a HTMLElement!"))
+                }
+
+                val attrMap = meals.attributes
+                val mealDate = LocalDate.parse(
+                    attrMap.allValues[attrMap.allKeys.indexOf("day")] as String)
+                val mealId = (attrMap.allValues[attrMap.allKeys.indexOf("mealid")] as String).toInt()
+                val mealName: String = meals.querySelector("span[id=mealtext]")?.textContent ?: ""
+                val mealAdditives: List<String> =
+                    (meals.querySelector("sub")?.textContent ?: "")
+                        .trim()
+                        .split(",")
+                        .toList()
+
+                if(!foods.containsKey(mealDate)) foods[mealDate] = mutableListOf()
+                foods[mealDate]!!.add(
+                    Food(
+                        num = mealId,
+                        name = mealName,
+                        additives = mealAdditives
+                    )
+                )
+            } catch(e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        return Result.success(foods.entries.associate { it.key to it.value.toList() })
     }
 }
