@@ -40,6 +40,7 @@ kotlin {
 
     sourceSets {
         val ktorVersion = "2.3.4"
+        val precomposeVersion = "1.5.1"
         val voyagerVersion = extra["voyager.version"] as String
 
 
@@ -47,15 +48,12 @@ kotlin {
             dependencies {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
+                implementation(compose.animation)
                 //implementation(compose.material)
                 implementation(compose.material3)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
                 //implementation(compose.materialIconsExtended)
-                implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
-                implementation("cafe.adriel.voyager:voyager-tab-navigator:$voyagerVersion")
-                implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
-                implementation("cafe.adriel.voyager:voyager-kodein:$voyagerVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.kodein.di:kodein-di-framework-compose:7.19.0")
                 implementation("org.kodein.di:kodein-di-conf:7.19.0")
@@ -65,6 +63,8 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
+                api("moe.tlaster:precompose:$precomposeVersion")
+                api("moe.tlaster:precompose-viewmodel:$precomposeVersion")
                 api("io.github.hoc081098:kmp-viewmodel:0.4.0")
             }
         }

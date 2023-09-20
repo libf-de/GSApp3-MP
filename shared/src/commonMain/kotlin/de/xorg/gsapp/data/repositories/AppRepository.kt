@@ -102,7 +102,6 @@ class AppRepository(
 
     private fun findTeacherInResult(results: Result<List<Teacher>>, value: String): Teacher {
         if(value.isBlank()) return Teacher("", "(kein)")
-
         return results.getOrNull()?.firstOrNull {
                 s -> s.shortName.lowercase() == value.lowercase()
         } ?: Teacher(value)
