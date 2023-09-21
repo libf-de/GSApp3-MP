@@ -19,58 +19,56 @@
 package de.xorg.gsapp
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.FiniteAnimationSpec
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.unit.IntOffset
-import de.xorg.gsapp.res.MR
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import de.xorg.gsapp.ui.screens.FoodplanScreen
-import de.xorg.gsapp.ui.screens.GSAppScreen
 import de.xorg.gsapp.ui.screens.SettingsScreen
 import de.xorg.gsapp.ui.screens.SubstitutionsScreen
 import de.xorg.gsapp.ui.screens.screens
 import de.xorg.gsapp.ui.theme.GSAppTheme
+import de.xorg.gsapp.ui.tools.SettingsSource
+import de.xorg.gsapp.ui.tools.circularReveal
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.last
-import moe.tlaster.precompose.navigation.BackStackEntry
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.PopUpTo
 import moe.tlaster.precompose.navigation.rememberNavigator
 import moe.tlaster.precompose.navigation.transition.NavTransition
+import org.kodein.di.compose.localDI
+import org.kodein.di.instance
 
 @Composable
 fun GSApp() {
-    val navigator = rememberNavigator()
-
-
-    val defaultAnim =
-
     GSAppTheme {
+        val navigator = rememberNavigator()
         var hideNavBar by rememberSaveable { mutableStateOf(false) }
         val hideNavBarState = remember { MutableTransitionState(!hideNavBar) }
+
+
+        val settingsState = remember { mutableStateOf(0f) }
+
+        val settingsSource: SettingsSource by localDI().instance()
 
         /*LaunchedEffect(key1 = "BLA!") { //TODO: This is ugly, do it better :(
             navigator.currentEntry.collectLatest {
@@ -83,12 +81,14 @@ fun GSApp() {
             bottomBar = {
                 AnimatedVisibility(
                     visibleState = hideNavBarState,
-                    exit = slideOutVertically(
+                    exit = fadeOut(),
+                    enter = fadeIn(),
+                    /*exit = slideOutVertically(
                         targetOffsetY = { fullHeight -> fullHeight }
                     ),
                     enter = slideInVertically(
                         initialOffsetY = { fullHeight -> fullHeight }
-                    )
+                    )*/
                 ) {
                     NavigationBar() {
                         val navBackStackEntry by navigator.currentEntry.collectAsState(null)
@@ -117,7 +117,7 @@ fun GSApp() {
                         }
                     }
                 }
-            }
+            },
         ) {
             NavHost(
                 navigator = navigator,
@@ -127,6 +127,11 @@ fun GSApp() {
                 scene(
                     route = GSAppRoutes.SUBSTITUTIONS,
                     navTransition = NavTransition(
+                        createTransition = fadeIn(),
+                        resumeTransition = fadeIn(),
+                        destroyTransition = fadeOut(),
+                        pauseTransition = fadeOut(),
+                    /*
                         createTransition = slideInHorizontally(
                             animationSpec = tween(easing = LinearEasing),
                             initialOffsetX = { it }),
@@ -138,7 +143,7 @@ fun GSApp() {
                             targetOffsetX = { -it}),
                         pauseTransition = slideOutHorizontally(
                             animationSpec = tween(easing = LinearEasing),
-                            targetOffsetX = { -it }),
+                            targetOffsetX = { -it }),*/
                     ),
                 ) {
                     hideNavBar = false
@@ -149,6 +154,10 @@ fun GSApp() {
                 scene(
                     route = GSAppRoutes.FOODPLAN,
                     navTransition = NavTransition(
+                        createTransition = fadeIn(),
+                        resumeTransition = fadeIn(),
+                        destroyTransition = fadeOut(),
+                        pauseTransition = fadeOut(),/*
                         createTransition = slideInHorizontally(
                             animationSpec = tween(easing = LinearEasing),
                             initialOffsetX = { -it }),
@@ -160,21 +169,24 @@ fun GSApp() {
                             targetOffsetX = { it }),
                         pauseTransition = slideOutHorizontally(
                             animationSpec = tween(easing = LinearEasing),
-                            targetOffsetX = { it }),
+                            targetOffsetX = { it }),*/
                     ),
                 ) {
                     hideNavBar = false
                     hideNavBarState.targetState = true
-                    FoodplanScreen()
+                    FoodplanScreen(navigator)
                 }
 
+                val setIn = expandIn(
+                    expandFrom = Alignment.TopEnd
+                )
                 scene(
                     route = GSAppRoutes.SETTINGS,
                     navTransition = NavTransition(),
                 ) {
                     hideNavBar = true
                     hideNavBarState.targetState = false
-                    SettingsScreen(navigator)
+                    SettingsScreen(Modifier.circularReveal(), navigator)
                 }
             }
         }

@@ -16,7 +16,11 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
@@ -37,8 +41,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
+import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.GSAppViewModel
 import de.xorg.gsapp.ui.components.FancyIndicator
@@ -46,6 +54,7 @@ import de.xorg.gsapp.ui.components.FoodplanCard
 import de.xorg.gsapp.ui.components.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.DateUtil
+import de.xorg.gsapp.ui.tools.SettingsSource
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
@@ -53,15 +62,19 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun FoodplanScreen() {
+fun FoodplanScreen(
+    navController: Navigator
+) {
     val di = localDI()
 
     val viewModel by di.instance<GSAppViewModel>()
+    val setSrc: SettingsSource by di.instance()
 
     val foodplan = viewModel.foodStateFlow.collectAsState().value
 
@@ -84,7 +97,7 @@ fun FoodplanScreen() {
     val pages = (fpDates.indices).toList()
     val pagerState = rememberPagerState(initialPage = todayIndex) { fpDates.size }
 
-    with(pagerState) {
+    /*with(pagerState) {
         LaunchedEffect(key1 = currentPageIndex) {
             launch {
                 animateScrollToPage(
@@ -92,7 +105,7 @@ fun FoodplanScreen() {
                 )
             }
         }
-    }
+    }*/
 
     Scaffold(
         modifier = Modifier
@@ -113,7 +126,16 @@ fun FoodplanScreen() {
                             MaterialTheme.colorScheme.background
                         else
                             MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
-                else TopAppBarDefaults.mediumTopAppBarColors()
+                else TopAppBarDefaults.mediumTopAppBarColors(),
+                actions = {
+                    IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) },
+                        modifier = Modifier.onGloballyPositioned { coords ->
+                            setSrc.transformOrigin = TransformOrigin(pivotFractionX = coords.positionInRoot().x, pivotFractionY = coords.positionInRoot().y)
+                        }) {
+                        Icon(imageVector = Icons.Filled.Settings,
+                            contentDescription = "Settings") //TODO: Localize!
+                    }
+                }
             )
         }
     ) { innerPadding ->
