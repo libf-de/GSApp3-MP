@@ -186,7 +186,7 @@ fun GSApp() {
                 ) {
                     hideNavBar = true
                     hideNavBarState.targetState = false
-                    SettingsScreen(Modifier.circularReveal(), navigator)
+                    SettingsScreen(navigator)
                 }
             }
         }

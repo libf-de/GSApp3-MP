@@ -18,8 +18,20 @@
 
 package de.xorg.gsapp.ui.state
 
-enum class FilterRole {
-    ALL,
-    TEACHER,
-    STUDENT
+import de.xorg.gsapp.res.MR
+import de.xorg.gsapp.data.enums.StringResEnum
+import dev.icerock.moko.resources.StringResource
+
+
+enum class FilterRole(
+    private val label: StringResource,
+    private val rawValue: String
+) : StringResEnum {
+    ALL(MR.strings.role_all, "All"),
+    TEACHER(MR.strings.role_teacher, "Teacher"),
+    STUDENT(MR.strings.role_student, "Student");
+
+    override fun getValue(): StringResource { return label }
+
+    override fun getRawValue(): String { return rawValue }
 }

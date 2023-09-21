@@ -24,4 +24,21 @@
 
     <!-- Date format (d=day, m=month, y=year) -->
     <string name="date_format">m.d.y</string>
+
+    <!-- Settings items -->
+    <string name="pref_filter">Role</string>
+    <string name="pref_filter_val_student">My class</string>
+    <string name="pref_filter_val_teacher">My name</string>
+    <string name="pref_push">Push notifications</string>
+
+    <!-- Role labels -->
+    <string name="role_all">Show everything</string>
+    <string name="role_student">Filter by class</string>
+    <string name="role_teacher">Filter by teacher</string>
+
+    <!-- Push labels -->
+    <string name="push_disabled">Disabled</string>
+    <string name="push_filter">Only if it affects me</string>
+    <string name="push_enabled">Always notify</string>
+    <string name="push_unavailable">(not available on %s)</string>
 </resources>

@@ -1,11 +1,12 @@
 package de.xorg.gsapp.data.di
 
+import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.AppRepository
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.sources.local.JsonDataSource
 import de.xorg.gsapp.data.sources.local.PathSource
 import de.xorg.gsapp.data.sources.remote.GsWebsiteDataSource
-import de.xorg.gsapp.ui.GSAppViewModel
+import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import de.xorg.gsapp.ui.tools.SettingsSource
 import org.kodein.di.DI
 import org.kodein.di.bind
@@ -22,5 +23,6 @@ val repositoryModule = DI.Module("repositoryModule") {
 val mainModule = DI.Module("mainModule") {
     import(repositoryModule)
     bind<SettingsSource>() with singleton { SettingsSource() }
+    bind<PushNotificationUtil>() with singleton { PushNotificationUtil(di) }
     bind<GSAppViewModel>() with singleton { GSAppViewModel(instance()) }
 }

@@ -32,7 +32,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,7 +47,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.GSAppViewModel
+import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import de.xorg.gsapp.ui.components.FancyIndicator
 import de.xorg.gsapp.ui.components.FoodplanCard
 import de.xorg.gsapp.ui.components.LoadingComponent
@@ -58,7 +57,6 @@ import de.xorg.gsapp.ui.tools.SettingsSource
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
-import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn

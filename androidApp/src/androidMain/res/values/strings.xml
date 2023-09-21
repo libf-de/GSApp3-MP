@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">My application</string>
+    <string name="app_name">GSApp</string>
+    <string name="default_notification_channel_id">GSApp-FCM</string>
 </resources>

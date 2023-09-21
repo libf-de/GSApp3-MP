@@ -16,15 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.xorg.gsapp.ui
+package de.xorg.gsapp.ui.viewmodels
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.hoc081098.kmp.viewmodel.ViewModel
+//import com.hoc081098.kmp.viewmodel.ViewModel
 import de.xorg.gsapp.data.di.repositoryModule
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.ui.state.AppState
@@ -34,6 +33,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import moe.tlaster.precompose.viewmodel.ViewModel
+import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 

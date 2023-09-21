@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.GSAppViewModel
+import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import de.xorg.gsapp.ui.components.LoadingComponent
 import de.xorg.gsapp.ui.components.SubstitutionCard
 import de.xorg.gsapp.ui.state.UiState

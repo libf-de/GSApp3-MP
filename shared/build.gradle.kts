@@ -26,6 +26,7 @@ kotlin {
         ios.deploymentTarget = "14.1"
         podfile = project.file("../iosApp/Podfile")
         pod("HTMLKit")
+        pod("FirebaseMessaging")
         framework {
             baseName = "shared"
             isStatic = true
@@ -49,11 +50,9 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.animation)
-                //implementation(compose.material)
                 implementation(compose.material3)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
-                //implementation(compose.materialIconsExtended)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.kodein.di:kodein-di-framework-compose:7.19.0")
                 implementation("org.kodein.di:kodein-di-conf:7.19.0")
@@ -65,7 +64,6 @@ kotlin {
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
                 api("moe.tlaster:precompose:$precomposeVersion")
                 api("moe.tlaster:precompose-viewmodel:$precomposeVersion")
-                api("io.github.hoc081098:kmp-viewmodel:0.4.0")
             }
         }
         val androidMain by getting {
@@ -77,6 +75,8 @@ kotlin {
                 implementation("it.skrape:skrapeit:1.2.2")
 
                 /*implementation("com.google.android.material:material:1.9.0")*/
+                //implementation("com.google.firebase:firebase-common-ktx:20.3.3")
+                implementation("com.google.firebase:firebase-messaging-ktx:23.2.1")
                 implementation("androidx.compose.ui:ui-tooling")
                 implementation(compose.preview)
             }
