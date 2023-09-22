@@ -44,6 +44,7 @@ fun SettingsScreen(
     val di = localDI()
     val viewModel: SettingsViewModel by di.instance()
     val showRoleDialog = remember { mutableStateOf(false) }
+    val showFilterDialog = remember { mutableStateOf(false) }
     val showPushDialog = remember { mutableStateOf(false) }
 
     Scaffold(modifier = modifier,
@@ -96,6 +97,8 @@ fun SettingsScreen(
             )
         }
 
+
+
         LazyColumn(modifier = modifier) {
             item {
                 SettingsItem(
@@ -118,7 +121,7 @@ fun SettingsScreen(
                             if(viewModel.rolePreference.value == FilterRole.STUDENT) MR.strings.pref_filter_val_student
                             else MR.strings.pref_filter_val_teacher),
                         subtitle = stringResource(viewModel.rolePreference.value.getValue()),
-                        onClick = { }
+                        onClick = { showFilterDialog.value = true }
                     )
                 }
             }
@@ -129,9 +132,10 @@ fun SettingsScreen(
                                                contentDescription = "",
                                                modifier = mod, tint = tint) },
                     title = stringResource(MR.strings.pref_filter),
-                    subtitle = stringResource(viewModel.rolePreference.value.getValue()),
+                    subtitle = stringResource(viewModel.pushPreference.value.getValue()),
                     onClick = { showPushDialog.value = true }
                 )
+
             }
 
         }

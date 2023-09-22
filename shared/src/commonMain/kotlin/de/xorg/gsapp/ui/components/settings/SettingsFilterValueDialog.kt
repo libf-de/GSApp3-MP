@@ -31,11 +31,14 @@ fun SettingsFilterTeacherDialog(
     selectedValue: String,
     dismissText: String,
     confirmText: String,
-    onConfirm: (StringResEnum) -> Unit = {},
+    onConfirm: (String) -> Unit = {},
     onDismiss: () -> Unit = {}
 ) {
     //val openDialog = remember { mutableStateOf(true) }
     val selected = remember { mutableStateOf(selectedValue) }
+
+    val dropdownOpen = remember { mutableStateOf(false) }
+    val dropdownValue = remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = {
@@ -55,30 +58,18 @@ fun SettingsFilterTeacherDialog(
                     modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
                 )
                 Column {
-                    ExposedDropdownMenuBox
+                    OutlinedButton(onClick = { dropdownOpen.value = !dropdownOpen.value }) {
+                        Text(dropdownValue.value)
+                    }
 
-
-                    for (item in items) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .selectable(
-                                    selected = (selected.value == item),
-                                    onClick = { selected.value = item },
-                                    role = Role.RadioButton
-                                )
-                                .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = (selected.value == item),
-                                onClick = null // null recommended for accessibility with screenreaders
-                            )
-                            Text(
-                                modifier = Modifier.padding(start = 16.dp),
-                                text = stringResource(item.getValue()),
-                            )
-                        }
+                    DropdownMenu(
+                        expanded = dropdownOpen.value,
+                        onDismissRequest = { dropdownOpen.value = false }
+                    ) {
+                        DropdownMenuItem(text = { Text("Foo") }, onClick = {
+                            dropdownValue.value = "Foo"
+                            dropdownOpen.value = false
+                        })
                     }
                 }
                 Divider(
