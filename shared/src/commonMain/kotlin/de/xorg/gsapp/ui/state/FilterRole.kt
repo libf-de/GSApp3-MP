@@ -18,20 +18,23 @@
 
 package de.xorg.gsapp.ui.state
 
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.data.enums.StringResEnum
+import de.xorg.gsapp.res.MR
 import dev.icerock.moko.resources.StringResource
 
+enum class FilterRole(val value: Int): StringResEnum {
+    ALL(0) {
+        override val labelResource: StringResource = MR.strings.role_all
+    },
+    TEACHER(1) {
+        override val labelResource: StringResource = MR.strings.role_teacher
+    },
+    STUDENT(2) {
+        override val labelResource: StringResource = MR.strings.role_student
+    };
 
-enum class FilterRole(
-    private val label: StringResource,
-    private val rawValue: String
-) : StringResEnum {
-    ALL(MR.strings.role_all, "All"),
-    TEACHER(MR.strings.role_teacher, "Teacher"),
-    STUDENT(MR.strings.role_student, "Student");
-
-    override fun getValue(): StringResource { return label }
-
-    override fun getRawValue(): String { return rawValue }
+    companion object {
+        fun fromInt(value: Int): FilterRole
+            = FilterRole.values().firstOrNull { it.value == value } ?: ALL
+    }
 }

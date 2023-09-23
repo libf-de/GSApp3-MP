@@ -21,23 +21,27 @@ package de.xorg.gsapp.data.repositories
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.Substitution
-import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
+import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sources.local.JsonDataSource
 import de.xorg.gsapp.data.sources.remote.GsWebsiteDataSource
+import de.xorg.gsapp.data.sources.settings.SettingsSource
+import de.xorg.gsapp.ui.state.FilterRole
+import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDate
+import org.kodein.di.DI
+import org.kodein.di.instance
 
-class AppRepository(
-    private val webDataSource: GsWebsiteDataSource,
-    private val jsonDataSource: JsonDataSource
-) : GSAppRepository {
+class AppRepository(di: DI) : GSAppRepository {
+    private val webDataSource: GsWebsiteDataSource by di.instance()
+    private val jsonDataSource: JsonDataSource by di.instance()
+    private val settingsSource: SettingsSource by di.instance()
     //TODO: Maybe use Mutex variables to cache objects here for write operations
 
     // Substitution functions
@@ -58,7 +62,7 @@ class AppRepository(
         emit(web)
     }
 
-    override fun getSubstitutions(): Flow<Result<SubstitutionSet>> = combine(substitutions,
+    override suspend fun getSubstitutions(): Flow<Result<SubstitutionSet>> = combine(substitutions,
         teachers, subjects) { subs, teachers, subjects ->
         subs.map {
             SubstitutionSet(
@@ -76,7 +80,7 @@ class AppRepository(
         }
     }
 
-    private val subjects: Flow<Result<List<Subject>>> = flow {
+    override val subjects: Flow<Result<List<Subject>>> = flow {
         val cached = jsonDataSource.loadSubjects()
         if(cached.isSuccess) emit(cached)
 
@@ -143,7 +147,7 @@ class AppRepository(
         return Result.success(success)
     }
 
-    private val teachers: Flow<Result<List<Teacher>>> = flow {
+    override val teachers: Flow<Result<List<Teacher>>> = flow {
         val cached = jsonDataSource.loadTeachers()
         if(cached.isSuccess) emit(cached)
 
@@ -224,4 +228,14 @@ class AppRepository(
 
         emit(web)
     }
+
+    /****/
+    override suspend fun getRole(): FilterRole = settingsSource.getRole()
+    override suspend fun setRole(value: FilterRole) = settingsSource.setRole(value)
+
+    override suspend fun getFilterValue(): String = settingsSource.getFilterValue()
+    override suspend fun setFilterValue(value: String) = settingsSource.setFilterValue(value)
+
+    override suspend fun getPush(): PushState = settingsSource.getPush()
+    override suspend fun setPush(value: PushState) = settingsSource.setPush(value)
 }

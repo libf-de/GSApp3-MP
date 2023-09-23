@@ -42,8 +42,6 @@ kotlin {
     sourceSets {
         val ktorVersion = "2.3.4"
         val precomposeVersion = "1.5.1"
-        val voyagerVersion = extra["voyager.version"] as String
-
 
         val commonMain by getting {
             dependencies {
@@ -89,8 +87,9 @@ kotlin {
         }
         val desktopMain by getting {
             dependencies {
+                dependsOn(commonMain)
                 implementation(compose.desktop.common)
-                implementation(compose.desktop.linux_x64)
+                implementation(compose.desktop.macos_x64)
                 implementation(compose.preview)
                 implementation("net.harawata:appdirs:1.2.2")
                 implementation("it.skrape:skrapeit:1.2.2")

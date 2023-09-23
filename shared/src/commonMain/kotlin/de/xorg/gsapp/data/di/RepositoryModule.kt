@@ -7,7 +7,7 @@ import de.xorg.gsapp.data.sources.local.JsonDataSource
 import de.xorg.gsapp.data.sources.local.PathSource
 import de.xorg.gsapp.data.sources.remote.GsWebsiteDataSource
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
-import de.xorg.gsapp.ui.tools.SettingsSource
+import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import org.kodein.di.DI
 import org.kodein.di.bind
 import org.kodein.di.instance
@@ -17,12 +17,14 @@ val repositoryModule = DI.Module("repositoryModule") {
     bind<GsWebsiteDataSource>() with singleton { GsWebsiteDataSource() }
     bind<PathSource>() with singleton { PathSource(di) }
     bind<JsonDataSource>() with singleton { JsonDataSource(instance()) }
-    bind<GSAppRepository>() with singleton { AppRepository(instance(), instance()) }
+    bind<GSAppRepository>() with singleton { AppRepository(di) }
 }
 
 val mainModule = DI.Module("mainModule") {
     import(repositoryModule)
-    bind<SettingsSource>() with singleton { SettingsSource() }
     bind<PushNotificationUtil>() with singleton { PushNotificationUtil(di) }
     bind<GSAppViewModel>() with singleton { GSAppViewModel(instance()) }
+    bind<SettingsViewModel>() with singleton { SettingsViewModel(di) }
+
+
 }

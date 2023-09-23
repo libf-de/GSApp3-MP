@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.exceptions.UnexpectedStatusCodeException
 import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
@@ -34,8 +33,6 @@ import kotlinx.datetime.LocalDate
 
 
 class GsWebsiteDataSource : RemoteDataSource {
-
-    private val TAG = "GsWebsiteDataSource"
 
     private val parser = GsWebsiteParser()
     private val client = HttpClient()

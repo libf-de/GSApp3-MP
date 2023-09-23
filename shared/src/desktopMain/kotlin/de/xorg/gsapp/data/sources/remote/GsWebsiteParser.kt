@@ -2,17 +2,13 @@ package de.xorg.gsapp.data.sources.remote
 
 import de.xorg.gsapp.data.exceptions.HolidayException
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.SubstitutionApiModel
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 import it.skrape.core.htmlDocument
 import it.skrape.matchers.toBePresentTimes
 import it.skrape.selects.DocElement
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
 
 actual class GsWebsiteParser {
     actual suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet>  {
@@ -27,7 +23,7 @@ actual class GsWebsiteParser {
                 HolidayException()
             )
 
-            var noteText: String = ""
+            var noteText = ""
             findFirst("td[class=vpTextLinks]") {
                 if(this.text.isNotEmpty())
                     noteText = this.text.replace("Hinweis:", "").trim()

@@ -2,15 +2,20 @@ package de.xorg.gsapp.data.repositories
 
 import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
+import de.xorg.gsapp.ui.state.FilterRole
+import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 
 interface GSAppRepository {
-    fun getSubstitutions(): Flow<Result<SubstitutionSet>>
+    suspend fun getSubstitutions(): Flow<Result<SubstitutionSet>>
+
+    val teachers: Flow<Result<List<Teacher>>>
+
+    val subjects: Flow<Result<List<Subject>>>
 
     val foodPlan: Flow<Result<Map<LocalDate, List<Food>>>>
 
@@ -28,4 +33,10 @@ interface GSAppRepository {
 
     suspend fun updateSubject(oldSub: Subject, newSub: Subject): Result<Subject>
 
+    suspend fun getRole(): FilterRole
+    suspend fun setRole(value: FilterRole)
+    suspend fun getFilterValue(): String
+    suspend fun setFilterValue(value: String)
+    suspend fun getPush(): PushState
+    suspend fun setPush(value: PushState)
 }

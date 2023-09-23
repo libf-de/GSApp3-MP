@@ -4,14 +4,13 @@ import de.xorg.gsapp.data.enums.StringResEnum
 import de.xorg.gsapp.res.MR
 import dev.icerock.moko.resources.StringResource
 
-enum class PushState(
-    private val label: StringResource,
-    private val rawValue: String
-) : StringResEnum {
-    DISABLED(MR.strings.push_disabled, "disabled"),
-    LIKE_FILTER(MR.strings.push_filter, "filter"),
-    ENABLED(MR.strings.push_enabled, "enabled");
+enum class PushState(val value: Int) : StringResEnum {
+    DISABLED(0) { override val labelResource: StringResource = MR.strings.push_disabled },
+    LIKE_FILTER(1) { override val labelResource: StringResource = MR.strings.push_filter },
+    ENABLED(2) { override val labelResource: StringResource = MR.strings.push_enabled };
 
-    override fun getValue(): StringResource { return label }
-    override fun getRawValue(): String { return rawValue }
+    companion object {
+        fun fromInt(value: Int): PushState
+                = PushState.values().firstOrNull { it.value == value } ?: DISABLED
+    }
 }

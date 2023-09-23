@@ -40,20 +40,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import de.xorg.gsapp.ui.components.FancyIndicator
 import de.xorg.gsapp.ui.components.FoodplanCard
 import de.xorg.gsapp.ui.components.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.DateUtil
-import de.xorg.gsapp.ui.tools.SettingsSource
+import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
@@ -72,7 +69,6 @@ fun FoodplanScreen(
     val di = localDI()
 
     val viewModel by di.instance<GSAppViewModel>()
-    val setSrc: SettingsSource by di.instance()
 
     val foodplan = viewModel.foodStateFlow.collectAsState().value
 
@@ -128,7 +124,7 @@ fun FoodplanScreen(
                 actions = {
                     IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) },
                         modifier = Modifier.onGloballyPositioned { coords ->
-                            setSrc.transformOrigin = TransformOrigin(pivotFractionX = coords.positionInRoot().x, pivotFractionY = coords.positionInRoot().y)
+                            //TODO: remove setSrc.transformOrigin = TransformOrigin(pivotFractionX = coords.positionInRoot().x, pivotFractionY = coords.positionInRoot().y)
                         }) {
                         Icon(imageVector = Icons.Filled.Settings,
                             contentDescription = "Settings") //TODO: Localize!

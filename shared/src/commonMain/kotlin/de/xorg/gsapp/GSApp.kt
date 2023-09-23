@@ -23,10 +23,6 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.shrinkOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -40,14 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import de.xorg.gsapp.ui.screens.FoodplanScreen
 import de.xorg.gsapp.ui.screens.SettingsScreen
 import de.xorg.gsapp.ui.screens.SubstitutionsScreen
 import de.xorg.gsapp.ui.screens.screens
 import de.xorg.gsapp.ui.theme.GSAppTheme
-import de.xorg.gsapp.ui.tools.SettingsSource
-import de.xorg.gsapp.ui.tools.circularReveal
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import moe.tlaster.precompose.navigation.NavHost
@@ -55,8 +48,6 @@ import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.PopUpTo
 import moe.tlaster.precompose.navigation.rememberNavigator
 import moe.tlaster.precompose.navigation.transition.NavTransition
-import org.kodein.di.compose.localDI
-import org.kodein.di.instance
 
 @Composable
 fun GSApp() {
@@ -65,30 +56,12 @@ fun GSApp() {
         var hideNavBar by rememberSaveable { mutableStateOf(false) }
         val hideNavBarState = remember { MutableTransitionState(!hideNavBar) }
 
-
-        val settingsState = remember { mutableStateOf(0f) }
-
-        val settingsSource: SettingsSource by localDI().instance()
-
-        /*LaunchedEffect(key1 = "BLA!") { //TODO: This is ugly, do it better :(
-            navigator.currentEntry.collectLatest {
-                hideNavBar = (it?.route?.route ?: "") == GSAppRoutes.SETTINGS
-                hideNavBarState.targetState = !hideNavBar
-            }
-        }*/
-
         Scaffold(
             bottomBar = {
                 AnimatedVisibility(
                     visibleState = hideNavBarState,
                     exit = fadeOut(),
                     enter = fadeIn(),
-                    /*exit = slideOutVertically(
-                        targetOffsetY = { fullHeight -> fullHeight }
-                    ),
-                    enter = slideInVertically(
-                        initialOffsetY = { fullHeight -> fullHeight }
-                    )*/
                 ) {
                     NavigationBar() {
                         val navBackStackEntry by navigator.currentEntry.collectAsState(null)
@@ -131,19 +104,6 @@ fun GSApp() {
                         resumeTransition = fadeIn(),
                         destroyTransition = fadeOut(),
                         pauseTransition = fadeOut(),
-                    /*
-                        createTransition = slideInHorizontally(
-                            animationSpec = tween(easing = LinearEasing),
-                            initialOffsetX = { it }),
-                        resumeTransition = slideInHorizontally(
-                            animationSpec = tween(easing = LinearEasing),
-                            initialOffsetX = { it }),
-                        destroyTransition = slideOutHorizontally(
-                            animationSpec = tween(easing = LinearEasing),
-                            targetOffsetX = { -it}),
-                        pauseTransition = slideOutHorizontally(
-                            animationSpec = tween(easing = LinearEasing),
-                            targetOffsetX = { -it }),*/
                     ),
                 ) {
                     hideNavBar = false
@@ -157,19 +117,7 @@ fun GSApp() {
                         createTransition = fadeIn(),
                         resumeTransition = fadeIn(),
                         destroyTransition = fadeOut(),
-                        pauseTransition = fadeOut(),/*
-                        createTransition = slideInHorizontally(
-                            animationSpec = tween(easing = LinearEasing),
-                            initialOffsetX = { -it }),
-                        resumeTransition = slideInHorizontally(
-                            animationSpec = tween(easing = LinearEasing),
-                            initialOffsetX = { -it }),
-                        destroyTransition = slideOutHorizontally(
-                            animationSpec = tween(easing = LinearEasing),
-                            targetOffsetX = { it }),
-                        pauseTransition = slideOutHorizontally(
-                            animationSpec = tween(easing = LinearEasing),
-                            targetOffsetX = { it }),*/
+                        pauseTransition = fadeOut(),
                     ),
                 ) {
                     hideNavBar = false
@@ -177,9 +125,6 @@ fun GSApp() {
                     FoodplanScreen(navigator)
                 }
 
-                val setIn = expandIn(
-                    expandFrom = Alignment.TopEnd
-                )
                 scene(
                     route = GSAppRoutes.SETTINGS,
                     navTransition = NavTransition(),

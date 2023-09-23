@@ -1,15 +1,13 @@
-package de.xorg.gsapp.ui.components;
+package de.xorg.gsapp.ui.components
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.material3.ExperimentalMaterial3Api;
-import androidx.compose.runtime.Composable;
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionType
 import de.xorg.gsapp.data.model.Teacher
-
-import kotlin.OptIn;
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
@@ -20,7 +18,7 @@ fun normalNoNotesPreview() {
         klass = "5.3",
         lessonNr = "3",
         origSubject = Subject("En", "Englisch", Color.Red),
-        substTeacher = Teacher("KOC", "Fr. Koch"),
+        substTeacher = Teacher("KOC", "Degner-Engelhard, Franziska"),
         substRoom = "L01",
         substSubject = Subject("De", "Deutsch", Color.Red),
         notes = "",

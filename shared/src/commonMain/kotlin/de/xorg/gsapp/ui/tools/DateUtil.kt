@@ -1,9 +1,9 @@
 package de.xorg.gsapp.ui.tools
 
 import androidx.compose.runtime.Composable
+import de.xorg.gsapp.res.MR
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.datetime.LocalDate
-import de.xorg.gsapp.res.MR
 
 class DateUtil {
     companion object {

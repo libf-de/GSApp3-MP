@@ -17,10 +17,10 @@ package de.xorg.gsapp.ui.colortools
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import de.xorg.gsapp.ui.colortools.utilities.ColorUtils
 import de.xorg.gsapp.ui.colortools.annotations.ColorInt
 import de.xorg.gsapp.ui.colortools.annotations.IntRange
 import de.xorg.gsapp.ui.colortools.utilities.Blend
+import de.xorg.gsapp.ui.colortools.utilities.ColorUtils
 import de.xorg.gsapp.ui.colortools.utilities.Hct
 
 /**

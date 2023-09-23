@@ -5,6 +5,7 @@ import android.content.Context
 import de.xorg.gsapp.data.cache.AndroidCacheManager
 import de.xorg.gsapp.data.cache.CacheManager
 import de.xorg.gsapp.data.di.mainModule
+import de.xorg.gsapp.data.sources.settings.SettingsSource
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.androidXModule
@@ -24,6 +25,7 @@ class GSAppApplication : Application(), DIAware {
     }
 
     override val di: DI by DI.lazy {
+        bind<SettingsSource>() with provider { SettingsSource(this@GSAppApplication) }
         bind<Context>() with provider { applicationContext }
         bind<CacheManager>() with singleton { AndroidCacheManager(applicationContext) }
         import(mainModule)

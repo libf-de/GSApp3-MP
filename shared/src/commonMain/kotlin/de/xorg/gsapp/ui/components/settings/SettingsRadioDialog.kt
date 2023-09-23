@@ -9,13 +9,10 @@ package de.xorg.gsapp.ui.components.settings
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.enums.StringResEnum
@@ -72,7 +69,7 @@ fun SettingsRadioDialog(
                             )
                             Text(
                                 modifier = Modifier.padding(start = 16.dp),
-                                text = stringResource(item.getValue()),
+                                text = stringResource(item.labelResource),
                             )
                         }
                     }

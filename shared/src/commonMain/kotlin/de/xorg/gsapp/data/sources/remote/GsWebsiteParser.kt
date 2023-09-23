@@ -1,7 +1,6 @@
 package de.xorg.gsapp.data.sources.remote
 
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 import kotlinx.datetime.LocalDate

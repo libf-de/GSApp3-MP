@@ -5,9 +5,7 @@ import cocoapods.HTMLKit.HTMLElement
 import de.xorg.gsapp.data.exceptions.ElementNotFoundException
 import de.xorg.gsapp.data.exceptions.HolidayException
 import de.xorg.gsapp.data.exceptions.InvalidElementTypeException
-import de.xorg.gsapp.data.exceptions.NoEntriesException
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.FoodOffer
 import de.xorg.gsapp.data.model.SubstitutionApiModel
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
@@ -22,14 +20,14 @@ actual class GsWebsiteParser {
         val doc = HTMLDocument.documentWithString(result)
 
         val dateHead: HTMLElement? = doc.querySelector("td[class*=vpUeberschr]")
-        var dateText: String = "(kein Datum)"
+        var dateText = "(kein Datum)"
         if(dateHead != null)
             if(!dateHead.isEmpty())
                 dateText = dateHead.textContent
         if(dateText == "Beschilderung beachten!") return Result.failure(HolidayException())
 
         val noteHead: HTMLElement? = doc.querySelector("td[class=vpTextLinks]")
-        var noteText: String = ""
+        var noteText = ""
         if(noteHead != null)
             if(!noteHead.isEmpty())
                 noteText = noteHead.textContent

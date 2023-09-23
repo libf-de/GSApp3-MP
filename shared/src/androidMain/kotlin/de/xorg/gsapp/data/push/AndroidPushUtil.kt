@@ -6,7 +6,6 @@ import android.widget.Toast
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import org.kodein.di.DI
-import org.kodein.di.DIAware
 import org.kodein.di.instance
 
 actual class PushNotificationUtil actual constructor(di: DI) {
