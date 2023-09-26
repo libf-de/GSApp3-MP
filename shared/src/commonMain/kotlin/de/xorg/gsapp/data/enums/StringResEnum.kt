@@ -4,4 +4,5 @@ import dev.icerock.moko.resources.StringResource
 
 interface StringResEnum {
     val labelResource: StringResource
+    val descriptiveResource: StringResource
 }

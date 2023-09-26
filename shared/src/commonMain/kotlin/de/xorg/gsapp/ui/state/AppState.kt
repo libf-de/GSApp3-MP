@@ -30,25 +30,25 @@ import kotlinx.coroutines.flow.StateFlow
 data class AppState(
     val currentView: ViewState = ViewState.SUBSTITUTIONS,
 
-    val substitutionsFlow: StateFlow<SubstitutionSet> = MutableStateFlow(
-        SubstitutionSet("", "", emptyMap())),
+    /*val substitutionsFlow: StateFlow<SubstitutionSet> = MutableStateFlow(
+        SubstitutionSet("", "", emptyMap())),*/
     val substitutionState: UiState = UiState.EMPTY,
     val substitutionError: Throwable = NoException(),
-    @Deprecated("use flow instead") val substitutionList: List<Substitution> = listOf(),
+    /*@Deprecated("use flow instead") val substitutionList: List<Substitution> = listOf(),
     @Deprecated("use flow instead") val substitutionDate: String = "",
-    @Deprecated("use flow instead") val substitutionNotes: String = "",
+    @Deprecated("use flow instead") val substitutionNotes: String = "",*/
 
     val filterRole: FilterRole = FilterRole.ALL,
     val filter: String = "",
 
 
     val foodplanState: UiState = UiState.EMPTY,
-    val foodplanList: List<FoodOffer> = listOf(),
+    /*val foodplanList: List<FoodOffer> = listOf(),*/
     val foodplanError: Throwable = NoException(),
 
 
-    val subjectsList: List<Subject> = listOf(),
+    /*val subjectsList: List<Subject> = listOf(),
 
 
-    val teachersList: List<Teacher> = listOf()
+    val teachersList: List<Teacher> = listOf()*/
 )

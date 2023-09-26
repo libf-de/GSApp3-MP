@@ -38,19 +38,24 @@ android {
     }
     packaging {
         resources {
+            excludes += "META-INF/versions/9/previous-compilation-data.bin"
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "META-INF/DEPENDENCIES"
             excludes += "mozilla/public-suffix-list.txt"
         }
     }
 
-    /*buildTypes {
-        release {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
         }
-    }*/
+
+        release {
+            /*isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")*/
+        }
+    }
 
 }
 

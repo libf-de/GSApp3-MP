@@ -139,9 +139,7 @@ fun FoodplanScreen(
                 LazyColumn(
                     modifier = Modifier.padding(innerPadding),
                     state = listState,
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    /*flingBehavior = flingBehavior*/
-                ) {
+                    verticalArrangement = Arrangement.spacedBy(16.dp) ) {
                     // Tabs
                     stickyHeader {
                         Column {

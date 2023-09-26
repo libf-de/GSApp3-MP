@@ -30,7 +30,7 @@ kotlin {
         framework {
             baseName = "shared"
             isStatic = true
-            export("io.github.hoc081098:kmp-viewmodel:0.4.0")
+            /*export("io.github.hoc081098:kmp-viewmodel:0.4.0")*/
             export("dev.icerock.moko:resources:0.23.0")
             export("dev.icerock.moko:graphics:0.9.0") // toUIColor here
         }
@@ -52,6 +52,7 @@ kotlin {
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
                 implementation("org.kodein.di:kodein-di-framework-compose:7.19.0")
                 implementation("org.kodein.di:kodein-di-conf:7.19.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
@@ -60,6 +61,8 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
+                implementation("com.russhwolf:multiplatform-settings:1.0.0")
+                implementation("com.moriatsushi.insetsx:insetsx:0.1.0-alpha10")
                 api("moe.tlaster:precompose:$precomposeVersion")
                 api("moe.tlaster:precompose-viewmodel:$precomposeVersion")
             }

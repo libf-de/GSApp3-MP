@@ -23,8 +23,6 @@ val repositoryModule = DI.Module("repositoryModule") {
 val mainModule = DI.Module("mainModule") {
     import(repositoryModule)
     bind<PushNotificationUtil>() with singleton { PushNotificationUtil(di) }
-    bind<GSAppViewModel>() with singleton { GSAppViewModel(instance()) }
+    bind<GSAppViewModel>() with singleton { GSAppViewModel(di) }
     bind<SettingsViewModel>() with singleton { SettingsViewModel(di) }
-
-
 }

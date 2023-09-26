@@ -24,17 +24,28 @@ import dev.icerock.moko.resources.StringResource
 
 enum class FilterRole(val value: Int): StringResEnum {
     ALL(0) {
-        override val labelResource: StringResource = MR.strings.role_all
+        override val labelResource: StringResource = MR.strings.filter_all
+        override val descriptiveResource: StringResource = MR.strings.pref_filter_all
     },
     TEACHER(1) {
-        override val labelResource: StringResource = MR.strings.role_teacher
+        override val labelResource: StringResource = MR.strings.filter_teacher
+        override val descriptiveResource: StringResource = MR.strings.pref_filter_teacher
     },
     STUDENT(2) {
-        override val labelResource: StringResource = MR.strings.role_student
+        override val labelResource: StringResource = MR.strings.filter_student
+        override val descriptiveResource: StringResource = MR.strings.pref_filter_student
     };
 
     companion object {
+        val default = ALL
+
+        fun shouldStore(role: FilterRole): Boolean = when(role) {
+            ALL -> true
+            TEACHER -> false
+            STUDENT -> false
+        }
+
         fun fromInt(value: Int): FilterRole
-            = FilterRole.values().firstOrNull { it.value == value } ?: ALL
+            = FilterRole.values().firstOrNull { it.value == value } ?: default
     }
 }

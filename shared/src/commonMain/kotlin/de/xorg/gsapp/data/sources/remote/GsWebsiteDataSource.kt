@@ -33,223 +33,8 @@ import kotlinx.datetime.LocalDate
 
 
 class GsWebsiteDataSource : RemoteDataSource {
-
     private val parser = GsWebsiteParser()
     private val client = HttpClient()
-
-    /*@Throws(ArrayIndexOutOfBoundsException::class)
-    private fun parseResponse(result: String): Result<SubstitutionSet> {
-        return htmlDocument(result) {
-            var dateText = "(kein Datum)"
-            findFirst("td[class*=vpUeberschr]") {
-                if(this.text.isNotEmpty())
-                    dateText = this.text.trim()
-            }
-
-            if(dateText == "Beschilderung beachten!") Result.failure<SubstitutionSet>(HolidayException())
-
-            var noteText: String = ""
-            findFirst("td[class=vpTextLinks]") {
-                if(this.text.isNotEmpty())
-                    noteText = this.text.replace("Hinweis:", "").trim()
-            }
-
-            val substitutions = ArrayList<Substitution>()
-            var colNum: Int
-            var data: Array<String>
-            var isNew: Boolean
-
-            val substElements: List<DocElement>
-                = this.findAll("tr[id=Svertretungen], tr[id=Svertretungen] ~ tr").ifEmpty {
-                    val parent = this.findFirst("td[class*=vpTextZentriert]").parent
-                    this.findAll("${parent.ownCssSelector}, ${parent.ownCssSelector} ~ tr")
-            }
-
-            substElements.forEach { currentRow ->
-                colNum = 0
-                data = arrayOf("", "", "", "", "", "", "")
-                isNew = currentRow.html.contains("<strong>")
-
-                currentRow.children {
-                    toBePresentTimes(7)
-                    forEach {
-                        data[colNum] = it.text.trim()
-                        colNum++
-                    }
-                }
-
-                substitutions.add(
-                    Substitution(
-                        klass = data[0],
-                        lessonNr = data[1],
-                        origSubject = data[2],
-                        substTeacher = data[3],
-                        substRoom = data[4],
-                        substSubject = data[5],
-                        notes = data[6],
-                        isNew = isNew
-                    ))
-            }
-
-            Result.success(SubstitutionSet(
-                date = dateText,
-                notes = noteText,
-                substitutions = substitutions
-            ))
-
-        }
-    }
-
-    private fun fallbackLoad(result: String): Result<SubstitutionSet> {
-        if (result == "E") return Result.failure(Exception("Result is E"))
-        val substitutions = ArrayList<Substitution>()
-        var dateStr = ""
-        var noteStr = ""
-
-        try {
-            dateStr = result
-                    .split("<td colspan=\"7\" class=\"rundeEckenOben vpUeberschr\">".toRegex())
-                    .dropLastWhile { it.isEmpty() }
-                    .toTypedArray()[1]
-                        .split("</td>".toRegex())
-                        .dropLastWhile { it.isEmpty() }
-                    .toTypedArray()[0]
-                        .replace("        ", "")
-            noteStr = "[!] " + result
-                .split("<tr id=\"Shinweis\">".toRegex())
-                .dropLastWhile { it.isEmpty() }
-                .toTypedArray()[1]
-                    .split("</tr>".toRegex())
-                    .dropLastWhile { it.isEmpty() }
-                .toTypedArray()[0]
-                    .replace("Hinweis: <br />", "")
-                    .replace("<br />", "· ")
-                .replace("<.*?>".toRegex(), "")
-                .replace("&uuml;", "ü")
-                .replace("&Uuml;", "Ü")
-                .replace("&auml;", "ä")
-                .replace("&Auml;", "Ä")
-                .replace("&ouml;", "ö")
-                .replace("&Ouml;", "Ö")
-                .replace("&szlig;", "ß")
-                .replace("[\r\n]+".toRegex(), "")
-                .trim { it <= ' ' }
-        } catch (_: java.lang.Exception) {
-        }
-
-        val newC: Array<String>
-        try {
-             newC = clearUp(result
-                        .split("<td class=\"vpTextZentriert\">".toRegex(), limit = 2)
-                        .toTypedArray()[1]
-                            .split("\n".toRegex())
-                            .dropLastWhile { it.isEmpty() }
-                        .toTypedArray())
-                .split("\n")
-                .toTypedArray()
-            var counter = 1
-            var klasse = ""
-            var stunde = ""
-            var orgfach = ""
-            var vertret = ""
-            var raum = ""
-            var verfach = ""
-            var str: String
-            for (cnt in newC) {
-                when (counter) {
-                    1 -> {
-                        klasse = cnt
-                        counter++
-                    }
-                    2 -> {
-                        stunde = cnt
-                        counter++
-                    }
-                    3 -> {
-                        orgfach = cnt
-                        counter++
-                    }
-                    4 -> {
-                        vertret = cnt
-                        counter++
-                    }
-                    5 -> {
-                        raum = cnt
-                        counter++
-                    }
-                    6 -> {
-                        verfach = cnt
-                        counter++
-                    }
-                    7 -> {
-                        str = cnt
-                        counter = 1
-                        substitutions.add(
-                            Substitution(
-                                klass = klasse.trim(),
-                                lessonNr = stunde.trim(),
-                                origSubject = orgfach.trim(),
-                                substTeacher = vertret.trim(),
-                                substRoom = raum.trim(),
-                                substSubject = verfach.trim(),
-                                notes = str.trim(),
-                                isNew = false
-                            )
-                        )
-                        klasse = ""
-                        stunde = ""
-                        orgfach = ""
-                        vertret = ""
-                        raum = ""
-                        verfach = ""
-                    }
-                }
-            }
-        } catch(ex: Exception) {
-            ex.printStackTrace()
-            return Result.failure(ex)
-        }
-        return  if(substitutions.isEmpty()) Result.failure(NoEntriesException())
-                else Result.success(SubstitutionSet(
-                    date = dateStr,
-                    notes = noteStr,
-                    substitutions = substitutions
-                ))
-    }
-
-    private fun clearUp(input: Array<String>): String {
-        val me = StringBuilder()
-        for (ln2 in input) {
-            var ln = ln2
-            ln = ln.replace("<.*?>".toRegex(), "")
-            ln = ln.replace("&uuml;", "ü")
-                .replace("&Uuml;", "Ü")
-                .replace("&auml;", "ä")
-                .replace("&Auml;", "Ä")
-                .replace("&ouml;", "ö")
-                .replace("&Ouml;", "Ö")
-                .replace("&szlig;", "ß")
-            ln = ln.replace("                        ", "")
-            ln = ln.trim { it <= ' ' }
-            ln = ln.replace("	", "")
-
-            if (ln != "      " &&
-                ln != "var hoehe = parent.document.getElementById('inhframe').style.height;" &&
-                ln != "setFrameHeight();" &&
-                ln != "var pageTracker = _gat._getTracker(\"UA-5496889-1\");" &&
-                ln != "pageTracker._trackPageview();" &&
-                ln != "    " &&
-                ln != "	" &&
-                ln != "  " &&
-                !ln.startsWith("var") &&
-                !ln.startsWith("document.write") &&
-                ln != "")
-
-                if (ln.matches(".*\\w.*".toRegex()) || ln.contains("##"))
-                    me.append(ln).append("\n")
-        }
-        return me.toString()
-    }*/
 
     override suspend fun loadSubstitutionPlan(): Result<SubstitutionApiModelSet> {
         try {
@@ -261,17 +46,9 @@ class GsWebsiteDataSource : RemoteDataSource {
 
             return try {
                 parser.parseSubstitutionTable(response.body())
-                //parseResponse(response.body())
-                //return parseResponse(response.body!!.string());
             } catch (ex: Exception) {
                 ex.printStackTrace()
                 Result.failure(ex)
-                /*try {
-                    fallbackLoad(response.body())
-                }catch(ex2: Exception) {
-                    ex2.printStackTrace()
-                    Result.failure(ex);
-                }*/
             }
         } catch(ex2: Exception) {
             println("Outer ex2 occurred in loadSubstitutionPlan")
@@ -280,61 +57,34 @@ class GsWebsiteDataSource : RemoteDataSource {
         }
     }
 
-    /*private suspend fun parseTeachersNumPages(html: String): Int {
-        return htmlDocument(html) {
-            findFirst("table[class=\"eAusgeben\"] > tbody > tr:last-child > td > a:nth-last-child(2)") {
-                this
-                    .attribute("href")
-                    .substringAfter("seite=")
-                    .toInt()
-            }
-        }
-    }*/
-
-    /*private suspend fun parseTeachers(html: String, list: MutableList<Teacher>) {
-        return htmlDocument(html) {
-            findAll("table.eAusgeben > tbody > tr:not(:first-child,:last-child)") {
-                forEach {
-                    it.findFirst("td.eEintragGrau,td.eEintragWeiss") {
-                        if(!this.html.contains("<br>")) return@findFirst
-                        val teacherName = this.html.split("<br>")[0]
-                        val teacherShort = this.html.substringAfter("Kürzel:").trim()
-                        list.add(
-                            Teacher(
-                                longName = teacherName,
-                                shortName = teacherShort
-                            )
-                        )
-                    }
-                }
-            }
-        }
-    }*/
-
     override suspend fun loadTeachers(): Result<List<Teacher>> {
-        val response: HttpResponse = client.get(
-            urlString = "https://www.gymnasium-sonneberg.de/Kontakt/Sprech/ausgeben.php5?seite=1"
-        )
-
-        if(response.status.value !in 200..299)
-            return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
-
-        val teachers = ArrayList<Teacher>()
-        parser.parseTeachers(response.body(), teachers)
-
-        for (page: Int in 2..parser.parseTeachersNumPages(response.body())) {
-            val nextResponse: HttpResponse = client.get(
-                urlString = "https://www.gymnasium-sonneberg.de/Kontakt/Sprech/ausgeben.php5?seite="
-                        + page.toString()
+        try {
+            val response: HttpResponse = client.get(
+                urlString = "https://www.gymnasium-sonneberg.de/Kontakt/Sprech/ausgeben.php5?seite=1"
             )
 
-            if(nextResponse.status.value !in 200..299)
-                return Result.failure(UnexpectedStatusCodeException("Unexpected code $nextResponse"))
+            if (response.status.value !in 200..299)
+                return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
 
-            parser.parseTeachers(nextResponse.body(), teachers)
+            val teachers = ArrayList<Teacher>()
+            parser.parseTeachers(response.body(), teachers)
+
+            for (page: Int in 2..parser.parseTeachersNumPages(response.body())) {
+                val nextResponse: HttpResponse = client.get(
+                    urlString = "https://www.gymnasium-sonneberg.de/Kontakt/Sprech/ausgeben.php5?seite="
+                            + page.toString()
+                )
+
+                if (nextResponse.status.value !in 200..299)
+                    return Result.failure(UnexpectedStatusCodeException("Unexpected code $nextResponse"))
+
+                parser.parseTeachers(nextResponse.body(), teachers)
+            }
+
+            return Result.success(teachers)
+        } catch(ex: Exception) {
+            return Result.failure(ex)
         }
-
-        return Result.success(teachers)
     }
 
     override suspend fun loadSubjects(): Result<List<Subject>> {

@@ -25,20 +25,40 @@
     <!-- Date format (d=day, m=month, y=year) -->
     <string name="date_format">m.d.y</string>
 
+    <!--- Settings -->
+    <string name="settings_title">Settings</string>
     <!-- Settings items -->
-    <string name="pref_filter">Role</string>
-    <string name="pref_filter_val_student">My class</string>
-    <string name="pref_filter_val_teacher">My name</string>
+    <string name="pref_filter">Substitution plan filter</string>
+    <string name="pref_filter_teacher">Teacher code %s</string>
+    <string name="pref_filter_student">Class %s</string>
+    <string name="pref_filter_all">None (show all)</string>
     <string name="pref_push">Push notifications</string>
 
-    <!-- Role labels -->
-    <string name="role_all">Show everything</string>
-    <string name="role_student">Filter by class</string>
-    <string name="role_teacher">Filter by teacher</string>
+    <!-- Filter Dialog -->
+    <string name="filter_dialog_title">Filter substitution plan</string>
+    <string name="filter_dialog_description">Select your class or teacher code to view only substitutions that affect you.</string>
+    <string name="filter_dialog_teacher_short">Teacher code</string>
+    <!--- Role labels -->
+    <string name="filter_all">All</string>
+    <string name="filter_student">Class</string>
+    <string name="filter_teacher">Teacher</string>
 
     <!-- Push labels -->
     <string name="push_disabled">Disabled</string>
     <string name="push_filter">Only if it affects me</string>
     <string name="push_enabled">Always notify</string>
+    <string name="push_dialog_title">Push notifications</string>
+    <string name="push_dialog_description">Choose whether you want to receive no notification, notification only when it affects you, or always notification of new substitution plans.</string>
     <string name="push_unavailable">(not available on %s)</string>
+
+
+    <!-- General dialog buttons -->
+    <string name="dialog_save">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+
+
+    <string name="push_channel_name">Substitution plan notifications</string>
+    <string name="push_channel_desc">Notifies you when a new substitution plan is available</string>
+    <string name="push_notification_title">New substitution plan!</string>
+    <string name="push_notification_body">There is a new substitution plan available!</string>
 </resources>

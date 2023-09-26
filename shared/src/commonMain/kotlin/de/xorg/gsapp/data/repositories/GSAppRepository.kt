@@ -1,5 +1,6 @@
 package de.xorg.gsapp.data.repositories
 
+import com.russhwolf.settings.SettingsListener
 import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
@@ -35,8 +36,13 @@ interface GSAppRepository {
 
     suspend fun getRole(): FilterRole
     suspend fun setRole(value: FilterRole)
+    suspend fun observeRole(callback: (FilterRole) -> Unit): SettingsListener?
+
     suspend fun getFilterValue(): String
     suspend fun setFilterValue(value: String)
+    suspend fun observeFilterValue(callback: (String) -> Unit): SettingsListener?
+
     suspend fun getPush(): PushState
     suspend fun setPush(value: PushState)
+    suspend fun observePush(callback: (PushState) -> Unit): SettingsListener?
 }

@@ -15,6 +15,7 @@
  */
 package de.xorg.gsapp.ui.colortools.utilities
 
+import androidx.compose.runtime.Stable
 import kotlin.math.PI
 import kotlin.math.cbrt
 import kotlin.math.exp
@@ -37,6 +38,7 @@ import kotlin.math.sqrt
  *
  * @hide
  */
+@Stable
 class ViewingConditions
 /**
  * Parameters are intermediate values of the CAM16 conversion process. Their names are shorthand

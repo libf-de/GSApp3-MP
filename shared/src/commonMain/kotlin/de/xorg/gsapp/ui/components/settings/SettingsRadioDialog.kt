@@ -17,13 +17,14 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.enums.StringResEnum
 import dev.icerock.moko.resources.compose.stringResource
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun SettingsRadioDialog(
     icon: @Composable () -> Unit,
     title: String,
     message: String,
-    items: List<StringResEnum>,
+    items: ImmutableList<StringResEnum>,
     selectedValue: StringResEnum,
     dismissText: String,
     confirmText: String,

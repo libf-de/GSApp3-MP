@@ -37,9 +37,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import de.xorg.gsapp.ui.screens.FoodplanScreen
-import de.xorg.gsapp.ui.screens.SettingsScreen
+import de.xorg.gsapp.ui.screens.settings.SettingsScreen
 import de.xorg.gsapp.ui.screens.SubstitutionsScreen
 import de.xorg.gsapp.ui.screens.screens
+import de.xorg.gsapp.ui.screens.settings.FilterSettingsScreen
 import de.xorg.gsapp.ui.theme.GSAppTheme
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
@@ -95,7 +96,7 @@ fun GSApp() {
             NavHost(
                 navigator = navigator,
                 navTransition = NavTransition(),
-                initialRoute = GSAppRoutes.SUBSTITUTIONS,
+                initialRoute = GSAppRoutes.SUBSTITUTIONS, //TODO: Revert back to SUBSTITUTIONS
             ) {
                 scene(
                     route = GSAppRoutes.SUBSTITUTIONS,
@@ -132,6 +133,15 @@ fun GSApp() {
                     hideNavBar = true
                     hideNavBarState.targetState = false
                     SettingsScreen(navigator)
+                }
+
+                scene(
+                    route = GSAppRoutes.SETTINGS_FILTER,
+                    navTransition = NavTransition(),
+                ) {
+                    hideNavBar = true
+                    hideNavBarState.targetState = false
+                    FilterSettingsScreen(navigator)
                 }
             }
         }

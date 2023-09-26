@@ -8,6 +8,7 @@
 package de.xorg.gsapp.ui.components.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -52,13 +54,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.moriatsushi.insetsx.safeDrawingPadding
 import de.xorg.gsapp.data.model.Teacher
+import de.xorg.gsapp.ui.components.ClassListItem
+import de.xorg.gsapp.ui.components.SkeletonClassListItem
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.LETTERS
 import de.xorg.gsapp.ui.tools.classList
 import dev.icerock.moko.resources.compose.stringResource
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingsFilterDialog(
     icon: @Composable () -> Unit,
@@ -89,187 +95,181 @@ fun SettingsFilterDialog(
     val confirmFocusReq = remember { FocusRequester() }
 
     AlertDialog(
+        modifier = Modifier.safeDrawingPadding(),
         onDismissRequest = { onDismiss() },
         icon = { icon() },
         title = { Text(text = title) },
         text = {
             Column {
-                Text(text = message, modifier = Modifier.padding(bottom = 8.dp))
+                Text(text = message,
+                    modifier = Modifier.padding(bottom = 8.dp))
                 Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly) {
                     FilterRole.entries.forEach {
                         Row(modifier = Modifier.selectable(
                             selected = roleVal == it,
-                            onClick = { roleVal = it }
+                            onClick = {
+                                if(roleVal != it) { //clear value
+                                    filterVal = ""
+                                    teacherLong = ""
+                                    teacherCandidate = null
+                                }
+                                roleVal = it //Set new role
+
+                            }
                         )) {
                             RadioButton(selected = (roleVal == it),
-                                        onClick = null // null recommended for accessibility with screenreaders
+                                onClick = null // null recommended for accessibility with screenreaders
                             )
-                            Text(modifier = Modifier.padding(start = 4.dp).height(IntrinsicSize.Max),
-                                 text = stringResource(it.labelResource) )
+                            Text(modifier = Modifier.padding(start = 4.dp).height(
+                                IntrinsicSize.Max),
+                                text = stringResource(it.labelResource) )
                         }
                     }
                 }
 
-                /**** Begin TeacherSection **/
-                AnimatedVisibility(visible = roleVal == FilterRole.TEACHER) {
-                    Column {
-                        Box(modifier = Modifier.padding(bottom = 8.dp)) {
-                            OutlinedTextField(
-                                value = teacherLong,
-                                onValueChange = { },
-                                readOnly = false,
-                                label = { },
-                                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End),
-                                interactionSource = inputInteractionSource,
-                                trailingIcon = {
-                                    IconButton(onClick = {
-                                        teacherLong = ""
-                                        filterVal = ""
-                                    }) {
-                                        Icon(Icons.Default.Clear, "")
+
+                AnimatedVisibility(roleVal == FilterRole.TEACHER) {
+                    Box(modifier = Modifier.padding(bottom = 8.dp)) {
+                        OutlinedTextField(
+                            value = teacherLong,
+                            onValueChange = { },
+                            readOnly = false,
+                            label = { },
+                            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End),
+                            interactionSource = inputInteractionSource,
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    teacherLong = ""
+                                    filterVal = ""
+                                }) {
+                                    Icon(Icons.Default.Clear, "")
+                                }
+                            },
+                            maxLines = 1,
+                            modifier = Modifier.fillMaxWidth().drawWithContent {
+                                if (layoutDirection == LayoutDirection.Rtl) {
+                                    clipRect(right = size.width / 3f) {
+                                        this@drawWithContent.drawContent()
                                     }
-                                },
-                                maxLines = 1,
-                                modifier = Modifier.fillMaxWidth().drawWithContent {
+                                } else {
+                                    clipRect(left = size.width / 3f) {
+                                        this@drawWithContent.drawContent()
+                                    }
+                                }
+                            }
+                        )
+
+                        OutlinedTextField(
+                            value = filterVal,
+                            onValueChange = {
+                                filterVal = it.uppercase()
+                                teacherCandidate = teacherList.firstOrNull { teacher ->
+                                    return@firstOrNull teacher.shortName == filterVal
+                                }
+                                teacherLong = teacherCandidate?.longName ?: ""
+                            },
+                            label = { Text(text = "Lehrerkürzel") },
+                            interactionSource = inputInteractionSource,
+                            maxLines = 1,
+                            trailingIcon = {
+                                IconButton(onClick = { teacherLong = ""; filterVal = "" }) {
+                                    Icon(Icons.Default.Clear, "")
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                                .onKeyEvent {
+                                    println(it.key)
+                                    if (it.key == Key.Enter) {
+                                        if (teacherCandidate != null)
+                                            confirmFocusReq.requestFocus()
+                                        return@onKeyEvent true
+                                    }
+                                    if (!LETTERS.contains(it.key)) return@onKeyEvent true
+                                    return@onKeyEvent false
+                                }
+                                .drawWithContent {
                                     if (layoutDirection == LayoutDirection.Rtl) {
-                                        clipRect(right = size.width / 3f) {
+                                        clipRect(left = size.width * 2 / 3f) {
                                             this@drawWithContent.drawContent()
                                         }
                                     } else {
-                                        clipRect(left = size.width / 3f) {
+                                        clipRect(right = size.width * 2 / 3f) {
                                             this@drawWithContent.drawContent()
                                         }
                                     }
                                 }
-                            )
+                        )
 
-                            OutlinedTextField(
-                                value = filterVal,
-                                onValueChange = {
-                                    filterVal = it.uppercase()
-                                    teacherCandidate = teacherList.firstOrNull { teacher ->
-                                        return@firstOrNull teacher.shortName == filterVal
-                                    }
-                                    teacherLong = teacherCandidate?.longName ?: ""
-                                },
-                                label = { Text(text = "Lehrerkürzel") },
-                                interactionSource = inputInteractionSource,
-                                maxLines = 1,
-                                trailingIcon = {
-                                    IconButton(onClick = { teacherLong = ""; filterVal = "" }) {
-                                        Icon(Icons.Default.Clear, "")
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                                    .onKeyEvent {
-                                        println(it.key)
-                                        if (it.key == Key.Enter) {
-                                            if (teacherCandidate != null)
-                                                confirmFocusReq.requestFocus()
-                                            return@onKeyEvent true
-                                        }
-                                        if (!LETTERS.contains(it.key)) return@onKeyEvent true
-                                        return@onKeyEvent false
-                                    }
-                                    .drawWithContent {
-                                        if (layoutDirection == LayoutDirection.Rtl) {
-                                            clipRect(left = size.width * 2 / 3f) {
-                                                this@drawWithContent.drawContent()
-                                            }
-                                        } else {
-                                            clipRect(right = size.width * 2 / 3f) {
-                                                this@drawWithContent.drawContent()
-                                            }
-                                        }
-                                    }
-                            )
-
-                        }
-                        when (teacherState) {
-                            UiState.LOADING -> LinearProgressIndicator()
-                            UiState.EMPTY -> Text("Es wurden keine Lehrer gefunden, bitte geben Sie ihr Kürzel von Hand ein.")
-                            UiState.FAILED -> Text("Lehrer konnten nicht geladen werden, bitte geben Sie ihr Kürzel von Hand ein.")
-                            else -> {
-                                if (teacherCandidate == null)
-                                    LazyColumn(modifier = Modifier) {
-                                        item {
-                                            Divider(modifier = Modifier.fillMaxWidth().height(1.dp))
-                                        }
-                                        teacherList.filter {
-                                            return@filter it.shortName
-                                                .lowercase()
-                                                .contains(filterVal.lowercase())
-                                                    || it.longName.contains(filterVal.lowercase())
-                                        }.forEach {
-                                            item {
-                                                Column(
-                                                    Modifier.clickable(
-                                                        interactionSource = remember { MutableInteractionSource() },
-                                                        onClick = {
-                                                            filterVal = it.shortName.uppercase()
-                                                            teacherLong = it.longName
-
-                                                        },
-                                                        indication = rememberRipple(bounded = true)
-                                                    )
-                                                ) {
-                                                    Text(
-                                                        text = "${it.shortName} ⸺ ${it.longName}",
-                                                        modifier = Modifier.padding(12.dp),
-                                                        style = MaterialTheme.typography.bodyLarge,
-                                                        color = if (it.longName == teacherLong)
-                                                            MaterialTheme.colorScheme.primary
-                                                        else Color.Unspecified
-                                                    )
-                                                    Divider(
-                                                        modifier = Modifier.fillMaxWidth()
-                                                            .height(1.dp)
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                            }
-                        }
                     }
-                } /** End TeacherSection ****/
+                }
 
-                /**** Begin StudentSection **/
-                AnimatedVisibility(visible = roleVal == FilterRole.STUDENT) {
-                    LazyColumn(modifier = Modifier) {
-                        item {
-                            Divider(modifier = Modifier.fillMaxWidth().height(1.dp))
+
+                LazyColumn(modifier = Modifier) {
+                    if(roleVal == FilterRole.TEACHER)
+                        when (teacherState) {
+                            UiState.EMPTY -> item { Text("Es wurden keine Lehrer gefunden, bitte geben Sie ihr Kürzel von Hand ein.") }
+                            UiState.FAILED -> item { Text("Lehrer konnten nicht geladen werden, bitte geben Sie ihr Kürzel von Hand ein.") }
+                            else -> {}
                         }
-                        classList.forEach {
-                            item {
+
+                    item {
+                        Divider(modifier = Modifier.fillMaxWidth().height(1.dp))
+                    }
+
+                    if(roleVal == FilterRole.TEACHER) {
+                        if(teacherState == UiState.NORMAL &&
+                            teacherCandidate == null) {
+                            items(teacherList.filter { teacher ->
+                                return@filter teacher.shortName
+                                    .lowercase()
+                                    .contains(filterVal.lowercase())
+                                        || teacher.longName.contains(filterVal.lowercase())
+                            }) {
                                 Column(
-                                    Modifier.clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            filterVal = it
-                                        },
-                                        indication = rememberRipple(bounded = true)
-                                    )
+                                    Modifier
+                                        .animateItemPlacement()
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            onClick = {
+                                                filterVal = it.shortName.uppercase()
+                                                teacherLong = it.longName
+
+                                            },
+                                            indication = rememberRipple(bounded = true)
+                                        )
                                 ) {
                                     Text(
-                                        text = it,
+                                        text = "${it.shortName} ⸺ ${it.longName}",
                                         modifier = Modifier.padding(12.dp),
-                                        fontWeight = if (it == filterVal) FontWeight.Bold
-                                                     else null,
-                                        color = if (it == filterVal)
-                                                     MaterialTheme.colorScheme.primary
-                                                else Color.Unspecified,
-                                        style = MaterialTheme.typography.bodyLarge
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = if (it.longName == teacherLong)
+                                            MaterialTheme.colorScheme.primary
+                                        else Color.Unspecified
                                     )
                                     Divider(
-                                        modifier = Modifier.fillMaxWidth().height(1.dp)
+                                        modifier = Modifier.fillMaxWidth()
+                                            .height(1.dp)
                                     )
                                 }
                             }
+                        } else if(teacherState == UiState.LOADING) {
+                            for(i in 0..20) {
+                                item {
+                                    SkeletonClassListItem(Modifier.animateItemPlacement())
+                                }
+                            }
+                        }
+                    } else if(roleVal == FilterRole.STUDENT) {
+                        items(classList) { className ->
+                            ClassListItem(
+                                label = className,
+                                highlight = className == filterVal,
+                                modifier = Modifier.animateItemPlacement())
+                            { filterVal = className }
                         }
                     }
-                } /** End StudentSection ****/
+                }
 
             }
         },

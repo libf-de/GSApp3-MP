@@ -19,6 +19,9 @@
 package de.xorg.gsapp.data.repositories
 
 import androidx.compose.ui.graphics.Color
+import com.russhwolf.settings.ObservableSettings
+import com.russhwolf.settings.Settings
+import com.russhwolf.settings.SettingsListener
 import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
@@ -28,7 +31,6 @@ import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sources.local.JsonDataSource
 import de.xorg.gsapp.data.sources.remote.GsWebsiteDataSource
-import de.xorg.gsapp.data.sources.settings.SettingsSource
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
@@ -41,7 +43,8 @@ import org.kodein.di.instance
 class AppRepository(di: DI) : GSAppRepository {
     private val webDataSource: GsWebsiteDataSource by di.instance()
     private val jsonDataSource: JsonDataSource by di.instance()
-    private val settingsSource: SettingsSource by di.instance()
+    private val appSettings: Settings by di.instance()
+    //private val settingsSource: SettingsSource by di.instance()
     //TODO: Maybe use Mutex variables to cache objects here for write operations
 
     // Substitution functions
@@ -230,12 +233,47 @@ class AppRepository(di: DI) : GSAppRepository {
     }
 
     /****/
-    override suspend fun getRole(): FilterRole = settingsSource.getRole()
-    override suspend fun setRole(value: FilterRole) = settingsSource.setRole(value)
+    override suspend fun getRole(): FilterRole {
+        return FilterRole.fromInt(
+            appSettings.getInt("role", FilterRole.ALL.value)
+        )
+    }
+    override suspend fun setRole(value: FilterRole) {
+        appSettings.putInt("role", value.value)
+    }
 
-    override suspend fun getFilterValue(): String = settingsSource.getFilterValue()
-    override suspend fun setFilterValue(value: String) = settingsSource.setFilterValue(value)
+    override suspend fun observeRole(callback: (FilterRole) -> Unit): SettingsListener? {
+        val settings = appSettings as? ObservableSettings ?: return null
+        return settings.addIntListener("role", FilterRole.default.value) {
+            callback(FilterRole.fromInt(it))
+        }
+    }
 
-    override suspend fun getPush(): PushState = settingsSource.getPush()
-    override suspend fun setPush(value: PushState) = settingsSource.setPush(value)
+    override suspend fun getFilterValue(): String {
+        return appSettings.getString("filter", "")
+    }
+    override suspend fun setFilterValue(value: String) {
+        appSettings.putString("filter", value)
+    }
+
+    override suspend fun observeFilterValue(callback: (String) -> Unit): SettingsListener? {
+        val settings = appSettings as? ObservableSettings ?: return null
+        return settings.addStringListener("filter", "") { callback(it) }
+    }
+
+    override suspend fun getPush(): PushState {
+        return PushState.fromInt(
+            appSettings.getInt("push", PushState.DISABLED.value)
+        )
+    }
+    override suspend fun setPush(value: PushState) {
+        appSettings.putInt("push", value.value)
+    }
+
+    override suspend fun observePush(callback: (PushState) -> Unit): SettingsListener? {
+        val settings = appSettings as? ObservableSettings ?: return null
+        return settings.addIntListener("push", PushState.default.value) {
+            callback(PushState.fromInt(it))
+        }
+    }
 }
