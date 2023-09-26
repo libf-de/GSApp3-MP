@@ -44,6 +44,8 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        //TODO: Improve notification!
+
         val pushState = PushState.fromInt(
             getSharedPreferences("GSApp", MODE_PRIVATE).getInt("push", PushState.default.value)
         )
