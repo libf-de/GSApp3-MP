@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.compose")
     kotlin("plugin.serialization")
     id("dev.icerock.mobile.multiplatform-resources")
+    id("app.cash.sqldelight")
 }
 
 kotlin {
@@ -75,6 +76,8 @@ kotlin {
                 api("androidx.core:core-ktx:1.10.1")
                 implementation("it.skrape:skrapeit:1.2.2")
 
+                implementation("app.cash.sqldelight:android-driver:2.0.0")
+
                 /*implementation("com.google.android.material:material:1.9.0")*/
                 //implementation("com.google.firebase:firebase-common-ktx:20.3.3")
                 implementation("com.google.firebase:firebase-messaging-ktx:23.2.1")
@@ -85,6 +88,7 @@ kotlin {
         val iosMain by getting {
             dependencies {
                 dependsOn(commonMain)
+                implementation("app.cash.sqldelight:native-driver:2.0.0")
                 implementation("io.ktor:ktor-client-darwin:$ktorVersion")
             }
         }
@@ -94,6 +98,7 @@ kotlin {
                 implementation(compose.desktop.common)
                 implementation(compose.desktop.macos_x64)
                 implementation(compose.preview)
+                implementation("app.cash.sqldelight:sqlite-driver:2.0.0")
                 implementation("net.harawata:appdirs:1.2.2")
                 implementation("it.skrape:skrapeit:1.2.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
@@ -140,4 +145,13 @@ dependencies {
 multiplatformResources {
     multiplatformResourcesPackage = "de.xorg.gsapp.res"
     disableStaticFrameworkWarning = true
+}
+
+sqldelight {
+    databases {
+        create("GsAppDatabase") {
+            packageName.set("de.xorg.gsapp.data.sql")
+        }
+    }
+    linkSqlite = true
 }

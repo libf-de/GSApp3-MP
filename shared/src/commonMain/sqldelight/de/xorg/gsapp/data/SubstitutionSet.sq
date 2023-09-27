@@ -1,0 +1,15 @@
+import kotlinx.datetime.LocalDate;
+
+CREATE TABLE SubstitutionSet (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL,
+    intDate INTEGER AS LocalDate,
+    notes TEXT);
+
+selectAll:
+SELECT *
+FROM SubstitutionSet;
+
+insertSubstitutionSet:
+INSERT INTO SubstitutionSet(date, intDate, notes)
+VALUES (?, ?, ?);

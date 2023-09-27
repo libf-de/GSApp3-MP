@@ -1,0 +1,20 @@
+CREATE TABLE Teacher (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    shortName TEXT NOT NULL UNIQUE,
+    longName TEXT NOT NULL);
+
+selectAll:
+SELECT * FROM Teacher;
+
+selectById:
+SELECT * FROM Teacher WHERE id = ?;
+
+selectByShort:
+SELECT * FROM Teacher WHERE shortName = ?;
+
+selectLongFromShort:
+SELECT longName FROM Teacher WHERE shortName = ?;
+
+insertTeacher:
+INSERT INTO Teacher(shortName, longName)
+VALUES (?, ?);
