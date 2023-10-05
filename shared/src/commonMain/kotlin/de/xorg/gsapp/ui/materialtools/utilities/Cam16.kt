@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.xorg.gsapp.ui.colortools.utilities
+package de.xorg.gsapp.ui.materialtools.utilities
 
-import de.xorg.gsapp.ui.colortools.utilities.MathUtils.signum
+import de.xorg.gsapp.ui.materialtools.utilities.MathUtils.signum
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2

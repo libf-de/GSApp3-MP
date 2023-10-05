@@ -2,8 +2,8 @@ import kotlin.Boolean;
 
 CREATE TABLE DbSubstitution (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    assSet INTEGER,
-    klass TEXT,
+    assSet INTEGER NOT NULL,
+    klass TEXT NOT NULL,
     lessonNr TEXT,
     origSubject TEXT,
     substTeacher TEXT,
@@ -20,6 +20,28 @@ selectAll:
 SELECT *
 FROM DbSubstitution;
 
+selectBySetId:
+SELECT *
+FROM DbSubstitution
+WHERE assSet == :id;
+
+findSubstitutionsBySetId:
+SELECT DbSubstitution.id,
+        DbSubstitution.assSet,
+        DbSubstitution.klass,
+        DbSubstitution.lessonNr,
+        oSub.shortName AS origShortName, oSub.longName AS origLongName, oSub.color AS origColor,
+        DbTeacher.shortName AS substTeacherShortName, DbTeacher.longName AS substTeacherLongName,
+        DbSubstitution.substRoom,
+        sSub.shortName AS substShortName, sSub.longName AS substLongName, sSub.color AS substColor,
+        DbSubstitution.notes,
+        DbSubstitution.isNew
+FROM DbSubstitution
+LEFT JOIN DbSubject oSub ON oSub.shortName = DbSubstitution.origSubject
+LEFT JOIN DbSubject sSub ON sSub.shortName = DbSubstitution.substSubject
+LEFT JOIN DbTeacher ON DbSubstitution.substTeacher = DbTeacher.shortName
+WHERE assSet == :id;
+
 selectByDate:
 SELECT *
 FROM DbSubstitution
@@ -27,7 +49,7 @@ JOIN DbSubstitutionSet ON DbSubstitution.assSet = DbSubstitutionSet.id
 WHERE DbSubstitutionSet.date = :date;
 
 insertSubstitution:
-INSERT INTO DbSubstitution(assSet, klass, lessonNr, origSubject, substTeacher, substRoom, substSubject, notes, isNew)
+INSERT OR IGNORE INTO DbSubstitution(assSet, klass, lessonNr, origSubject, substTeacher, substRoom, substSubject, notes, isNew)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertSubstitutionWithStrings:

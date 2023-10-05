@@ -19,7 +19,6 @@
 package de.xorg.gsapp.data.sources.local
 
 import de.xorg.gsapp.data.exceptions.EmptyStoreException
-import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionSet
@@ -39,7 +38,7 @@ class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
         filePath = pathSrc.getTeachersPath())
     private var foodplanStore: KStore<Map<LocalDate, List<Food>>> = storeOf(
         filePath = pathSrc.getFoodplanPath())
-    private var additivesStore: KStore<List<Additive>> = storeOf(
+    private var additivesStore: KStore<Map<String, String>> = storeOf(
         filePath = pathSrc.getAdditivesPath())
 
     override suspend fun loadSubstitutionPlan(): Result<SubstitutionSet> {
@@ -131,8 +130,8 @@ class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
         }
     }
 
-    override suspend fun loadAdditives(): Result<List<Additive>> {
-        val mayStored: List<Additive>?
+    override suspend fun loadAdditives(): Result<Map<String, String>> {
+        val mayStored: Map<String, String>?
         try {
             mayStored = additivesStore.get()
         } catch(ex: Exception) {
@@ -144,7 +143,7 @@ class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
             Result.failure(EmptyStoreException())
     }
 
-    override suspend fun storeAdditives(value: List<Additive>) {
+    override suspend fun storeAdditives(value: Map<String, String>) {
         try {
             additivesStore.set(value)
         } catch(ex: Exception) {

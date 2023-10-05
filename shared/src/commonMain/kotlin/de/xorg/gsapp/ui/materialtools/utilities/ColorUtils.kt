@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.xorg.gsapp.ui.colortools.utilities
+package de.xorg.gsapp.ui.materialtools.utilities
 
 import androidx.compose.ui.graphics.Color
-import de.xorg.gsapp.ui.colortools.annotations.ColorInt
-import de.xorg.gsapp.ui.colortools.annotations.FloatRange
+import de.xorg.gsapp.ui.materialtools.annotations.ColorInt
+import de.xorg.gsapp.ui.materialtools.annotations.FloatRange
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow

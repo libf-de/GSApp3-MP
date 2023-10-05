@@ -11,5 +11,14 @@ SELECT *
 FROM DbSubject;
 
 insertSubject:
-INSERT INTO DbSubject(shortName, longName, color)
+INSERT OR IGNORE INTO DbSubject(shortName, longName, color)
 VALUES (?, ?, ?);
+
+updateSubject:
+UPDATE DbSubject
+SET longName = :longName, color = :color
+WHERE shortName = :shortName;
+
+deleteSubject:
+DELETE FROM DbSubject
+WHERE shortName = :shortName;

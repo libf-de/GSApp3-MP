@@ -31,7 +31,7 @@ import io.ktor.client.statement.HttpResponse
 import kotlinx.datetime.LocalDate
 
 
-class GsWebsiteDataSource : RemoteDataSource {
+class DebugWebDataSource : RemoteDataSource {
     private val parser = GsWebsiteParser()
     private val client = HttpClient()
 
@@ -40,7 +40,7 @@ class GsWebsiteDataSource : RemoteDataSource {
     override suspend fun loadSubstitutionPlan(): Result<SubstitutionApiModelSet> {
         try {
             val response: HttpResponse =
-                client.get("https://www.gymnasium-sonneberg.de/Informationen/vp.php5")
+                client.get("https://agdsn.me/~xorg/gsapp/debug/vpl.html")
             if (response.status.value !in 200..299) return Result.failure(
                 UnexpectedStatusCodeException("Unexpected code $response")
             )

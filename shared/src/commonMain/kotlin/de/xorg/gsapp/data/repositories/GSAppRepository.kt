@@ -1,7 +1,6 @@
 package de.xorg.gsapp.data.repositories
 
 import com.russhwolf.settings.SettingsListener
-import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionSet
@@ -12,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 
 interface GSAppRepository {
-    suspend fun getSubstitutions(): Flow<Result<SubstitutionSet>>
+    suspend fun getSubstitutions(reload: Boolean): Flow<Result<SubstitutionSet>>
 
     val teachers: Flow<Result<List<Teacher>>>
 
@@ -20,7 +19,7 @@ interface GSAppRepository {
 
     val foodPlan: Flow<Result<Map<LocalDate, List<Food>>>>
 
-    val additives: Flow<Result<List<Additive>>>
+    val additives: Flow<Result<Map<String, String>>>
 
     suspend fun addTeacher(value: Teacher): Result<Boolean>
 

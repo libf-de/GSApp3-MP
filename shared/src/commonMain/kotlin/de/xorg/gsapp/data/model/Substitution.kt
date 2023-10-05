@@ -33,21 +33,41 @@ data class Substitution(
     val isNew: Boolean
 ) {
 
+    constructor(
+        klass: String,
+        lessonNr: String,
+        origSubject: Subject,
+        substTeacher: Teacher,
+        substRoom: String,
+        substSubject: Subject,
+        notes: String,
+        isNew: Boolean
+    ) : this(
+        type = if(notes.lowercase() == "ausfall")
+            SubstitutionType.CANCELLATION
+        else if(notes.lowercase() == "aa"
+            || notes.lowercase().startsWith("arbeitsauftr"))
+            SubstitutionType.WORKORDER
+        else if(notes.lowercase() == "raumtausch")
+            SubstitutionType.ROOMSWAP
+        else if(notes.lowercase().startsWith("stillbesch"))
+            SubstitutionType.BREASTFEED
+        else
+            SubstitutionType.NORMAL,
+        klass = klass.ifBlank { "(kein)" },
+        lessonNr = lessonNr.ifBlank { "?" },
+        origSubject = origSubject,
+        substTeacher = substTeacher,
+        substRoom = substRoom.ifBlank { "(kein)" },
+        substSubject = substSubject,
+        notes = notes,
+        isNew = isNew
+    )
+
     constructor(primitive: SubstitutionApiModel,
                 origSubject: Subject,
                 substTeacher: Teacher,
                 substSubject: Subject) : this(
-                    type = if(primitive.notes.lowercase() == "ausfall")
-                        SubstitutionType.CANCELLATION
-                    else if(primitive.notes.lowercase() == "aa"
-                            || primitive.notes.lowercase().startsWith("arbeitsauftr"))
-                        SubstitutionType.WORKORDER
-                    else if(primitive.notes.lowercase() == "raumtausch")
-                        SubstitutionType.ROOMSWAP
-                    else if(primitive.notes.lowercase().startsWith("stillbesch"))
-                        SubstitutionType.BREASTFEED
-                    else
-                        SubstitutionType.NORMAL,
                     klass = primitive.klass.ifBlank { "(kein)" },
                     lessonNr = primitive.lessonNr.ifBlank { "?" },
                     origSubject = origSubject,
@@ -56,7 +76,5 @@ data class Substitution(
                     substSubject = substSubject,
                     notes = primitive.notes,
                     isNew = primitive.isNew
-                ) {
-
-    }
+                )
 }

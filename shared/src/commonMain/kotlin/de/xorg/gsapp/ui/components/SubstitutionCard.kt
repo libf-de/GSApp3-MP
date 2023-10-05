@@ -63,7 +63,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionType
-import de.xorg.gsapp.ui.colortools.MaterialColors
+import de.xorg.gsapp.ui.materialtools.MaterialColors
 
 @ExperimentalMaterial3Api
 @Composable

@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.xorg.gsapp.ui.colortools
+package de.xorg.gsapp.ui.materialtools
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import de.xorg.gsapp.ui.colortools.annotations.ColorInt
-import de.xorg.gsapp.ui.colortools.annotations.IntRange
-import de.xorg.gsapp.ui.colortools.utilities.Blend
-import de.xorg.gsapp.ui.colortools.utilities.ColorUtils
-import de.xorg.gsapp.ui.colortools.utilities.Hct
+import de.xorg.gsapp.ui.materialtools.annotations.ColorInt
+import de.xorg.gsapp.ui.materialtools.annotations.IntRange
+import de.xorg.gsapp.ui.materialtools.utilities.Blend
+import de.xorg.gsapp.ui.materialtools.utilities.ColorUtils
+import de.xorg.gsapp.ui.materialtools.utilities.Hct
 
 /**
  * A utility class for common color variants used in Material themes.

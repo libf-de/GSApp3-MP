@@ -12,9 +12,10 @@ fun FoodplanCardPreview() {
     FoodplanCard(
         food = Food(
             num = 1,
-            name = "Spaghetti Bolognese",
+            name = "Spaghetti Bologneseeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
             additives = listOf("a", "b")
         ),
+        menuNumber = 1,
         color = Color.Green
     )
 }

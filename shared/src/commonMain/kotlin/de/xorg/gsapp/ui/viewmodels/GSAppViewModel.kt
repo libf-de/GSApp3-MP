@@ -20,19 +20,14 @@ package de.xorg.gsapp.ui.viewmodels
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.russhwolf.settings.ObservableSettings
-import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SettingsListener
 //import com.hoc081098.kmp.viewmodel.ViewModel
-import de.xorg.gsapp.data.di.repositoryModule
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.ui.state.AppState
 import de.xorg.gsapp.ui.state.FilterRole
-import de.xorg.gsapp.ui.state.ProtoState
 import de.xorg.gsapp.ui.state.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,7 +36,6 @@ import kotlinx.datetime.LocalDate
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.kodein.di.DI
-import org.kodein.di.DIAware
 import org.kodein.di.instance
 
 //TODO: Wenn hier fehler, dann schau was mit dem Parameter ist.
@@ -85,21 +79,29 @@ class GSAppViewModel(di: DI) : ViewModel() {
         }
     }
 
-    private fun loadSubstitutions() {
-        uiState = uiState.copy(
-            substitutionState = UiState.LOADING
-        )
+    fun reloadSubstitutions() {
+        loadSubstitutions(true)
+    }
+
+    private fun setSubstitutionState(state: UiState, reload: Boolean) {
+        uiState = if(reload) uiState.copy(substitutionReloading = state == UiState.LOADING)
+                  else uiState.copy(substitutionState = state)
+    }
+
+    private fun loadSubstitutions(reload: Boolean = false) {
+
+        uiState = if(reload) uiState.copy(substitutionReloading = true)
+                  else uiState.copy(substitutionState = UiState.LOADING)
 
         viewModelScope.launch {
             loadSettings()
 
-            appRepo.getSubstitutions().collect { sdsResult ->
+            appRepo.getSubstitutions(reload).collect { sdsResult ->
                 if(sdsResult.isFailure) {
-                    //Log.d("GSAppViewModel:loadSubs", "Error while fetching: ${sdsResult.exceptionOrNull()}")
-                    uiState = uiState.copy(
-                        substitutionState = UiState.FAILED,
-                        substitutionError = sdsResult.exceptionOrNull()!!
-                    )
+                    uiState = if(reload) uiState.copy(substitutionReloading = false,
+                                                      substitutionError = sdsResult.exceptionOrNull()!!)
+                              else uiState.copy(substitutionState = UiState.FAILED,
+                                                substitutionError = sdsResult.exceptionOrNull()!!)
                     return@collect
                 }
 
@@ -134,6 +136,7 @@ class GSAppViewModel(di: DI) : ViewModel() {
                         UiState.EMPTY
                     else
                         UiState.NORMAL,
+                    substitutionReloading = false
                 )
             }
         }

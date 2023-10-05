@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.xorg.gsapp.ui.colortools.annotations
+package de.xorg.gsapp.ui.materialtools.annotations
 
 /**
  * Denotes that the annotated element should be a float or double in the given range

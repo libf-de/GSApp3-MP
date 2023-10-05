@@ -1,10 +1,10 @@
 package de.xorg.gsapp.ui.components
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
@@ -33,12 +33,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.ui.colortools.MaterialColors
+import de.xorg.gsapp.ui.materialtools.MaterialColors
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FoodplanCard(
     food: Food,
+    menuNumber: Int,
     color: Color,
     modifier: Modifier = Modifier
 ) {
@@ -72,64 +73,55 @@ fun FoodplanCard(
     }
 
     Card(
-        modifier = modifier.padding(4.dp).clickable {
-            expanded = !expanded
-        }.wrapContentHeight(),
+        modifier = modifier
+            .padding(4.dp)
+            .clickable { expanded = !expanded }
+            .wrapContentHeight()
+            .animateContentSize(),
         colors = CardDefaults.cardColors(containerColor = Color(colorRoles.accentContainer))
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(modifier = Modifier.fillMaxWidth().padding(12.dp, 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween) {
-                Column {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
                     Text(modifier = Modifier,
                         style = MaterialTheme.typography.titleSmall,
-                        text = "${food.num}. Menü",
+                        text = "${menuNumber}. Menü",
                         color = Color(colorRoles.onAccentContainer))
-                    Text(modifier = Modifier,
+                    Text(
+                        modifier = Modifier,
                         style = MaterialTheme.typography.titleLarge,
                         text = food.name,
                         color = Color(colorRoles.onAccentContainer)
                     )
                 }
+
                 Icon(
                     imageVector = Icons.Rounded.KeyboardArrowDown,
                     tint = Color(colorRoles.accent),
                     contentDescription = "",
-                    modifier = Modifier.rotate(rotation.value).clickable {
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .rotate(rotation.value).clickable {
                         expanded = !expanded
                     }
                 )
             }
             if(expanded) {
                 Divider(color = Color(colorRoles.accent), modifier = Modifier)
-                Text(text = food.additives.joinToString(", "),
+                Text(text = food.additives.sorted().joinToString(", "),
                      modifier = Modifier.padding(start = 12.dp,
                                                  end = 12.dp,
                                                  top = 4.dp,
                                                  bottom = 6.dp),
-                     color = Color(colorRoles.onAccentContainer)
-                ) //12h 6v
-                /*FlowRow(modifier = Modifier) {
-                    food.additives.forEach {
-                        AssistChip(
-                            colors = AssistChipDefaults.assistChipColors(
-                                labelColor = Color(colorRoles.accent)
-                            ),
-                            onClick = {},
-                            label = {
-                                Text(it)
-                            }
-                        )
-                    }
-                }*/
+                     color = Color(colorRoles.onAccentContainer),
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
         }
-        Box() {
-
-
-        }
-
     }
 
 }

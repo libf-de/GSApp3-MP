@@ -14,4 +14,6 @@ expect class GsWebsiteParser() {
 
     suspend fun parseFoodOffers(html: String): Result<Map<LocalDate, List<Food>>>
 
+    suspend fun parseAdditives(html: String): Result<Map<String, String>>
+
 }

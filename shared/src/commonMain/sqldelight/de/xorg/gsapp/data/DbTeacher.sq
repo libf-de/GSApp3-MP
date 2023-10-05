@@ -12,5 +12,9 @@ selectLongFromShort:
 SELECT longName FROM DbTeacher WHERE shortName = ?;
 
 insertTeacher:
-INSERT INTO DbTeacher(shortName, longName)
+INSERT OR IGNORE INTO DbTeacher(shortName, longName)
 VALUES (?, ?);
+
+deleteTeacher:
+DELETE FROM DbTeacher
+WHERE shortName = :shortName;

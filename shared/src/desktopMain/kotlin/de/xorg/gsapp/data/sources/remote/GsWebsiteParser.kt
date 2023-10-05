@@ -121,15 +121,19 @@ actual class GsWebsiteParser {
                         var mealName = ""
                         var mealAdditives = emptyList<String>()
 
-                        meal.findFirst("span[id=mealtext]") {
-                            if(this.text.isNotEmpty())
+                        //Look for a mealtxt span - if we found one with text -> assign to mealName
+                        if(!meal.findFirst("span[id=mealtext]") {
+                            if(this.text.isNotEmpty()) {
                                 mealName = this.text.trim()
-                            else
-                                println("[loadFoodPlan]: Got food with empty name, on html: ${meal.html}")
-                        }
+                                return@findFirst true //<- We've got mealtxt
+                            } else {
+                                println("[loadFoodPlan]: Got food with empty name, on html: ${meal.html}") //TODO: This happens in holidays!
+                                return@findFirst false //<- No mealtxt, continue with next meal
+                            }
+                        }) return@forEach //Continue with next meal if no mealtxt
 
                         meal.findFirst("sub") {
-                            mealAdditives = this.text.trim().split(",").toList()
+                            mealAdditives = this.text.replace("\\s".toRegex(), "").split(",").toList()
                         }
 
                         if(!foods.containsKey(mealDate)) foods[mealDate] = mutableListOf()
@@ -146,17 +150,46 @@ actual class GsWebsiteParser {
                 }
             }
 
-            Result.success(
-                foods.entries.associate { it.key to it.value.toList() })/*
-                foods.entries.map {
-                    FoodOffer(
-                        dataFromDate=dateFrom,
-                        dataTillDate=dateTo,
-                        date= LocalDate.parse(it.key),
-                        foods=it.value
-                    )
+            Result.success(foods.entries.associate { it.key to it.value.toList() })
+        }
+    }
+
+    actual suspend fun parseAdditives(html: String): Result<Map<String, String>> {
+        val additiveMap = mutableMapOf<String, String>()
+        return try {
+            htmlDocument(html) {
+                findAll("ingredients dl").forEach {
+                    var isShort = true
+                    var shortVal = ""
+                    it.children.forEach {
+                        if (!it.text.trim().endsWith(")") && it.text.trim().length > 3) {
+                            //probably not the shortcode
+                            if (isShort) {
+                                println("[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT (upper): ${it.html}")
+                                return@forEach
+                            }
+                        } else {
+                            if (!isShort) {
+                                println("[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT (lower): ${it.html}")
+                                return@forEach
+                            }
+                        }
+
+
+                        if (isShort) {
+                            shortVal = it.text.trim().removeSuffix(")")
+                            isShort = false
+                        } else {
+                            additiveMap[shortVal] = it.text.trim()
+                            isShort = true
+                        }
+                    }
                 }
-            )*/
+                Result.success(additiveMap)
+            }
+        } catch(ex: Exception) {
+            ex.printStackTrace()
+            Result.failure(ex)
         }
     }
 }

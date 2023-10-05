@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.xorg.gsapp.ui.colortools.utilities
+package de.xorg.gsapp.ui.materialtools.utilities
 
 /**
  * A color system built using CAM16 hue and chroma, and L* from L*a*b*.

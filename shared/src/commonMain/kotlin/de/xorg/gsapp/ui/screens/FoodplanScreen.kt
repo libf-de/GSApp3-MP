@@ -32,6 +32,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,7 @@ import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
@@ -80,18 +82,16 @@ fun FoodplanScreen(
 
     val listState = rememberLazyListState()
 
-    //TODO Extract to own component
-    var currentPageIndex by remember {
-        mutableStateOf(0)
-    }
-
     // TODO: Merge this
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
     val todayIndex = if(fpDates.contains(today)) fpDates.indexOf(today) else 0
     val pages = (fpDates.indices).toList()
     val pagerState = rememberPagerState(initialPage = todayIndex) { fpDates.size }
+    var currentPageIndex by remember {
+        mutableStateOf(todayIndex)
+    }
 
-    /*with(pagerState) {
+    with(pagerState) {
         LaunchedEffect(key1 = currentPageIndex) {
             launch {
                 animateScrollToPage(
@@ -99,7 +99,7 @@ fun FoodplanScreen(
                 )
             }
         }
-    }*/
+    }
 
     Scaffold(
         modifier = Modifier
@@ -198,9 +198,14 @@ fun FoodplanScreen(
                                         (240 / fpFoods[page].size) * foodNum.toFloat(),
                                         0.6f, 0.5f
                                     )
-                                    println("on page $foodNum -> ${(240 / fpFoods[page].size) * foodNum.toFloat()}")
+                                    //println("on page $foodNum -> ${(240 / fpFoods[page].size) * foodNum.toFloat()}")
 
-                                    FoodplanCard(it, color, Modifier.padding(bottom = 8.dp))
+                                    FoodplanCard(
+                                        food = it,
+                                        menuNumber = foodNum + 1,
+                                        color = color,
+                                        modifier = Modifier.padding(bottom = 8.dp))
+
                                     foodNum++
                                 }
 

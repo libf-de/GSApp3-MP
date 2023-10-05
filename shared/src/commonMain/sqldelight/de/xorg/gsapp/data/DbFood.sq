@@ -1,0 +1,21 @@
+import kotlin.String;
+import kotlin.collections.List;
+import kotlinx.datetime.LocalDate;
+
+CREATE TABLE DbFood (
+    date INTEGER AS LocalDate NOT NULL,
+    foodId INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    additives TEXT AS List<String> NOT NULL
+);
+
+selectAll:
+SELECT *
+FROM DbFood;
+
+insert:
+INSERT OR IGNORE INTO DbFood(date, foodId, name, additives)
+VALUES (?, ?, ?, ?);
+
+clearOld:
+DELETE FROM DbFood WHERE date < :olderThan;

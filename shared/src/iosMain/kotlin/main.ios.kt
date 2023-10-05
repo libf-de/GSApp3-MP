@@ -1,3 +1,4 @@
+import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import com.moriatsushi.insetsx.WindowInsetsUIViewController
 import com.russhwolf.settings.NSUserDefaultsSettings
@@ -16,11 +17,10 @@ actual fun getPlatformName(): String = "iOS"
 fun MainViewController() = WindowInsetsUIViewController { PreComposeApplication {
     withDI({
         bind<Settings>() with singleton { NSUserDefaultsSettings(standardUserDefaults()) }
-        bind<GsAppDatabase>() with singleton {
-            GsAppDatabase(
-                NativeSqliteDriver(GsAppDatabase.Schema, "gsapp.db")
-            )
+        bind<SqlDriver>() with singleton {
+            NativeSqliteDriver(GsAppDatabase.Schema, "gsapp.db")
         }
+
         //bind<SettingsSource>() with singleton { SettingsSource(NSObject()) }
         import(mainModule)
     }) { GSApp() }

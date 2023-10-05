@@ -1,9 +1,11 @@
 package de.xorg.gsapp.data.sources.local
 
-import de.xorg.gsapp.data.model.Additive
+import androidx.compose.ui.graphics.Color
+import de.xorg.gsapp.data.DbFood
+import de.xorg.gsapp.data.exceptions.EmptyStoreException
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.data.model.SubstitutionApiModelSet
+import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sql.GsAppDatabase
@@ -15,44 +17,199 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
 
     val database: GsAppDatabase by di.instance()
 
+    /*
+    klass: String,
+        lessonNr: String,
+        origSubject: Subject,
+        substTeacher: Teacher,
+        substRoom: String,
+        substSubject: Subject,
+        notes: String,
+        isNew: Boolean
+     */
     override suspend fun loadSubstitutionPlan(): Result<SubstitutionSet> {
-        TODO("Not yet implemented")
+        return try {
+            val latest = database.dbSubstitutionSetQueries.selectLatest().executeAsOneOrNull()
+                ?: return Result.failure(EmptyStoreException())
+            val substitutions: Map<String, List<Substitution>> = database.dbSubstitutionQueries
+                .findSubstitutionsBySetId(latest.id)
+                .executeAsList()
+                .map {
+                    Substitution(
+                        klass = it.klass,
+                        lessonNr = it.lessonNr ?: "?",
+                        origSubject = Subject(
+                            shortName = it.origShortName ?: "??",
+                            longName = it.origLongName ?: "??",
+                            color = it.origColor ?: Color.Magenta
+                        ),
+                        substTeacher = Teacher(
+                            shortName = it.substTeacherShortName ?: "??",
+                            longName = it.substTeacherLongName ?: "??"
+                        ),
+                        substRoom = it.substRoom ?: "??",
+                        substSubject = Subject(
+                            shortName = it.substShortName ?: "??",
+                            longName = it.substLongName ?: "??",
+                            color = it.substColor ?: Color.Magenta
+                        ),
+                        notes = it.notes ?: "",
+                        isNew = it.isNew
+                    )
+                }
+                .groupBy { subs -> subs.klass }
+            Result.success(
+                SubstitutionSet(
+                    date = latest.date,
+                    notes = latest.notes ?: "",
+                    substitutions = substitutions
+                )
+            )
+        } catch(ex: Exception) {
+            ex.printStackTrace()
+            Result.failure(ex);
+        }
     }
 
     override suspend fun storeSubstitutionPlan(value: SubstitutionSet) {
-        TODO("Not yet implemented")
+        val subsList = value.substitutions.flatMap { it.value }.distinct()
+        val teachers = subsList.map { it.substTeacher }.distinct()
+        val subjects = subsList.flatMap { listOf(it.origSubject, it.substSubject) }.distinct()
+
+        database.transaction {
+            teachers.forEach { teacher ->
+                database.dbTeacherQueries.insertTeacher(
+                    shortName = teacher.shortName,
+                    longName = teacher.longName
+                )
+            }
+
+            subjects.forEach { subject ->
+                database.dbSubjectQueries.insertSubject(
+                    shortName = subject.shortName,
+                    longName = subject.longName,
+                    color = subject.color
+                )
+            }
+
+            database.dbSubstitutionSetQueries.insertSubstitutionSet(
+                date = value.date,
+                notes = value.notes
+            )
+
+            val setId = database.dbSubstitutionSetQueries.lastInsertRowId().executeAsOne()
+
+            subsList.forEach {sub ->
+                database.dbSubstitutionQueries.insertSubstitution(
+                    assSet = setId,
+                    klass = sub.klass,
+                    lessonNr = sub.lessonNr,
+                    origSubject = sub.origSubject.shortName,
+                    substTeacher = sub.substTeacher.shortName,
+                    substRoom = sub.substRoom,
+                    substSubject = sub.substSubject.shortName,
+                    notes = sub.notes,
+                    isNew = sub.isNew
+                )
+            }
+        }
     }
 
     override suspend fun loadSubjects(): Result<List<Subject>> {
-        TODO("Not yet implemented")
+        return try {
+            Result.success(database.dbSubjectQueries.selectAll().executeAsList().map {
+                Subject(shortName = it.shortName, longName = it.longName, color = it.color ?: Color.Magenta)
+            })
+        } catch (ex: Exception) {
+            Result.failure(ex)
+        }
     }
 
     override suspend fun storeSubjects(value: List<Subject>) {
-        TODO("Not yet implemented")
+        database.dbSubjectQueries.transaction {
+            value.forEach { subject ->
+                database.dbSubjectQueries.insertSubject(
+                    shortName = subject.shortName,
+                    longName = subject.longName,
+                    color = subject.color
+                )
+            }
+        }
     }
 
     override suspend fun loadTeachers(): Result<List<Teacher>> {
-        TODO("Not yet implemented")
+        return try {
+            Result.success(database.dbTeacherQueries.selectAll().executeAsList().map {
+                Teacher(shortName = it.shortName, longName = it.longName)
+            })
+        } catch (ex: Exception) {
+            Result.failure(ex)
+        }
     }
 
     override suspend fun storeTeachers(value: List<Teacher>) {
-        TODO("Not yet implemented")
+        database.dbTeacherQueries.transaction {
+            value.forEach {teacher ->
+                database.dbTeacherQueries.insertTeacher(
+                    shortName = teacher.shortName,
+                    longName = teacher.longName
+                )
+            }
+        }
     }
 
     override suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>> {
-        TODO("Not yet implemented")
+        return try {
+            Result.success(
+                database.dbFoodQueries.selectAll().executeAsList().groupBy<DbFood, LocalDate> {
+                    it.date
+                }.mapValues { foodList ->
+                    foodList.value.map { dbFood ->
+                        Food(
+                            num = dbFood.foodId.toInt(),
+                            name = dbFood.name,
+                            additives = dbFood.additives
+                        )
+                    }
+                })
+        } catch (ex: Exception) {
+            Result.failure(ex)
+        }
     }
 
     override suspend fun storeFoodPlan(value: Map<LocalDate, List<Food>>) {
-        TODO("Not yet implemented")
+        database.dbFoodQueries.transaction {
+            value.forEach { dayFoods ->
+                dayFoods.value.forEach { food ->
+                    database.dbFoodQueries.insert(
+                        date = dayFoods.key,
+                        foodId = food.num.toLong(),
+                        name = food.name,
+                        additives = food.additives
+                    )
+                }
+            }
+        }
     }
 
-    override suspend fun loadAdditives(): Result<List<Additive>> {
-        TODO("Not yet implemented")
+    override suspend fun loadAdditives(): Result<Map<String, String>> {
+        return try {
+            Result.success(
+                database.dbAdditiveQueries.selectAll().executeAsList().map {
+                    it.shortName to it.longName
+                }.toMap()
+            )
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
     }
 
-    override suspend fun storeAdditives(value: List<Additive>) {
-        TODO("Not yet implemented")
+    override suspend fun storeAdditives(value: Map<String, String>) {
+        database.dbAdditiveQueries.transaction {
+            value.forEach {
+                database.dbAdditiveQueries.insert(shortName = it.key, longName = it.value)
+            }
+        }
     }
 
 }

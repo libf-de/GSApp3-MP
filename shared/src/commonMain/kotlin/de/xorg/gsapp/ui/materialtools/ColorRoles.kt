@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.xorg.gsapp.ui.colortools
+package de.xorg.gsapp.ui.materialtools
 
-import de.xorg.gsapp.ui.colortools.annotations.ColorInt
+import de.xorg.gsapp.ui.materialtools.annotations.ColorInt
 
 /**
  * Each accent color (primary, secondary and tertiary), is provided as a group of four supplementary

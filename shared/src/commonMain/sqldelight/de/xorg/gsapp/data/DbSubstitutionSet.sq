@@ -3,13 +3,21 @@ import kotlinx.datetime.LocalDate;
 CREATE TABLE DbSubstitutionSet (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL,
-    intDate INTEGER AS LocalDate,
     notes TEXT);
 
 selectAll:
 SELECT *
 FROM DbSubstitutionSet;
 
+selectLatest:
+SELECT *
+FROM DbSubstitutionSet
+ORDER BY id DESC
+LIMIT 1;
+
 insertSubstitutionSet:
-INSERT INTO DbSubstitutionSet(date, intDate, notes)
-VALUES (?, ?, ?);
+INSERT INTO DbSubstitutionSet(date, notes)
+VALUES (?, ?);
+
+lastInsertRowId:
+SELECT last_insert_rowid();

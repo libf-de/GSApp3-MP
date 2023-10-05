@@ -2,6 +2,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import androidx.compose.runtime.Composable
+import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
@@ -18,10 +19,8 @@ import org.kodein.di.singleton
 actual fun getPlatformName(): String = "Android"
 
 @Composable fun MainView(ctx: Activity) = withDI({
-    bind<GsAppDatabase>() with singleton {
-        GsAppDatabase(
-            AndroidSqliteDriver(GsAppDatabase.Schema, ctx, "gsapp.db")
-        )
+    bind<SqlDriver>() with singleton {
+        AndroidSqliteDriver(GsAppDatabase.Schema, ctx, "gsapp.db")
     }
     bind<Activity>() with provider { ctx }
     bind<CacheManager>() with singleton { AndroidCacheManager(ctx) }

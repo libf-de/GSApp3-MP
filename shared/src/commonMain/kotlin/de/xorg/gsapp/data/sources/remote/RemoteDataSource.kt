@@ -18,7 +18,6 @@
 
 package de.xorg.gsapp.data.sources.remote
 
-import de.xorg.gsapp.data.model.Additive
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
@@ -31,5 +30,5 @@ interface RemoteDataSource {
     suspend fun loadTeachers(): Result<List<Teacher>>
 
     suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>>
-    suspend fun loadAdditives(): Result<List<Additive>>
+    suspend fun loadAdditives(): Result<Map<String, String>>
 }

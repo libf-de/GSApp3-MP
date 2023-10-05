@@ -146,7 +146,7 @@ actual class GsWebsiteParser {
                 val mealName: String = meals.querySelector("span[id=mealtext]")?.textContent ?: ""
                 val mealAdditives: List<String> =
                     (meals.querySelector("sub")?.textContent ?: "")
-                        .trim()
+                        .replace(Regex("\\s"), "")
                         .split(",")
                         .toList()
 
@@ -164,5 +164,54 @@ actual class GsWebsiteParser {
         }
 
         return Result.success(foods.entries.associate { it.key to it.value.toList() })
+    }
+
+    actual suspend fun parseAdditives(html: String): Result<Map<String, String>> {
+        val additiveMap = mutableMapOf<String, String>()
+        return try {
+            val doc = HTMLDocument.documentWithString(html)
+            for(addiveColumn: Any? in doc.querySelectorAll("ingredients dl")) {
+                if(addiveColumn !is HTMLElement) {
+                    return Result.failure(ElementNotFoundException("additiveColumn not a HTMLElement!"))
+                }
+
+                var isShort = true
+                var shortVal = ""
+                addiveColumn.childNodes.array.forEach { item ->
+                    if (item !is HTMLElement)
+                        return Result.failure(
+                            InvalidElementTypeException("Additive item is not a HTMLElement!")
+                        )
+
+
+                    if (!item.textContent.trim().endsWith(")") && item.textContent.trim().length > 3) {
+                        //probably not the shortcode
+                        if (isShort) {
+                            println("[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT (upper): ${item.outerHTML}")
+                            return@forEach
+                        }
+                    } else {
+                        if (!isShort) {
+                            println("[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT (lower): ${item.outerHTML}")
+                            return@forEach
+                        }
+                    }
+
+
+                    if (isShort) {
+                        shortVal = item.textContent.trim().removeSuffix(")")
+                        isShort = false
+                    } else {
+                        additiveMap[shortVal] = item.textContent.trim()
+                        isShort = true
+                    }
+                }
+            }
+
+            Result.success(additiveMap)
+        } catch(ex: Exception) {
+            ex.printStackTrace()
+            Result.failure(ex)
+        }
     }
 }

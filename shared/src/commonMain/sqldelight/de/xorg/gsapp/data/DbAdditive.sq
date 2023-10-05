@@ -1,0 +1,15 @@
+CREATE TABLE DbAdditive (
+    shortName TEXT NOT NULL PRIMARY KEY,
+    longName TEXT NOT NULL
+);
+
+selectAll:
+SELECT *
+FROM DbAdditive;
+
+insert:
+INSERT OR IGNORE INTO DbAdditive(shortName, longName)
+VALUES (?, ?);
+
+deleteByShort:
+DELETE FROM DbAdditive WHERE shortName = :short;
