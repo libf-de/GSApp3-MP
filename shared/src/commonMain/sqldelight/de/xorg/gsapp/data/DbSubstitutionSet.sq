@@ -1,6 +1,6 @@
 import kotlinx.datetime.LocalDate;
 
-CREATE TABLE SubstitutionSet (
+CREATE TABLE DbSubstitutionSet (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL,
     intDate INTEGER AS LocalDate,
@@ -8,8 +8,8 @@ CREATE TABLE SubstitutionSet (
 
 selectAll:
 SELECT *
-FROM SubstitutionSet;
+FROM DbSubstitutionSet;
 
 insertSubstitutionSet:
-INSERT INTO SubstitutionSet(date, intDate, notes)
+INSERT INTO DbSubstitutionSet(date, intDate, notes)
 VALUES (?, ?, ?);

@@ -1,0 +1,15 @@
+import androidx.compose.ui.graphics.Color;
+
+CREATE TABLE DbSubject (
+    shortName TEXT NOT NULL PRIMARY KEY,
+    longName TEXT NOT NULL,
+    color INTEGER AS Color
+);
+
+selectAll:
+SELECT *
+FROM DbSubject;
+
+insertSubject:
+INSERT INTO DbSubject(shortName, longName, color)
+VALUES (?, ?, ?);

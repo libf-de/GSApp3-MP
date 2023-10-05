@@ -1,0 +1,16 @@
+CREATE TABLE DbTeacher (
+    shortName TEXT NOT NULL PRIMARY KEY,
+    longName TEXT NOT NULL);
+
+selectAll:
+SELECT * FROM DbTeacher;
+
+selectByShort:
+SELECT * FROM DbTeacher WHERE shortName = ?;
+
+selectLongFromShort:
+SELECT longName FROM DbTeacher WHERE shortName = ?;
+
+insertTeacher:
+INSERT INTO DbTeacher(shortName, longName)
+VALUES (?, ?);

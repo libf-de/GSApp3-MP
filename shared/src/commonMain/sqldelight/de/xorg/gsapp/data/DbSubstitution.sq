@@ -1,0 +1,35 @@
+import kotlin.Boolean;
+
+CREATE TABLE DbSubstitution (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    assSet INTEGER,
+    klass TEXT,
+    lessonNr TEXT,
+    origSubject TEXT,
+    substTeacher TEXT,
+    substRoom TEXT,
+    substSubject TEXT,
+    notes TEXT,
+    isNew INTEGER AS Boolean NOT NULL DEFAULT 0,
+    FOREIGN KEY(assSet) REFERENCES DbSubstitutionSet(id),
+    FOREIGN KEY(substTeacher) REFERENCES DbTeacher(shortName),
+    FOREIGN KEY(origSubject) REFERENCES DbSubject(shortName),
+    FOREIGN KEY(substSubject) REFERENCES DbSubject(shortName));
+
+selectAll:
+SELECT *
+FROM DbSubstitution;
+
+selectByDate:
+SELECT *
+FROM DbSubstitution
+JOIN DbSubstitutionSet ON DbSubstitution.assSet = DbSubstitutionSet.id
+WHERE DbSubstitutionSet.date = :date;
+
+insertSubstitution:
+INSERT INTO DbSubstitution(assSet, klass, lessonNr, origSubject, substTeacher, substRoom, substSubject, notes, isNew)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+insertSubstitutionWithStrings:
+INSERT INTO DbSubstitution(assSet, klass, lessonNr, origSubject, substTeacher, substRoom, substSubject, notes, isNew)
+VALUES ((SELECT id FROM DbSubstitutionSet WHERE date = ?), ?, ?, (SELECT shortName FROM DbSubject WHERE shortName = ?), (SELECT shortName FROM DbTeacher WHERE shortName = ?), ?, (SELECT shortName FROM DbSubject WHERE shortName = ?), ?, ?);
