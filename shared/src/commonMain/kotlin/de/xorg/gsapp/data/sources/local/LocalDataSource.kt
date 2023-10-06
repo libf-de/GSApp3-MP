@@ -18,6 +18,8 @@
 
 package de.xorg.gsapp.data.sources.local
 
+import de.xorg.gsapp.data.enums.ExamCourse
+import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionSet
@@ -36,4 +38,7 @@ interface LocalDataSource {
     suspend fun storeFoodPlan(value: Map<LocalDate, List<Food>>)
     suspend fun loadAdditives(): Result<Map<String, String>>
     suspend fun storeAdditives(value: Map<String, String>)
+
+    suspend fun loadExams(course: ExamCourse): Result<Map<LocalDate, List<Exam>>>
+    suspend fun storeExams(value: Map<LocalDate, List<Exam>>)
 }

@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import de.xorg.gsapp.ui.screens.ExamsScreen
 import de.xorg.gsapp.ui.screens.FoodplanScreen
 import de.xorg.gsapp.ui.screens.settings.SettingsScreen
 import de.xorg.gsapp.ui.screens.SubstitutionsScreen
@@ -124,6 +125,20 @@ fun GSApp() {
                     hideNavBar = false
                     hideNavBarState.targetState = true
                     FoodplanScreen(navigator)
+                }
+
+                scene(
+                    route = GSAppRoutes.EXAMS,
+                    navTransition = NavTransition(
+                        createTransition = fadeIn(),
+                        resumeTransition = fadeIn(),
+                        destroyTransition = fadeOut(),
+                        pauseTransition = fadeOut(),
+                    ),
+                ) {
+                    hideNavBar = false
+                    hideNavBarState.targetState = true
+                    ExamsScreen(navigator)
                 }
 
                 scene(

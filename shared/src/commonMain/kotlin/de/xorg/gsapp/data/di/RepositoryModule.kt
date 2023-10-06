@@ -1,5 +1,7 @@
 package de.xorg.gsapp.data.di
 
+import app.cash.sqldelight.EnumColumnAdapter
+import de.xorg.gsapp.data.DbExam
 import de.xorg.gsapp.data.DbFood
 import de.xorg.gsapp.data.DbSubject
 import de.xorg.gsapp.data.push.PushNotificationUtil
@@ -34,13 +36,18 @@ val repositoryModule = DI.Module("repositoryModule") {
             ),
             DbSubjectAdapter = DbSubject.Adapter(
                 colorAdapter = ColorAdapter
+            ),
+            DbExamAdapter = DbExam.Adapter(
+                courseAdapter = EnumColumnAdapter(),
+                dateAdapter = DateAdapter
             )
         )
     }
     bind<RemoteDataSource>() with singleton { DebugWebDataSource() }
     bind<PathSource>() with singleton { PathSource(di) }
-    bind<LocalDataSource>() with singleton { JsonDataSource(instance()) }
-    bind<SqldelightDataSource>() with singleton { SqldelightDataSource(di) }
+    //bind<LocalDataSource>() with singleton { JsonDataSource(instance()) }
+    bind<JsonDataSource>() with singleton { JsonDataSource(instance()) }
+    bind<LocalDataSource>() with singleton { SqldelightDataSource(di) }
     bind<GSAppRepository>() with singleton { AppRepository(di) }
 }
 

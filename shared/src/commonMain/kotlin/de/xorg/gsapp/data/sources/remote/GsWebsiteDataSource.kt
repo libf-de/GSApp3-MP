@@ -19,7 +19,9 @@
 package de.xorg.gsapp.data.sources.remote
 
 import androidx.compose.ui.graphics.Color
+import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.UnexpectedStatusCodeException
+import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
@@ -31,7 +33,7 @@ import io.ktor.client.statement.HttpResponse
 import kotlinx.datetime.LocalDate
 
 
-class GsWebsiteDataSource : RemoteDataSource {
+open class GsWebsiteDataSource : RemoteDataSource {
     private val parser = GsWebsiteParser()
     private val client = HttpClient()
 
@@ -153,6 +155,23 @@ class GsWebsiteDataSource : RemoteDataSource {
             return parser.parseAdditives(response.body())
         } catch (ex: Exception){
             return Result.failure(ex)
+        }
+    }
+
+    override suspend fun loadExams(course: ExamCourse): Result<Map<LocalDate, List<Exam>>> {
+        try {
+            val response: HttpResponse = client.get(
+                "https://www.gymnasium-sonneberg.de/Schueler/KursArb/ka.php5?seite=${course.ordinal}")
+
+            if(response.status.value !in 200..299) return Result.failure(
+                UnexpectedStatusCodeException("Unexpected code $response")
+            )
+
+            return parser.parseExams(response.body(), course)
+        } catch (e: Exception) {
+            //Log.e(TAG, "Konnte Serverantwort nicht verarbeiten: ${e.message}")
+            e.printStackTrace()
+            return Result.failure(e)
         }
     }
 

@@ -18,6 +18,8 @@
 
 package de.xorg.gsapp.data.sources.remote
 
+import de.xorg.gsapp.data.enums.ExamCourse
+import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
@@ -31,4 +33,6 @@ interface RemoteDataSource {
 
     suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>>
     suspend fun loadAdditives(): Result<Map<String, String>>
+
+    suspend fun loadExams(course: ExamCourse): Result<Map<LocalDate, List<Exam>>>
 }

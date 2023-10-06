@@ -37,8 +37,13 @@ data class AppState(
 
 
     val foodplanState: UiState = UiState.EMPTY,
+    val foodplanReloading: Boolean = false,
     /*val foodplanList: List<FoodOffer> = listOf(),*/
     val foodplanError: Throwable = NoException(),
+
+    val examState: UiState = UiState.EMPTY,
+    val examReloading: Boolean = false,
+    val examError: Throwable = NoException(),
 
 
     /*val subjectsList: List<Subject> = listOf(),

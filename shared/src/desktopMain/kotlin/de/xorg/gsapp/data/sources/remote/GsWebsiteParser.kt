@@ -1,6 +1,8 @@
 package de.xorg.gsapp.data.sources.remote
 
+import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.HolidayException
+import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.SubstitutionApiModel
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
@@ -8,7 +10,11 @@ import de.xorg.gsapp.data.model.Teacher
 import it.skrape.core.htmlDocument
 import it.skrape.matchers.toBePresentTimes
 import it.skrape.selects.DocElement
+import it.skrape.selects.ElementNotFoundException
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
+
 
 actual class GsWebsiteParser {
     actual suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet>  {
@@ -189,6 +195,168 @@ actual class GsWebsiteParser {
             }
         } catch(ex: Exception) {
             ex.printStackTrace()
+            Result.failure(ex)
+        }
+    }
+
+    //TODO: Has SkrapeIt a better solution for this??
+    private fun DocElement.hasElement(selector: String): Boolean {
+        return try {
+            this.findFirst(selector).isPresent
+        } catch(enf: ElementNotFoundException) {
+            false
+        }
+    }
+
+    actual suspend fun parseExams(html: String, course: ExamCourse): Result<Map<LocalDate, List<Exam>>> {
+        val exams: MutableList<Exam> = mutableListOf()
+        val germanDateRegex = Regex("([0-3]?[0-9])\\.([0-1]?[0-9])\\.([0-9]{1,4})")
+        val germanDateWithoutYearRegex = Regex("([0-3]?[0-9])\\.([0-1]?[0-9])\\.")
+
+        return try {
+            htmlDocument(html) {
+                //val dates: MutableList<LocalDate> = mutableListOf()
+
+                val header = findFirst("td[class*=ueberschr]").html
+
+                //years[0] = "2023/2024", [1] = 2023, [2] = 2024
+                val years = Regex("([0-9]{4})/([0-9]{4})").find(header)?.groupValues ?: emptyList()
+
+                if (years.size != 3)
+                    println("WARNING: Years array size != 3!!")
+
+                findAll("td[class=kopf] ~ td").map { dateHeader -> //find all dates in table headings
+                    val weekStart: String = dateHeader.html.split("<br>")[0] //TODO: Doof.
+                    val protoDate =
+                        germanDateWithoutYearRegex.find(weekStart)?.groupValues ?: listOf(
+                            "01",
+                            "01"
+                        )
+                    val protoYear = if (protoDate[2].toInt() in 8..12) years[1] else years[2]
+
+                    LocalDate(
+                        year = protoYear.toInt(),
+                        monthNumber = protoDate[2].toInt(),
+                        dayOfMonth = protoDate[1].toInt()
+                    )
+
+
+                    /*dates.add(
+                        LocalDate(
+
+                        )
+                    )*/
+                    /*val weekStart: String = vpEnt.html().split("<br>").get(0) //TODO: Doof.
+                    val cal = Calendar.getInstance()
+                    cal.time = Objects.requireNonNull(format.parse(weekStart + "2000"))
+                    //int month = Integer.parseInt(Pattern.compile("([0-9]+)(?!.*[0-9])").matcher(weekStart).group(0));
+                    if (8 <= cal[Calendar.MONTH] && cal[Calendar.MONTH] <= 12) //Wenn Monat zwischen 8 und 12 -> erstes Jahr, sonst 2. Jahr
+                        cal[Calendar.YEAR] = jahre[0].toInt() //1. Jahr setzen
+                    else cal[Calendar.YEAR] = jahre[1].toInt() //2. Jahr setzen
+                    daten.add(cal.time) //Wochenstart-Datum hinzufügen*/
+                }
+
+
+                var dates: List<LocalDate>? = null
+
+                var currentColumn: Int
+                var dayOffset: Int = -1 //= currentRow
+
+                findAll("tr").forEach forRow@{
+                    if (it.hasElement("td[class*=\"ueberschr\"]")) {
+                        //We've found the header row, no need to parse columns...
+                        return@forRow //...just continue with the next row TODO: dont set day to 0
+                    }
+
+                    if (it.hasElement("td[class*=\"kopf\"]")) {
+                        //This is the "second" header row containing the dates, parse them!
+                        dates = it.findAll("td[class=kopf]").filter {
+                            it.text.isNotBlank()
+                        }.map { dateHeader -> //find all dates in table headings
+                            val weekStartDate: String = dateHeader.html.split("<br>")[0] //TODO: Doof.
+                            val protoDate = germanDateWithoutYearRegex
+                                             .find(weekStartDate)?.groupValues ?: listOf("01", "01")
+                            val protoYear = if (protoDate[2].toInt() in 8..12)
+                                                years[1] //First half of school year
+                                            else
+                                                years[2] //Second half of school year
+
+                            LocalDate(
+                                year = protoYear.toInt(),
+                                monthNumber = protoDate[2].toInt(),
+                                dayOfMonth = protoDate[1].toInt()
+                            )
+                        }
+
+                        dayOffset = 0
+                        return@forRow
+                    }
+
+                    if (it.hasElement("td[class*=\"ferien\"]")) {
+                        //This is actually the second table, below the exam plan.
+                        //Theoretically, we could now end table parsing, but for the sake of it
+                        //continue. TODO: Stop.
+                        return@forRow
+                    }
+
+                    currentColumn = 0
+                    it.findAll("td").forEach forCell@{ cell ->
+                        if (dates == null) {
+                            println("dates array does not exist, this should not happen -> dateHeader was not found!")
+                            return@htmlDocument Result.failure(ElementNotFoundException(
+                                "dates array does not exist, this should not happen -> dateHeader was not found!"
+                            ))
+                        }
+
+                        if (cell.classNames.contains("tag")) {
+                            //This is the first column containing date names. Skip that.
+                            return@forCell
+                        }
+
+                        if (cell.text.isNotEmpty()) {
+                            //There are some exams in this cell!
+                            val examDay = dates!![currentColumn].plus(dayOffset, DateTimeUnit.DAY)
+                            if (Regex("[^a-zA-Z0-9\\s]").matches(cell.text) ||
+                                cell.text == "Ferien"
+                            ) {
+                                //TODO: Is there anything to do here? Continue??
+                            } else if (cell.text.equals("Abgabe SF")) {
+                                //This is submission of seminar papers, add it!
+                                exams.add(
+                                    Exam(
+                                        label = "Abgabe SF",
+                                        date = examDay,
+                                        course = course
+                                    )
+                                )
+                            } else {
+                                //This is an exam(s) cell, add them/it to the list!
+                                cell.text.trim().split(" ").forEach { examLbl ->
+                                    if (examLbl.length < 6) //TODO: Are there any "else" cases??
+                                        exams.add(
+                                            Exam(
+                                                label = examLbl.trim(),
+                                                date = examDay,
+                                                course = course
+                                            )
+                                        )
+                                }
+                            }
+                        }
+
+                        currentColumn++
+                    }
+
+                    dayOffset++;
+                }
+
+                exams.sortBy { it.date }
+
+                Result.success(
+                    exams.groupBy { it.date }
+                )
+            }
+        } catch (ex: Exception) {
             Result.failure(ex)
         }
     }

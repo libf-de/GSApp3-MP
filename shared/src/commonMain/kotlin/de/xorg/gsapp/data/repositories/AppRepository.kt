@@ -22,14 +22,16 @@ import androidx.compose.ui.graphics.Color
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SettingsListener
+import de.xorg.gsapp.data.enums.ExamCourse
+import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
+import de.xorg.gsapp.data.sources.local.JsonDataSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
-import de.xorg.gsapp.data.sources.local.SqldelightDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
@@ -44,10 +46,9 @@ import kotlin.time.measureTime
 class AppRepository(di: DI) : GSAppRepository {
     private val apiDataSource: RemoteDataSource by di.instance()
     private val localDataSource: LocalDataSource by di.instance()
-    private val sqlDataSource: SqldelightDataSource by di.instance()
+    private val jsonDataSource: JsonDataSource by di.instance()
+
     private val appSettings: Settings by di.instance()
-
-
 
     private val apiSubstitutionsFlow: Flow<Result<SubstitutionApiModelSet>> = flow {
         emit(apiDataSource.loadSubstitutionPlan())
@@ -75,10 +76,10 @@ class AppRepository(di: DI) : GSAppRepository {
         var cached: Result<SubstitutionSet>? = null
         if(!reload) {
             val dbTime = measureTime {
-                cached = sqlDataSource.loadSubstitutionPlan()
+                cached = localDataSource.loadSubstitutionPlan()
             }
             val jsonTime = measureTime {
-                localDataSource.loadSubstitutionPlan()
+                jsonDataSource.loadSubstitutionPlan()
             }
             println("db => ${dbTime.inWholeMilliseconds}ms, json => ${jsonTime.inWholeMilliseconds}ms")
 
@@ -92,10 +93,10 @@ class AppRepository(di: DI) : GSAppRepository {
                         return@collect //Do nothing if web is same as cache
                 }
                 val dbStoreTime = measureTime {
-                    sqlDataSource.storeSubstitutionPlan(web.getOrNull()!!)
+                    localDataSource.storeSubstitutionPlan(web.getOrNull()!!)
                 }
                 val jsonStoreTime = measureTime {
-                    localDataSource.storeSubstitutionPlan(web.getOrNull()!!)
+                    jsonDataSource.storeSubstitutionPlan(web.getOrNull()!!)
                 }
                 println("db => ${dbStoreTime.inWholeMilliseconds}ms, json => ${jsonStoreTime.inWholeMilliseconds}ms")
                 //sqlDataSource.storeSubstitutionPlan(web.getOrNull()!!) //Store web plan in cache
@@ -107,7 +108,7 @@ class AppRepository(di: DI) : GSAppRepository {
     }
 
     override val subjects: Flow<Result<List<Subject>>> = flow {
-        val cached = sqlDataSource.loadSubjects()
+        val cached = localDataSource.loadSubjects()
         if(cached.isSuccess) emit(cached)
 
         val web = apiDataSource.loadSubjects()
@@ -116,7 +117,7 @@ class AppRepository(di: DI) : GSAppRepository {
             if(cached.isSuccess)
                 if(cached.getOrNull() == web.getOrNull())
                     return@flow
-            sqlDataSource.storeSubjects(web.getOrNull()!!)
+            localDataSource.storeSubjects(web.getOrNull()!!)
             emit(web)
         } else if (cached.isSuccess) { return@flow }
 
@@ -139,17 +140,17 @@ class AppRepository(di: DI) : GSAppRepository {
     }
 
     override suspend fun addSubject(value: Subject): Result<Boolean> {
-        val local = sqlDataSource.loadSubjects()
+        val local = localDataSource.loadSubjects()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
         val newSubjects = local.getOrNull()!!.toMutableList()
         val success = newSubjects.add(value)
-        sqlDataSource.storeSubjects(newSubjects)
+        localDataSource.storeSubjects(newSubjects)
         return Result.success(success)
     }
 
     override suspend fun deleteSubject(value: Subject): Result<Boolean> {
-        val local = sqlDataSource.loadSubjects()
+        val local = localDataSource.loadSubjects()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
         val newSubjects = local.getOrNull()!!.toMutableList()
@@ -158,7 +159,7 @@ class AppRepository(di: DI) : GSAppRepository {
     }
 
     override suspend fun updateSubject(oldSub: Subject, newSub: Subject): Result<Subject> {
-        val local = sqlDataSource.loadSubjects()
+        val local = localDataSource.loadSubjects()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
         val newSubjects = local.getOrNull()!!.toMutableList()
@@ -167,7 +168,7 @@ class AppRepository(di: DI) : GSAppRepository {
     }
 
     override val teachers: Flow<Result<List<Teacher>>> = flow {
-        val cached = sqlDataSource.loadTeachers()
+        val cached = localDataSource.loadTeachers()
         if(cached.isSuccess) emit(cached)
 
         val web = apiDataSource.loadTeachers()
@@ -178,7 +179,7 @@ class AppRepository(di: DI) : GSAppRepository {
                     return@flow
             val mergedTeacherList = (web.getOrNull() ?: emptyList()) +
                     (cached.getOrNull() ?: emptyList())
-            sqlDataSource.storeTeachers(mergedTeacherList)
+            localDataSource.storeTeachers(mergedTeacherList)
             emit(Result.success(mergedTeacherList))
         } else if (cached.isSuccess) { return@flow }
 
@@ -186,27 +187,27 @@ class AppRepository(di: DI) : GSAppRepository {
     }
 
     override suspend fun addTeacher(value: Teacher): Result<Boolean> {
-        val local = sqlDataSource.loadTeachers()
+        val local = localDataSource.loadTeachers()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
         val newTeachers = local.getOrNull()!!.toMutableList()
         val success = newTeachers.add(value)
-        sqlDataSource.storeTeachers(newTeachers)
+        localDataSource.storeTeachers(newTeachers)
         return Result.success(success)
     }
 
     override suspend fun deleteTeacher(value: Teacher): Result<Boolean> {
-        val local = sqlDataSource.loadTeachers()
+        val local = localDataSource.loadTeachers()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
         val newTeachers = local.getOrNull()!!.toMutableList()
         val success = newTeachers.remove(value)
-        sqlDataSource.storeTeachers(newTeachers)
+        localDataSource.storeTeachers(newTeachers)
         return Result.success(success)
     }
 
     override suspend fun updateTeacher(oldTea: Teacher, newTea: Teacher): Result<Teacher> {
-        val local = sqlDataSource.loadTeachers()
+        val local = localDataSource.loadTeachers()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
 
         val newSubjects = local.getOrNull()!!.toMutableList()
@@ -215,7 +216,7 @@ class AppRepository(di: DI) : GSAppRepository {
     }
 
     private val apiFoodPlan: Flow<Result<Map<LocalDate, List<Food>>>> = flow {
-        val cached: Result<Map<LocalDate, List<Food>>> = sqlDataSource.loadFoodPlan()
+        val cached: Result<Map<LocalDate, List<Food>>> = localDataSource.loadFoodPlan()
         if(cached.isSuccess) emit(cached)
 
         val web = apiDataSource.loadFoodPlan()
@@ -224,7 +225,7 @@ class AppRepository(di: DI) : GSAppRepository {
             if(cached.isSuccess)
                 if(cached.getOrNull()!! == web.getOrNull()!!)
                     return@flow
-            sqlDataSource.storeFoodPlan(web.getOrNull()!!)
+            localDataSource.storeFoodPlan(web.getOrNull()!!)
             emit(web)
         } else if (cached.isSuccess) { return@flow }
 
@@ -232,7 +233,7 @@ class AppRepository(di: DI) : GSAppRepository {
     }
 
     override val additives: Flow<Result<Map<String, String>>> = flow {
-        val cached = sqlDataSource.loadAdditives()
+        val cached = localDataSource.loadAdditives()
         if(cached.isSuccess) emit(cached)
 
         val web = apiDataSource.loadAdditives()
@@ -241,7 +242,7 @@ class AppRepository(di: DI) : GSAppRepository {
             if(cached.isSuccess)
                 if(cached.getOrNull()!! == web.getOrNull()!!)
                     return@flow
-            sqlDataSource.storeAdditives(web.getOrNull()!!)
+            localDataSource.storeAdditives(web.getOrNull()!!)
             emit(web)
         } else if (cached.isSuccess) { return@flow }
 
@@ -264,6 +265,23 @@ class AppRepository(di: DI) : GSAppRepository {
                 }
             }
         }
+    }
+
+    override suspend fun getExams(course: ExamCourse, reload: Boolean): Flow<Result<Map<LocalDate, List<Exam>>>> = flow {
+        val cached = localDataSource.loadExams(course)
+        if(cached.isSuccess) emit(cached)
+
+        val web = apiDataSource.loadExams(course)
+        if(web.isSuccess) {
+            //TODO: Can I compare results directly?
+            if(cached.isSuccess)
+                if(cached.getOrNull()!! == web.getOrNull()!!)
+                    return@flow
+            localDataSource.storeExams(web.getOrNull()!!)
+            emit(web)
+        } else if (cached.isSuccess) { return@flow }
+
+        emit(web)
     }
 
     /****/

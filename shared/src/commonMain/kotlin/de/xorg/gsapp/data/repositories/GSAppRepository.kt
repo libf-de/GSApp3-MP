@@ -1,6 +1,8 @@
 package de.xorg.gsapp.data.repositories
 
 import com.russhwolf.settings.SettingsListener
+import de.xorg.gsapp.data.enums.ExamCourse
+import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionSet
@@ -20,6 +22,8 @@ interface GSAppRepository {
     val foodPlan: Flow<Result<Map<LocalDate, List<Food>>>>
 
     val additives: Flow<Result<Map<String, String>>>
+
+    suspend fun getExams(course: ExamCourse, reload: Boolean): Flow<Result<Map<LocalDate, List<Exam>>>>
 
     suspend fun addTeacher(value: Teacher): Result<Boolean>
 

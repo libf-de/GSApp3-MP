@@ -2,7 +2,9 @@ package de.xorg.gsapp.data.sources.local
 
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.DbFood
+import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.EmptyStoreException
+import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.Substitution
@@ -208,6 +210,46 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         database.dbAdditiveQueries.transaction {
             value.forEach {
                 database.dbAdditiveQueries.insert(shortName = it.key, longName = it.value)
+            }
+        }
+    }
+
+    override suspend fun loadExams(course: ExamCourse): Result<Map<LocalDate, List<Exam>>> {
+        return try {
+            Result.success(
+                database.dbExamQueries.selectByCourseWithSubjects(course).executeAsList().map {
+                    val subject = if(it.subject == null ||
+                                  it.subjectLongName == null ||
+                                  it.subjectColor == null)
+                                    null
+                               else
+                                    Subject(
+                                        shortName = it.subject,
+                                        longName = it.subjectLongName,
+                                        color = it.subjectColor
+                                    )
+                    Exam(label = it.label,
+                         date = it.date,
+                         course = it.course,
+                         isCoursework = it.isCoursework,
+                         subject = subject)
+                }.groupBy { it.date }
+            )
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
+    }
+
+    override suspend fun storeExams(value: Map<LocalDate, List<Exam>>) {
+        database.dbExamQueries.transaction {
+            value.flatMap { it.value }.forEach {
+                database.dbExamQueries.insert(
+                    label = it.label,
+                    date = it.date,
+                    course = it.course,
+                    isCoursework = it.isCoursework,
+                    subject = it.subject?.shortName
+                )
             }
         }
     }

@@ -22,6 +22,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.russhwolf.settings.SettingsListener
+import de.xorg.gsapp.data.enums.ExamCourse
+import de.xorg.gsapp.data.model.Exam
 //import com.hoc081098.kmp.viewmodel.ViewModel
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.SubstitutionSet
@@ -32,7 +34,10 @@ import de.xorg.gsapp.ui.state.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.kodein.di.DI
@@ -51,6 +56,9 @@ class GSAppViewModel(di: DI) : ViewModel() {
     private val _foodStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Food>>())
     val foodStateFlow = _foodStateFlow.asStateFlow()
 
+    private val _examStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Exam>>())
+    val examStateFlow = _examStateFlow.asStateFlow()
+
     private val _roleObserver = MutableStateFlow<SettingsListener?>(null)
     val roleObserver = _roleObserver.asStateFlow()
 
@@ -60,6 +68,7 @@ class GSAppViewModel(di: DI) : ViewModel() {
     init {
         loadSubstitutions()
         loadFoodplan()
+        loadExams()
     }
 
     private suspend fun loadSettings() {
@@ -83,13 +92,40 @@ class GSAppViewModel(di: DI) : ViewModel() {
         loadSubstitutions(true)
     }
 
-    private fun setSubstitutionState(state: UiState, reload: Boolean) {
-        uiState = if(reload) uiState.copy(substitutionReloading = state == UiState.LOADING)
-                  else uiState.copy(substitutionState = state)
+    private fun loadExams(reload: Boolean = false) {
+        uiState = if(reload) uiState.copy(examReloading = true)
+        else uiState.copy(examState = UiState.LOADING)
+
+        viewModelScope.launch {
+            val twoDigitYear = Clock.System.todayIn(TimeZone.currentSystemDefault())
+                .year.toString().substring(2)
+            val defaultCourse = if(uiState.filterRole == FilterRole.STUDENT &&
+                uiState.filter == "A${twoDigitYear}") ExamCourse.COURSE_12
+            else ExamCourse.COURSE_11
+
+            appRepo.getExams(defaultCourse, reload).collect { examResult ->
+                if(examResult.isFailure) {
+                    uiState = if(reload) uiState.copy(examReloading = false,
+                        examError = examResult.exceptionOrNull()!!)
+                    else uiState.copy(examState = UiState.FAILED,
+                        examError = examResult.exceptionOrNull()!!)
+                    return@collect
+                }
+
+                _examStateFlow.value = examResult.getOrNull()!!
+
+                uiState = uiState.copy(
+                    examState = if(examResult.getOrNull()!!.isEmpty())
+                        UiState.EMPTY
+                    else
+                        UiState.NORMAL,
+                    examReloading = false
+                )
+            }
+        }
     }
 
     private fun loadSubstitutions(reload: Boolean = false) {
-
         uiState = if(reload) uiState.copy(substitutionReloading = true)
                   else uiState.copy(substitutionState = UiState.LOADING)
 

@@ -1,0 +1,38 @@
+import de.xorg.gsapp.data.enums.ExamCourse;
+import kotlin.Boolean;
+import kotlinx.datetime.LocalDate;
+
+CREATE TABLE DbExam (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    label TEXT NOT NULL,
+    date INTEGER AS LocalDate NOT NULL,
+    course TEXT AS ExamCourse NOT NULL,
+    isCoursework INTEGER AS Boolean NOT NULL DEFAULT 0,
+    subject TEXT,
+    FOREIGN KEY(subject) REFERENCES DbSubject(shortName)
+);
+
+selectAll:
+SELECT *
+FROM DbExam;
+
+selectAllWithSubjects:
+SELECT DbExam.id, DbExam.label, DbExam.course, DbExam.date, DbExam.isCoursework, DbExam.subject,
+       dSub.longName AS subjectLongName, dSub.color AS subjectColor
+FROM DbExam
+LEFT JOIN DbSubject dSub ON DbExam.subject = dSub.shortName;
+
+selectByCourseWithSubjects:
+SELECT DbExam.id, DbExam.label, DbExam.course, DbExam.date, DbExam.isCoursework, DbExam.subject,
+       dSub.longName AS subjectLongName, dSub.color AS subjectColor
+FROM DbExam
+LEFT JOIN DbSubject dSub ON DbExam.subject = dSub.shortName
+WHERE DbExam.course = :course;
+
+insert:
+INSERT OR IGNORE INTO DbExam(label, date, course, isCoursework, subject)
+VALUES (?, ?, ?, ?, ?);
+
+clearOlder:
+DELETE FROM DbExam
+WHERE date < :limitDate;

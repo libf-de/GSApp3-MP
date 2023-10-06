@@ -3,6 +3,7 @@
     <string name="app_name">GSApp</string>
     <string name="tab_substitutions">Substitutions</string>
     <string name="tab_foodplan">Food plan</string>
+    <string name="tab_exams">Exams</string>
 
     <!-- Weekdays, long form -->
     <string name="wd_mo_lo">Monday</string>

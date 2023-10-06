@@ -18,7 +18,9 @@
 
 package de.xorg.gsapp.data.sources.local
 
+import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.EmptyStoreException
+import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionSet
@@ -150,5 +152,13 @@ class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
             //Log.w("jsonDataSource", "Failed to store substitution plan, stack trace:")
             ex.printStackTrace()
         }
+    }
+
+    override suspend fun loadExams(course: ExamCourse): Result<Map<LocalDate, List<Exam>>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun storeExams(value: Map<LocalDate, List<Exam>>) {
+        TODO("Not yet implemented")
     }
 }
