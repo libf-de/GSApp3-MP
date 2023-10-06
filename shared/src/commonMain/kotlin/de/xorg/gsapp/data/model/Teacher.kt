@@ -20,10 +20,22 @@ package de.xorg.gsapp.data.model
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Data class to represent a teacher. Could probably be replaced with a map, but will keep this,
+ * maybe will add gender later to display teacher in substitutions like "Hr. Mustermann" instead of
+ * "Mustermann, Max". The problem is that the website does not specify gender, so will have to use
+ * lookup table or https://genderize.io or https://gender-api.com
+ * @param shortName short name, as displayed in substitution plan on website
+ * @param longName long name that will be shown to the user.
+ */
 @Serializable
 data class Teacher(
     val shortName: String,
     val longName: String
 ) {
+    /**
+     * Constructor that constructs a "dummy" teacher if a shortName is not in the database.
+     * Will display the shortName to the user.
+     */
     constructor(shortName: String) : this(shortName, shortName)
 }

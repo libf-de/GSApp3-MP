@@ -1,3 +1,21 @@
+/*
+ * GSApp3 (https://github.com/libf-de/GSApp3)
+ * Copyright (C) 2023 Fabian Schillig
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.xorg.gsapp.data.di
 
 import app.cash.sqldelight.EnumColumnAdapter
@@ -7,12 +25,10 @@ import de.xorg.gsapp.data.DbSubject
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.AppRepository
 import de.xorg.gsapp.data.repositories.GSAppRepository
-import de.xorg.gsapp.data.sources.local.JsonDataSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
 import de.xorg.gsapp.data.sources.local.PathSource
 import de.xorg.gsapp.data.sources.local.SqldelightDataSource
 import de.xorg.gsapp.data.sources.remote.DebugWebDataSource
-import de.xorg.gsapp.data.sources.remote.GsWebsiteDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
 import de.xorg.gsapp.data.sql.GsAppDatabase
 import de.xorg.gsapp.data.sql_adapters.ColorAdapter
@@ -25,8 +41,7 @@ import org.kodein.di.bind
 import org.kodein.di.instance
 import org.kodein.di.singleton
 
-val repositoryModule = DI.Module("repositoryModule") {
-    /*bind<RemoteDataSource>() with singleton { GsWebsiteDataSource() } TODO: Revert to production! */
+val mainModule = DI.Module("mainModule") {
     bind<GsAppDatabase>() with singleton {
         GsAppDatabase(
             driver = instance(),
@@ -43,16 +58,11 @@ val repositoryModule = DI.Module("repositoryModule") {
             )
         )
     }
+    //bind<RemoteDataSource>() with singleton { GsWebsiteDataSource() } TODO: Revert for release builds!
     bind<RemoteDataSource>() with singleton { DebugWebDataSource() }
     bind<PathSource>() with singleton { PathSource(di) }
-    //bind<LocalDataSource>() with singleton { JsonDataSource(instance()) }
-    bind<JsonDataSource>() with singleton { JsonDataSource(instance()) }
     bind<LocalDataSource>() with singleton { SqldelightDataSource(di) }
     bind<GSAppRepository>() with singleton { AppRepository(di) }
-}
-
-val mainModule = DI.Module("mainModule") {
-    import(repositoryModule)
     bind<PushNotificationUtil>() with singleton { PushNotificationUtil(di) }
     bind<GSAppViewModel>() with singleton { GSAppViewModel(di) }
     bind<SettingsViewModel>() with singleton { SettingsViewModel(di) }

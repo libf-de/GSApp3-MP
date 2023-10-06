@@ -43,45 +43,101 @@ import org.kodein.di.DI
 import org.kodein.di.instance
 import kotlin.time.measureTime
 
+/**
+ * This combines all data sources (local cache and remote apis), as well as app settings into a
+ * single interface to be used by the UI layer.
+ *
+ * All of the "get" flows (marked with [GET]) roughly follow this chart:
+ * (if flow does not support reload ==>  reloading = false)
+ * ┌──────────┐
+ * │Reloading?│
+ * └┬──────┬──┘
+ *  │Yes   │No
+ *  │    ┌─▼────────────────┐
+ *  │    │Load local cache. │
+ *  │    │Was it successful?│
+ *  │    └──┬────────┬──────┘
+ *  │       │No      │Yes
+ *  │       │      ┌─▼──────┐
+ *  │       │      │Emit it!│
+ *  │       │      └─┬──────┘
+ *  │       │        │
+ * ┌▼───────▼────────▼────┐
+ * │Load from api/website.│
+ * │Was it successful?    │
+ * └┬──────────────┬──────┘
+ *  │No            │Yes
+ *  │     ┌────────┴────────┐
+ *  │     │Is it different  │
+ *  │     │from local cache?│
+ *  │     └───┬────────────┬┘
+ *  │         │Yes       No│
+ *  │  ┌──────▼─────────┐  │
+ *  │  │ Emit and write │  │
+ *  │  │ to local cache.│  │
+ *  │  └─────────────┬──┘  │
+ *  │                └─────┤
+ *  │                      │
+ * ┌▼────────────────────┐ │
+ * │Was loading frm local│ │
+ * │cache successful AND │ │
+ * │are we NOT reloading?│ │
+ * ├─ ── ── ── ── ── ── ─┤ │
+ * │(Is there any data to│ │
+ * │ be displayed?)      │ │
+ * └─┬───────────────┬───┘ │
+ *   │No          Yes│     │
+ *  ┌▼───────┐     ┌─▼─────▼┐
+ *  │Emit web│     │ !DONE! │
+ *  │error   ├─────► !DONE! │
+ *  └────────┘     └────────┘
+ */
+
 class AppRepository(di: DI) : GSAppRepository {
+
+    //Get data sources from DI
     private val apiDataSource: RemoteDataSource by di.instance()
     private val localDataSource: LocalDataSource by di.instance()
-    private val jsonDataSource: JsonDataSource by di.instance()
 
     private val appSettings: Settings by di.instance()
 
+    // This is used to create a flow from the "pure" web api, to be able to then
+    // just combine the teachers and subjects flow with it. Maybe there is a better
+    // way to achieve this :S
     private val apiSubstitutionsFlow: Flow<Result<SubstitutionApiModelSet>> = flow {
         emit(apiDataSource.loadSubstitutionPlan())
     }
 
+    // Combines web substitutions, teachers and subjects flows to a flow that emits "non-api"
+    // SubstitutionSets (with Substitutions) [replaces string teacher/subject with objects]
     private fun getWebSubstitutions(): Flow<Result<SubstitutionSet>> = combine(apiSubstitutionsFlow,
         teachers, subjects) { subs, teachers, subjects ->
         subs.map {
             SubstitutionSet(
                 date = it.date,
                 notes = it.notes,
-                substitutions = it.substitutionApiModels.map { sub ->
+                substitutions = it.substitutionApiModels.map { sub -> //replace strings->objects
                     Substitution(
                         primitive = sub,
                         origSubject = findSubjectInResult(subjects, sub.origSubject),
                         substTeacher = findTeacherInResult(teachers, sub.substTeacher),
                         substSubject = findSubjectInResult(subjects, sub.substSubject)
                     )
-                }.groupBy { subs -> subs.klass }
+                }.groupBy { subs -> subs.klass } //Generate class-grouped map
             )
         }
     }
 
+    // [GET] Substitutions
+    // This is the "master" substitutions flow, combining web-api and local-cached sources.
     override suspend fun getSubstitutions(reload: Boolean): Flow<Result<SubstitutionSet>> = flow {
         var cached: Result<SubstitutionSet>? = null
         if(!reload) {
+            //TODO: Remove; don't measure read time in release
             val dbTime = measureTime {
                 cached = localDataSource.loadSubstitutionPlan()
             }
-            val jsonTime = measureTime {
-                jsonDataSource.loadSubstitutionPlan()
-            }
-            println("db => ${dbTime.inWholeMilliseconds}ms, json => ${jsonTime.inWholeMilliseconds}ms")
+            println("read db in ${dbTime.inWholeMilliseconds}ms")
 
             if(cached?.isSuccess == true) emit(cached!!)
         }
@@ -92,14 +148,13 @@ class AppRepository(di: DI) : GSAppRepository {
                     if(cached!!.isSuccess && cached!!.getOrNull() == web.getOrNull())
                         return@collect //Do nothing if web is same as cache
                 }
+
+                //TODO: Remove; don't measure time in release builds
                 val dbStoreTime = measureTime {
-                    localDataSource.storeSubstitutionPlan(web.getOrNull()!!)
+                    localDataSource.storeSubstitutionPlan(web.getOrNull()!!) //Store web plan in cache
                 }
-                val jsonStoreTime = measureTime {
-                    jsonDataSource.storeSubstitutionPlan(web.getOrNull()!!)
-                }
-                println("db => ${dbStoreTime.inWholeMilliseconds}ms, json => ${jsonStoreTime.inWholeMilliseconds}ms")
-                //sqlDataSource.storeSubstitutionPlan(web.getOrNull()!!) //Store web plan in cache
+                println("stored in db in ${dbStoreTime.inWholeMilliseconds}ms")
+
                 emit(web) // & emit web
             } else if(!reload && cached != null) {
                 if (!cached!!.isSuccess) emit(web) //Emit web error if there's no cache
@@ -107,6 +162,10 @@ class AppRepository(di: DI) : GSAppRepository {
         }
     }
 
+    // [GET] Subjects - combines "remote" and local sources for subjects
+    // As there is no subject list on the website, we'll provide some defaults.
+    // I'll probably have to change the logic here to not overwrite the user's subjects
+    // with the default values TODO: Review logic to prevent overwriting user settings
     override val subjects: Flow<Result<List<Subject>>> = flow {
         val cached = localDataSource.loadSubjects()
         if(cached.isSuccess) emit(cached)
@@ -124,13 +183,13 @@ class AppRepository(di: DI) : GSAppRepository {
         emit(web)
     }
 
-    private fun findTeacherInResult(results: Result<List<Teacher>>, value: String): Teacher {
-        if(value.isBlank()) return Teacher("", "(kein)")
-        return results.getOrNull()?.firstOrNull {
-                s -> s.shortName.lowercase() == value.lowercase()
-        } ?: Teacher(value)
-    }
-
+    /**
+     * Finds the Subject in the provided list for the given shortName string value
+     * @param results List to be searched
+     * @param value shortName to be searched for
+     * @return matching Subject object
+     * TODO: Use database properly!
+     */
     private fun findSubjectInResult(results: Result<List<Subject>>, value: String): Subject {
         if(value.isBlank()) return Subject("", "(kein)", Color.Black)
 
@@ -139,6 +198,12 @@ class AppRepository(di: DI) : GSAppRepository {
         } ?: Subject(value)
     }
 
+    /**
+     * Adds a new subject to the local source.
+     * @param value value to be added
+     * @return Exception or boolean whether it was successful.
+     * TODO: Use database properly!
+     */
     override suspend fun addSubject(value: Subject): Result<Boolean> {
         val local = localDataSource.loadSubjects()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
@@ -149,6 +214,12 @@ class AppRepository(di: DI) : GSAppRepository {
         return Result.success(success)
     }
 
+    /**
+     * Deletes a given subject from local source.
+     * @param value subject to delete
+     * @return Exception or boolean -> Successful
+     * TODO: Use database properly!
+     */
     override suspend fun deleteSubject(value: Subject): Result<Boolean> {
         val local = localDataSource.loadSubjects()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
@@ -158,6 +229,13 @@ class AppRepository(di: DI) : GSAppRepository {
         return Result.success(success)
     }
 
+    /**
+     * Updates the given subject in local source.
+     * @param oldSub Subject to be edited
+     * @param newSub Subject with changes
+     * @return old subject?
+     * TODO: Use database properly!
+     */
     override suspend fun updateSubject(oldSub: Subject, newSub: Subject): Result<Subject> {
         val local = localDataSource.loadSubjects()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
@@ -167,6 +245,9 @@ class AppRepository(di: DI) : GSAppRepository {
         return Result.success(success)
     }
 
+    //****************** TEACHER ******************
+
+    // [GET] Teachers
     override val teachers: Flow<Result<List<Teacher>>> = flow {
         val cached = localDataSource.loadTeachers()
         if(cached.isSuccess) emit(cached)
@@ -186,6 +267,26 @@ class AppRepository(di: DI) : GSAppRepository {
         emit(web)
     }
 
+    /**
+     * Finds the Teacher in the provided list for the given shortName string value
+     * @param results List to be searched
+     * @param value shortName to be searched for
+     * @return matching Teacher object
+     * TODO: Use database properly!
+     */
+    private fun findTeacherInResult(results: Result<List<Teacher>>, value: String): Teacher {
+        if(value.isBlank()) return Teacher("", "(kein)")
+        return results.getOrNull()?.firstOrNull {
+                s -> s.shortName.lowercase() == value.lowercase()
+        } ?: Teacher(value)
+    }
+
+    /**
+     * Adds a new teacher to the local source.
+     * @param value value to be added
+     * @return Exception or boolean whether it was successful.
+     * TODO: Use database properly!
+     */
     override suspend fun addTeacher(value: Teacher): Result<Boolean> {
         val local = localDataSource.loadTeachers()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
@@ -196,6 +297,12 @@ class AppRepository(di: DI) : GSAppRepository {
         return Result.success(success)
     }
 
+    /**
+     * Deletes a given teacher from local source.
+     * @param value subject to delete
+     * @return Exception or boolean -> Successful
+     * TODO: Use database properly!
+     */
     override suspend fun deleteTeacher(value: Teacher): Result<Boolean> {
         val local = localDataSource.loadTeachers()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
@@ -206,6 +313,13 @@ class AppRepository(di: DI) : GSAppRepository {
         return Result.success(success)
     }
 
+    /**
+     * Updates the given subject in local source.
+     * @param oldSub Subject to be edited
+     * @param newSub Subject with changes
+     * @return old subject?
+     * TODO: Use database properly!
+     */
     override suspend fun updateTeacher(oldTea: Teacher, newTea: Teacher): Result<Teacher> {
         val local = localDataSource.loadTeachers()
         if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
@@ -215,6 +329,9 @@ class AppRepository(di: DI) : GSAppRepository {
         return Result.success(success)
     }
 
+    //****************** FOOD PLAN ******************
+
+    // [GET] Gets the "pure" foodplan from the web api? TODO: Store processed foodplan in database OR process directly in database?
     private val apiFoodPlan: Flow<Result<Map<LocalDate, List<Food>>>> = flow {
         val cached: Result<Map<LocalDate, List<Food>>> = localDataSource.loadFoodPlan()
         if(cached.isSuccess) emit(cached)
@@ -232,6 +349,7 @@ class AppRepository(di: DI) : GSAppRepository {
         emit(web)
     }
 
+    // [GET] Additives
     override val additives: Flow<Result<Map<String, String>>> = flow {
         val cached = localDataSource.loadAdditives()
         if(cached.isSuccess) emit(cached)
@@ -249,6 +367,7 @@ class AppRepository(di: DI) : GSAppRepository {
         emit(web)
     }
 
+    // Replaces the short additives with long names in foodplan
     override val foodPlan: Flow<Result<Map<LocalDate, List<Food>>>> = combine(apiFoodPlan, additives)
     { apiFoodPlan, additives ->
         if(!additives.isSuccess)
@@ -267,6 +386,11 @@ class AppRepository(di: DI) : GSAppRepository {
         }
     }
 
+
+    //****************** EXAMS ******************
+
+    // [GET] Exam flow for the given ExamCourse.
+    // TODO: Should I use one flow for this?
     override suspend fun getExams(course: ExamCourse, reload: Boolean): Flow<Result<Map<LocalDate, List<Exam>>>> = flow {
         val cached = localDataSource.loadExams(course)
         if(cached.isSuccess) emit(cached)
@@ -284,16 +408,38 @@ class AppRepository(di: DI) : GSAppRepository {
         emit(web)
     }
 
-    /****/
+
+
+    //****************** SETTINGS ******************
+
+    /**
+     * Returns the Filter Role (Student/Teacher/All) from settings
+     * @return FilterRole
+     */
     override suspend fun getRole(): FilterRole {
         return FilterRole.fromInt(
-            appSettings.getInt("role", FilterRole.ALL.value)
+            appSettings.getInt("role", FilterRole.default.value)
         )
     }
+
+    /**
+     * Stores the Filter Role (Student/Teacher/All) in settings
+     * @param value role to store
+     */
     override suspend fun setRole(value: FilterRole) {
         appSettings.putInt("role", value.value)
     }
 
+    /**
+     * Observes the filter role setting for changes, and runs the given callback
+     * after the setting was changed.
+     *
+     * IMPORTANT: A strong reference to the returned SettingsListener must be held, otherwise
+     * updates might not be sent! (https://github.com/russhwolf/multiplatform-settings#listeners)
+     *
+     * @param callback function to run when role was changed.
+     * @return reference to the SettingsListener
+     */
     override suspend fun observeRole(callback: (FilterRole) -> Unit): SettingsListener? {
         val settings = appSettings as? ObservableSettings ?: return null
         return settings.addIntListener("role", FilterRole.default.value) {
@@ -301,27 +447,65 @@ class AppRepository(di: DI) : GSAppRepository {
         }
     }
 
+    /**
+     * Returns the Filter Value from settings
+     * @return string
+     */
     override suspend fun getFilterValue(): String {
         return appSettings.getString("filter", "")
     }
+
+    /**
+     * Stores the Filter value in settings
+     * @param value value to store
+     */
     override suspend fun setFilterValue(value: String) {
         appSettings.putString("filter", value)
     }
 
+    /**
+     * Observes the filter value setting for changes, and runs the given callback
+     * after the setting was changed.
+     *
+     * IMPORTANT: A strong reference to the returned SettingsListener must be held, otherwise
+     * updates might not be sent! (https://github.com/russhwolf/multiplatform-settings#listeners)
+     *
+     * @param callback function to run when value was changed.
+     * @return reference to the SettingsListener
+     */
     override suspend fun observeFilterValue(callback: (String) -> Unit): SettingsListener? {
         val settings = appSettings as? ObservableSettings ?: return null
         return settings.addStringListener("filter", "") { callback(it) }
     }
 
+    /**
+     * Returns the push notification enablement from settings
+     * @return PushState
+     */
     override suspend fun getPush(): PushState {
         return PushState.fromInt(
             appSettings.getInt("push", PushState.DISABLED.value)
         )
     }
+
+    /**
+     * Stores the push notification enablement in settings
+     * @param value PushState
+     */
     override suspend fun setPush(value: PushState) {
         appSettings.putInt("push", value.value)
     }
 
+    /**
+     * Observes the push notification enablement setting for changes, and runs the given callback
+     * after the setting was changed.
+     *
+     * IMPORTANT: A strong reference to the returned SettingsListener must be held, otherwise
+     * updates might not be sent! (https://github.com/russhwolf/multiplatform-settings#listeners)
+     *
+     * @param callback function to run when PushState was changed.
+     * @return reference to the SettingsListener
+     */
     override suspend fun observePush(callback: (PushState) -> Unit): SettingsListener? {
         val settings = appSettings as? ObservableSettings ?: return null
         return settings.addIntListener("push", PushState.default.value) {

@@ -20,6 +20,13 @@ package de.xorg.gsapp.data.model
 
 import kotlinx.serialization.Serializable
 
+/**
+ * A complete representation of a substitution plan, consisting of "global" date and notes, and
+ * a list of entries
+ * @param date string representation of the date, as displayed on the website
+ * @param notes as displayed on website
+ * @param substitutionApiModels list of substitutions
+ */
 @Serializable
 data class SubstitutionApiModelSet(
     val date: String,

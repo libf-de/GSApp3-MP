@@ -20,6 +20,18 @@ package de.xorg.gsapp.data.model
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Data class to hold a single substitution plan entry
+ * @property type whether it's a cancellation, etc.
+ * @property klass the affected class (spelled with k, to not interfere with kotlin class)
+ * @property lessonNr
+ * @property origSubject the subject to be substituted
+ * @property substTeacher the teacher who replaces
+ * @property substRoom the replacement room
+ * @property substSubject the replacement subject
+ * @property notes
+ * @property isNew whether this is a new entry, as denoted by bold text on website
+ */
 @Serializable
 data class Substitution(
     val type: SubstitutionType,
@@ -33,6 +45,17 @@ data class Substitution(
     val isNew: Boolean
 ) {
 
+    /**
+     * Data class to hold a single substitution plan entry, constructor will determine type
+     * @property klass the affected class (spelled with k, to not interfere with kotlin class)
+     * @property lessonNr
+     * @property origSubject the subject to be substituted
+     * @property substTeacher the teacher who replaces
+     * @property substRoom the replacement room
+     * @property substSubject the replacement subject
+     * @property notes
+     * @property isNew whether this is a new entry, as denoted by bold text on website
+     */
     constructor(
         klass: String,
         lessonNr: String,
@@ -64,6 +87,13 @@ data class Substitution(
         isNew = isNew
     )
 
+    /**
+     * Constructor to convert from a SubstitutionApiModel
+     * @param primitive ApiModel to convert from
+     * @param origSubject Subject resolved from String value in ApiModel
+     * @param substTeacher Teacher resolved from String value in ApiModel
+     * @param substSubject Subject resolved from String value in ApiModel
+     */
     constructor(primitive: SubstitutionApiModel,
                 origSubject: Subject,
                 substTeacher: Teacher,

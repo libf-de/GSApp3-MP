@@ -29,6 +29,16 @@ import io.github.xxfast.kstore.KStore
 import io.github.xxfast.kstore.file.storeOf
 import kotlinx.datetime.LocalDate
 
+/**
+ * This uses multiple JSON files for local storage.
+ * Will probably be removed in favour of database storage.
+ *
+ * + simple, stored in cache folder (not good for subjects!), probably fast enough
+ * - not nice
+ *
+ * Although I have to admit, there was often no big speed difference with the little
+ * tests I did using a huge substitution plan!
+ */
 
 class JsonDataSource(private var pathSrc: PathSource) : LocalDataSource {
 

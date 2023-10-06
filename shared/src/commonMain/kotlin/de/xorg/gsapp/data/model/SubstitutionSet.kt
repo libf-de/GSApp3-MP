@@ -20,12 +20,26 @@ package de.xorg.gsapp.data.model
 
 import kotlinx.serialization.Serializable
 
+/**
+ * A complete representation of a substitution plan, consisting of "global" date and notes, and
+ * a mapping of Class -> List<Substitution>
+ *
+ * This uses a map for the substitutions, this makes it easier to generate the composables.
+ *
+ * @param date string representation of the date, as displayed on the website
+ * @param notes as displayed on website
+ * @param substitutions map of classes to List<Substitution>
+ */
 @Serializable
 data class SubstitutionSet(
     val date: String,
     val notes: String,
     val substitutions: Map<String, List<Substitution>>
 ) {
+
+    /**
+     * Constructor for an empty SubstitutionSet, used to initialize the app state.
+     */
     constructor() : this(
         date = "",
         notes = "",

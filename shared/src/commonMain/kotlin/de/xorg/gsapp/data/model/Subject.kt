@@ -22,6 +22,14 @@ import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.serializers.ColorSerializer
 import kotlinx.serialization.Serializable
 
+//TODO: Maybe add indication if this was changed by the user, or store separate from defaults?
+
+/**
+ * Data class to hold a single subject
+ * @property shortName short name of the subject, as used in substitution plan
+ * @property longName long name, as it will be displayed to the user
+ * @property color to color the cards of this subject with
+ */
 @Serializable
 data class Subject(
     val shortName: String,
@@ -29,5 +37,9 @@ data class Subject(
     @Serializable(ColorSerializer::class)
     val color: Color
 ) {
+    /**
+     * Constructor for "unknown" placeholder subject, will be marked in magenta.
+     * Also has no long name, so the shortName will be displayed
+     */
     constructor(shortName: String) : this(shortName, shortName, Color.Magenta)
 }
