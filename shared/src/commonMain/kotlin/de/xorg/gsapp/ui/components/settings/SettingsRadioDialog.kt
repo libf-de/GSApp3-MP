@@ -19,6 +19,11 @@ import de.xorg.gsapp.data.enums.StringResEnum
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.collections.immutable.ImmutableList
 
+/**
+ * This is an AlertDialog with a title, message and some radio buttons.
+ * Currently used for push settings.
+ */
+
 @Composable
 fun SettingsRadioDialog(
     icon: @Composable () -> Unit,
@@ -31,7 +36,6 @@ fun SettingsRadioDialog(
     onConfirm: (StringResEnum) -> Unit = {},
     onDismiss: () -> Unit = {}
 ) {
-    //val openDialog = remember { mutableStateOf(true) }
     val selected = remember { mutableStateOf(selectedValue) }
 
     AlertDialog(
@@ -101,29 +105,3 @@ fun SettingsRadioDialog(
         }
     )
 }
-
-/*@Preview
-@Composable
-fun PreviewSettingsRadioDialog() {
-    val showDialog = remember { mutableStateOf(true) }
-
-    if (showDialog.value) {
-        SettingsRadioDialog(
-            showDialog = showDialog.value,
-            iconVector = Icons.Rounded.Place,
-            title = "Standort wählen",
-            confirmText = "Speichern",
-            dismissText = "Zurück",
-            message = "Wähle hier welchen Standort du sehen möchtest",
-            onConfirm = {
-                showDialog.value = false
-            },
-            onDismiss = {
-                showDialog.value = false
-            },
-            items = Location.values().toList(),
-            selectedValue = Location.WUERZBURG
-        )
-    }
-
-}*/

@@ -29,7 +29,7 @@ actual fun GSAppTheme(
     dynamicColor: Boolean,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if(isSystemInDarkTheme()) DarkColors else DarkColors
+    val colorScheme = if(darkTheme) DarkColors else DarkColors
 
     MaterialTheme(
         colorScheme = colorScheme,

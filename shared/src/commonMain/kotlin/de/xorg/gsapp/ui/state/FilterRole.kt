@@ -22,6 +22,11 @@ import de.xorg.gsapp.data.enums.StringResEnum
 import de.xorg.gsapp.res.MR
 import dev.icerock.moko.resources.StringResource
 
+/**
+ * The filter roles for filtering the substitution plan, either by not filtering (ALL),
+ * or only showing the specified Teacher (TEACHER) / Class (STUDENT).
+ * Also contains human-readable labels and descriptions for the associated settings dialog.
+ */
 enum class FilterRole(val value: Int): StringResEnum {
     ALL(0) {
         override val labelResource: StringResource = MR.strings.filter_all

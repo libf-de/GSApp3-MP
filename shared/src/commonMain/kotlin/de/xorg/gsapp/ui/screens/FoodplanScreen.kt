@@ -1,3 +1,21 @@
+/*
+ * GSApp3 (https://github.com/libf-de/GSApp3)
+ * Copyright (C) 2023 Fabian Schillig
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.xorg.gsapp.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -42,7 +60,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.res.MR
@@ -51,6 +68,7 @@ import de.xorg.gsapp.ui.components.FoodplanCard
 import de.xorg.gsapp.ui.components.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.DateUtil
+import de.xorg.gsapp.ui.tools.getErrorAsString
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
@@ -63,6 +81,9 @@ import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
 
+/**
+ * The foodplan-tab composable
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FoodplanScreen(
@@ -77,12 +98,11 @@ fun FoodplanScreen(
     val fpDates = foodplan.keys.toList()
     val fpFoods = foodplan.values.toList()
 
-    /******************************************************/
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     val listState = rememberLazyListState()
 
-    // TODO: Merge this
+    // TODO: Merge this?
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
     val todayIndex = if(fpDates.contains(today)) fpDates.indexOf(today) else 0
     val pages = (fpDates.indices).toList()
@@ -114,26 +134,26 @@ fun FoodplanScreen(
                     )
                 },
                 scrollBehavior = scrollBehavior,
-                colors = if(getPlatformName() == "Desktop")
-                    TopAppBarDefaults.mediumTopAppBarColors(
-                        containerColor = if (listState.firstVisibleItemIndex == 0)
-                            MaterialTheme.colorScheme.background
-                        else
-                            MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
-                else TopAppBarDefaults.mediumTopAppBarColors(),
+                colors = if(getPlatformName() == "Desktop") //TopAppBar currently does not color correctly on desktop TODO: Remove when fixed
+                            TopAppBarDefaults.mediumTopAppBarColors(
+                                containerColor = if (listState.firstVisibleItemIndex == 0)
+                                    MaterialTheme.colorScheme.background
+                                else
+                                    MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
+                         else TopAppBarDefaults.mediumTopAppBarColors(),
                 actions = {
-                    IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) },
-                        modifier = Modifier.onGloballyPositioned { coords ->
-                            //TODO: remove setSrc.transformOrigin = TransformOrigin(pivotFractionX = coords.positionInRoot().x, pivotFractionY = coords.positionInRoot().y)
-                        }) {
+                    /** Settings button **/
+                    IconButton(
+                        onClick = { navController.navigate(GSAppRoutes.SETTINGS) },
+                        modifier = Modifier
+                    ) {
                         Icon(imageVector = Icons.Filled.Settings,
-                            contentDescription = "Settings") //TODO: Localize!
+                             contentDescription = stringResource(MR.strings.settings_title))
                     }
                 }
             )
         }
     ) { innerPadding ->
-
         when (viewModel.uiState.foodplanState) {
             UiState.NORMAL -> {
                 LazyColumn(
@@ -198,7 +218,7 @@ fun FoodplanScreen(
                                         (240 / fpFoods[page].size) * foodNum.toFloat(),
                                         0.6f, 0.5f
                                     )
-                                    //println("on page $foodNum -> ${(240 / fpFoods[page].size) * foodNum.toFloat()}")
+                                    //DEBUG: println("on page $foodNum -> ${(240 / fpFoods[page].size) * foodNum.toFloat()}")
 
                                     FoodplanCard(
                                         food = it,
@@ -223,7 +243,7 @@ fun FoodplanScreen(
                     modifier = Modifier.fillMaxHeight(),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text("(kein Speiseplan)")
+                    Text(stringResource(MR.strings.foodplan_error_empty))
                 }
             }
 
@@ -236,22 +256,9 @@ fun FoodplanScreen(
                     modifier = Modifier.fillMaxHeight(),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text("Fehler: ${viewModel.uiState.foodplanError.message}")
+                    Text(text = getErrorAsString(viewModel.uiState.foodplanError))
                 }
             }
         }
     }
-
-
-    /*BackHandler(enabled = onBackClicked != null) {
-        if (onBackClicked != null) {
-            onBackClicked()
-        }
-    }*/
-
-    /*ClockBroadcastReceiver(systemAction = Intent.ACTION_TIME_TICK) {
-        mensaViewModel.updateOpeningHourTexts(Category.ANY)
-    }*/
-
-
 }

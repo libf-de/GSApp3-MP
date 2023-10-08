@@ -26,6 +26,11 @@ import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 import kotlinx.datetime.LocalDate
 
+/**
+ * Interface for remote api sources.
+ * Must only provide read functions for all data stores.
+ */
+
 interface RemoteDataSource {
     suspend fun loadSubstitutionPlan(): Result<SubstitutionApiModelSet>
     suspend fun loadSubjects(): Result<List<Subject>>

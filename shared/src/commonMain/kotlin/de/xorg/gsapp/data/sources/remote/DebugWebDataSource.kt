@@ -30,7 +30,10 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import kotlinx.datetime.LocalDate
 
-
+/**
+ * This is a version of GsWebsiteDataSource that uses debug urls, to be able to test
+ * substitution plans during holidays.
+ */
 class DebugWebDataSource : GsWebsiteDataSource() {
     private val parser = GsWebsiteParser()
     private val client = HttpClient()

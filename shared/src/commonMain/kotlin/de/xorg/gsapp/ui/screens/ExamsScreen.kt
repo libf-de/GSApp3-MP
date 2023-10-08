@@ -1,3 +1,21 @@
+/*
+ * GSApp3 (https://github.com/libf-de/GSApp3)
+ * Copyright (C) 2023 Fabian Schillig
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.xorg.gsapp.ui.screens
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +44,6 @@ import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.ExamCard
 import de.xorg.gsapp.ui.components.LoadingComponent
-import de.xorg.gsapp.ui.components.SubstitutionCard
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.DateUtil
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
@@ -36,6 +53,9 @@ import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
 
+/**
+ * The exam plan-tab composable
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExamsScreen(

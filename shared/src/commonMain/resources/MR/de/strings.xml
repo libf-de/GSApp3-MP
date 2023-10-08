@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ GSApp3 (https://github.com/libf-de/GSApp3)
+  ~ Copyright (C) 2023 Fabian Schillig
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <resources>
     <string name="app_name">GSApp</string>
     <string name="tab_substitutions">Vertretungsplan</string>
@@ -26,6 +44,16 @@
     <!-- Date format (d=day, m=month, y=year) -->
     <string name="date_format">d.m.y</string>
 
+    <!-- Substitution plan -->
+    <string name="subplan_workorder_samesubject">%s Arbeitsauftrag</string>
+    <string name="subplan_workorder">%s ➜ %s Arbeitsauftrag</string>
+    <string name="subplan_cancellation">%s ➜ Ausfall</string>
+    <string name="subplan_breastfeed">%s ➜ Stillbeschäftigung</string>
+    <string name="subplan_samesubject">%s</string>
+    <string name="subplan_normal">%s ➜ %s</string>
+    <string name="subplan_dsc_location">Ort</string>
+    <string name="subplan_dsc_teacher">Vertretender Lehrer</string>
+
     <string name="settings_title">Einstellungen</string>
     <!-- Settings items -->
     <string name="pref_filter">Vertretungsplan-Filter</string>
@@ -36,8 +64,11 @@
 
     <!-- Filter Dialog -->
     <string name="filter_dialog_title">Vertretungplan-Filter</string>
-    <string name="filter_dialog_description">Wähle deine Klasse oder deinen Lehrercode aus, um nur Vertretungen anzuzeigen, die dich betreffen.</string>
+    <string name="filter_dialog_description">Wähle deine Klasse oder deinen Lehrerkürzel aus, um nur Vertretungen anzuzeigen, die dich betreffen.</string>
     <string name="filter_dialog_teacher_short">Lehrerkürzel</string>
+    <!-- Error messages -->
+    <string name="filter_dialog_error_no_teachers">Es wurden keine Lehrer gefunden, bitte geben Sie ihr Kürzel von Hand ein.</string>
+    <string name="filter_dialog_error_teachers_failed">Lehrer konnten nicht geladen werden, bitte geben Sie ihr Kürzel von Hand ein.</string>
     <!-- Role labels -->
     <string name="filter_all">Alle</string>
     <string name="filter_student">Schüler</string>
@@ -54,6 +85,14 @@
     <!-- General dialog buttons -->
     <string name="dialog_save">Speichern</string>
     <string name="dialog_cancel">Abbrechen</string>
+
+    <!-- Generic strings -->
+    <string name="generic_loading">Wird geladen…</string>
+
+    <!-- Foodplan -->
+    <string name="foodplan_menu_no">%d. Menü</string>
+    <string name="foodplan_error">Fehler: %s</string>
+    <string name="foodplan_error_empty">(keine Essensversorgung)</string>
 
     <string name="push_channel_name">Vertretungsplan-Nachrichten</string>
     <string name="push_channel_desc">Benachrichtigt dich sobald ein neuer Vertretungsplan verfügbar ist</string>

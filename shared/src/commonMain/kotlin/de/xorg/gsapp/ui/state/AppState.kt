@@ -20,34 +20,23 @@ package de.xorg.gsapp.ui.state
 
 import de.xorg.gsapp.data.exceptions.NoException
 
+/**
+ * This data class represents the main-app ui-states for all tabs.
+ * It holds loading states, whether a tab is currently reloading and the error that might have
+ * occurred while loading, as well as the selected filter for substitution plan.
+ */
 data class AppState(
-    val currentView: ViewState = ViewState.SUBSTITUTIONS,
-
-    /*val substitutionsFlow: StateFlow<SubstitutionSet> = MutableStateFlow(
-        SubstitutionSet("", "", emptyMap())),*/
     val substitutionState: UiState = UiState.EMPTY,
     val substitutionReloading: Boolean = false,
     val substitutionError: Throwable = NoException(),
-    /*@Deprecated("use flow instead") val substitutionList: List<Substitution> = listOf(),
-    @Deprecated("use flow instead") val substitutionDate: String = "",
-    @Deprecated("use flow instead") val substitutionNotes: String = "",*/
-
     val filterRole: FilterRole = FilterRole.ALL,
     val filter: String = "",
 
-
     val foodplanState: UiState = UiState.EMPTY,
     val foodplanReloading: Boolean = false,
-    /*val foodplanList: List<FoodOffer> = listOf(),*/
     val foodplanError: Throwable = NoException(),
 
     val examState: UiState = UiState.EMPTY,
     val examReloading: Boolean = false,
     val examError: Throwable = NoException(),
-
-
-    /*val subjectsList: List<Subject> = listOf(),
-
-
-    val teachersList: List<Teacher> = listOf()*/
 )

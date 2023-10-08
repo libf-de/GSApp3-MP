@@ -64,6 +64,8 @@ import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionType
 import de.xorg.gsapp.ui.materialtools.MaterialColors
+import dev.icerock.moko.resources.compose.stringResource
+import de.xorg.gsapp.res.MR
 
 @ExperimentalMaterial3Api
 @Composable
@@ -124,28 +126,27 @@ fun SubstitutionCard(
                 Column(modifier = Modifier.padding(horizontal = 12.dp)) {
 
                     /**** begin ContentBox -> Title **/
-                    Text(text = when {
+                    Text(text = stringResource(when {
                             value.origSubject == value.substSubject
-                            -> value.origSubject.longName
+                            -> MR.strings.subplan_samesubject  //Deutsch
 
                             value.type == SubstitutionType.WORKORDER
                                     && value.origSubject == value.substSubject
-                            -> value.origSubject.longName + " Arbeitsauftrag"
+                            -> MR.strings.subplan_workorder_samesubject  //Deutsch Arbeitsauftrag
 
                             value.type == SubstitutionType.WORKORDER
                                     && value.origSubject != value.substSubject
-                            -> value.origSubject.longName + " ➜ " +
-                                    value.substSubject.longName + " Arbeitsauftrag"
+                            -> MR.strings.subplan_workorder //Deutsch ➜ Mathe Arbeitsauftrag
 
                             value.type == SubstitutionType.CANCELLATION
-                            -> value.origSubject.longName + " ➜ Ausfall"
+                            -> MR.strings.subplan_cancellation //Deutsch ➜ Ausfall
 
                             value.type == SubstitutionType.BREASTFEED
-                            -> value.origSubject.longName + " ➜ Stillbeschäftigung"
+                            -> MR.strings.subplan_breastfeed //Deutsch ➜ Stillbeschäftigung"
 
                             else
-                            -> value.origSubject.longName + " ➜ " + value.substSubject.longName
-                         },
+                            -> MR.strings.subplan_normal //Deutsch ➜ Mathe
+                         }, value.origSubject.longName, value.substSubject.longName),
                          maxLines = 1,
                          overflow = TextOverflow.Ellipsis,
                          style = MaterialTheme.typography.titleMedium,
@@ -158,7 +159,7 @@ fun SubstitutionCard(
 
                         /* ContentBox -> SubBox -> Room */
                         Icon(imageVector = Icons.Outlined.LocationOn,
-                             contentDescription = "Location",
+                             contentDescription = stringResource(MR.strings.subplan_dsc_location),
                              modifier = Modifier
                                 .size(24.dp)
                                 .alignByBaseline(),
@@ -180,7 +181,7 @@ fun SubstitutionCard(
                         /* ContentBox -> SubBox -> Teacher */
                         if(value.substTeacher.shortName != "##" && value.substTeacher.shortName.isNotEmpty()) {
                             Icon(imageVector = Icons.Outlined.Person,
-                                 contentDescription = "Bla!",
+                                 contentDescription = stringResource(MR.strings.subplan_dsc_teacher),
                                  modifier = Modifier
                                     .padding(start = 8.dp)
                                     .size(24.dp)

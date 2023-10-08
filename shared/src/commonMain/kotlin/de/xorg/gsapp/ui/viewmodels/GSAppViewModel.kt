@@ -43,7 +43,9 @@ import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.kodein.di.DI
 import org.kodein.di.instance
 
-//TODO: Wenn hier fehler, dann schau was mit dem Parameter ist.
+/**
+ * View model for the main app tabs
+ */
 class GSAppViewModel(di: DI) : ViewModel() {
     private val appRepo: GSAppRepository by di.instance()
 
@@ -59,6 +61,9 @@ class GSAppViewModel(di: DI) : ViewModel() {
     private val _examStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Exam>>())
     val examStateFlow = _examStateFlow.asStateFlow()
 
+    // Strong references for settings observers. Android Studio marks these as unused,
+    // but it's necessary for the Listeners to work.
+    // See last paragraph: https://github.com/russhwolf/multiplatform-settings#listeners
     private val _roleObserver = MutableStateFlow<SettingsListener?>(null)
     val roleObserver = _roleObserver.asStateFlow()
 
@@ -66,6 +71,7 @@ class GSAppViewModel(di: DI) : ViewModel() {
     val filterObserver = _filterObserver.asStateFlow()
 
     init {
+        //TODO: Is it a good idea to load all tabs upon app creation?
         loadSubstitutions()
         loadFoodplan()
         loadExams()
@@ -88,6 +94,7 @@ class GSAppViewModel(di: DI) : ViewModel() {
         }
     }
 
+    // This is here if I decide to implement pull-to-refresh (or a refresh button).
     fun reloadSubstitutions() {
         loadSubstitutions(true)
     }
@@ -186,7 +193,6 @@ class GSAppViewModel(di: DI) : ViewModel() {
         viewModelScope.launch {
             appRepo.foodPlan.collect {fpResult ->
                 if(fpResult.isFailure) {
-                    //Log.d("GSAppViewModel:loadSubs", "Error while fetching: ${sdsResult.exceptionOrNull()}")
                     uiState = uiState.copy(
                         foodplanState = UiState.FAILED,
                         foodplanError = fpResult.exceptionOrNull()!!
@@ -195,8 +201,6 @@ class GSAppViewModel(di: DI) : ViewModel() {
                 }
 
                 val foodplan = fpResult.getOrNull()!!
-                //Log.d("GSAppViewModel:loadSubs", "Got SubstitutionsDisplaySet " +
-                //        "with ${sds.substitutions} substitutions for ${sds.date}")
 
                 uiState = uiState.copy(
                     foodplanState = if(foodplan.isEmpty()) UiState.EMPTY else UiState.NORMAL

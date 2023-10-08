@@ -30,7 +30,8 @@ import io.github.xxfast.kstore.file.storeOf
 import kotlinx.datetime.LocalDate
 
 /**
- * This uses multiple JSON files for local storage.
+ * This uses multiple JSON files for local storage, currently via KStore library:
+ * https://github.com/xxfast/KStore
  * Will probably be removed in favour of database storage.
  *
  * + simple, stored in cache folder (not good for subjects!), probably fast enough

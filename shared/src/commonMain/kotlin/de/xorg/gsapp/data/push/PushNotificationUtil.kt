@@ -18,6 +18,7 @@
 
 package de.xorg.gsapp.data.push
 
+import androidx.compose.runtime.Composable
 import org.kodein.di.DI
 
 /**

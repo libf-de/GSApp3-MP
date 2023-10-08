@@ -33,6 +33,17 @@ import io.ktor.client.statement.HttpResponse
 import kotlinx.datetime.LocalDate
 
 
+/**
+ * This fetches data from official websites
+ * (https://www.gymnasium-sonneberg.de and http://schulkueche-bestellung.de)
+ * using Ktor (https://github.com/ktorio/ktor).
+ *
+ * It utilizes a platform-specific GsWebsiteParser, as there's currently
+ * no Kotlin Multiplatform HTML parsing library that supports Android, iOS and Desktop.
+ * This could be merged when such a library exists in the future, although this separation
+ * could be used to properly test the parser.
+ */
+
 open class GsWebsiteDataSource : RemoteDataSource {
     private val parser = GsWebsiteParser()
     private val client = HttpClient()

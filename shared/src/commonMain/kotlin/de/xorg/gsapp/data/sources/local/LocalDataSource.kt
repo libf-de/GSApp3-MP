@@ -26,6 +26,10 @@ import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
 import kotlinx.datetime.LocalDate
 
+/**
+ * Interface for device-local data sources.
+ * Must provide read *and write* functions for all data stores.
+ */
 interface LocalDataSource {
     suspend fun loadSubstitutionPlan(): Result<SubstitutionSet>
     suspend fun storeSubstitutionPlan(value: SubstitutionSet)

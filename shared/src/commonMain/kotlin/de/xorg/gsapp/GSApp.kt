@@ -51,6 +51,12 @@ import moe.tlaster.precompose.navigation.PopUpTo
 import moe.tlaster.precompose.navigation.rememberNavigator
 import moe.tlaster.precompose.navigation.transition.NavTransition
 
+/**
+ * This is the app main-common-entry composable, that applies the theme and mainly consists
+ * of a hideable bottom bar and a NavHost, which navigates to the different app screens.
+ * See GSAppRoutes.kt for the route uris.
+ */
+
 @Composable
 fun GSApp() {
     GSAppTheme {

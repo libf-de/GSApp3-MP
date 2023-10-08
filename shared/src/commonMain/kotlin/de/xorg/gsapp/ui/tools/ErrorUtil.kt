@@ -16,13 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.xorg.gsapp.ui.state
+package de.xorg.gsapp.ui.tools
 
-import de.xorg.gsapp.data.model.Substitution
+import androidx.compose.runtime.Composable
+import de.xorg.gsapp.res.MR
+import dev.icerock.moko.resources.compose.stringResource
 
-data class SubstitutionPlanState(
-    var subState: UiState = UiState.EMPTY,
-    val subDate: String = "",
-    val subNotes: String = "",
-    val subList: List<Substitution> = listOf()
-)
+/**
+ * Helper functions to work with localized dates.
+ */
+@Composable
+fun getErrorAsString(throwable: Throwable): String {
+    return stringResource(
+        resource = MR.strings.foodplan_error,
+        throwable.message ?: stringResource(MR.strings.generic_error_null)
+    )
+}

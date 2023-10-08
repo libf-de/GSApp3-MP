@@ -1,8 +1,25 @@
+/*
+ * GSApp3 (https://github.com/libf-de/GSApp3)
+ * Copyright (C) 2023 Fabian Schillig
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.xorg.gsapp.ui.screens.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +57,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.key.Key
@@ -49,12 +65,12 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.moriatsushi.insetsx.ExperimentalSoftwareKeyboardApi
 import com.moriatsushi.insetsx.imePadding
-import com.moriatsushi.insetsx.safeDrawingPadding
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.ClassListItem
-import de.xorg.gsapp.ui.components.SkeletonClassListItem
+import de.xorg.gsapp.ui.components.settings.ClassListItem
+import de.xorg.gsapp.ui.components.settings.SkeletonClassListItem
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.LETTERS
@@ -65,7 +81,12 @@ import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+/**
+ * This composable is the "substitution plan filter" settings dialog.
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalSoftwareKeyboardApi::class
+)
 @Composable
 fun FilterSettingsScreen(
     navController: Navigator,
@@ -100,10 +121,7 @@ fun FilterSettingsScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = stringResource(MR.strings.filter_dialog_title)/*,
-                    fontFamily = fontFamilyResource(MR.fonts.LondrinaSolid.black),
-                    style = MaterialTheme.typography.headlineMedium*/
-                    )
+                    Text(text = stringResource(MR.strings.filter_dialog_title))
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.goBack() }) {
@@ -142,7 +160,7 @@ fun FilterSettingsScreen(
                         }
                     )) {
                         RadioButton(selected = (roleVal == it),
-                            onClick = null // null recommended for accessibility with screenreaders
+                            onClick = null // null recommended for accessibility with screen readers
                         )
                         Text(modifier = Modifier.padding(start = 4.dp).height(
                             IntrinsicSize.Max),

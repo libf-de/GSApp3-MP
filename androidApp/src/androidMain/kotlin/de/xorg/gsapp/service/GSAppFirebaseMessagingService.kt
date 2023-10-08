@@ -1,3 +1,21 @@
+/*
+ * GSApp3 (https://github.com/libf-de/GSApp3)
+ * Copyright (C) 2023 Fabian Schillig
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.xorg.gsapp.service
 
 import android.Manifest
@@ -43,6 +61,18 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
+    /**
+     * Called if the FCM registration token is updated. This may occur if the security of
+     * the previous token had been compromised. Note that this is called when the
+     * FCM registration token is initially generated so this is where you would retrieve the token.
+     *
+     * NOTE: The app does NOT use token-based messaging, it only uses topic-based messaging!
+     * Thus new tokens aren't saved anywhere.
+     */
+    override fun onNewToken(token: String) {
+        //Log.d(TAG, "Refreshed token: $token")
+    }
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         //TODO: Improve notification!
 
@@ -70,7 +100,7 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService() {
         val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
 
-        var builder = NotificationCompat.Builder(this, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.notification_icon)
             .setContentTitle(MR.strings.push_notification_title.desc().toString(this))
             .setContentText(MR.strings.push_notification_body.desc().toString(this))

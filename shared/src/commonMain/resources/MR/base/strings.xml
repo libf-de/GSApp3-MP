@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ GSApp3 (https://github.com/libf-de/GSApp3)
+  ~ Copyright (C) 2023 Fabian Schillig
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <resources>
     <string name="app_name">GSApp</string>
     <string name="tab_substitutions">Substitutions</string>
@@ -26,6 +44,18 @@
     <!-- Date format (d=day, m=month, y=year) -->
     <string name="date_format">m.d.y</string>
 
+    <!-- Substitution plan -->
+    <string name="subplan_workorder_samesubject">%s work order</string>
+    <string name="subplan_workorder">%s ➜ %s work order</string>
+    <string name="subplan_cancellation">%s ➜ cancelled</string>
+    <string name="subplan_breastfeed">%s ➜ quiet activity</string>
+    <string name="subplan_samesubject">%s</string>
+    <string name="subplan_normal">%s ➜ %s</string>
+    <string name="subplan_dsc_location">Location</string>
+    <string name="subplan_dsc_teacher">Replacement teacher</string>
+
+
+
     <!--- Settings -->
     <string name="settings_title">Settings</string>
     <!-- Settings items -->
@@ -38,11 +68,14 @@
     <!-- Filter Dialog -->
     <string name="filter_dialog_title">Filter substitution plan</string>
     <string name="filter_dialog_description">Select your class or teacher code to view only substitutions that affect you.</string>
-    <string name="filter_dialog_teacher_short">Teacher code</string>
+    <string name="filter_dialog_teacher_short">Teacher abbreviation</string>
     <!--- Role labels -->
     <string name="filter_all">All</string>
     <string name="filter_student">Class</string>
     <string name="filter_teacher">Teacher</string>
+    <!-- Error messages -->
+    <string name="filter_dialog_error_no_teachers">No teachers were found, please enter your abbreviation by hand.</string>
+    <string name="filter_dialog_error_teachers_failed">Teachers could not be loaded, please enter their abbreviation by hand.</string>
 
     <!-- Push labels -->
     <string name="push_disabled">Disabled</string>
@@ -57,6 +90,14 @@
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
 
+    <!-- Generic strings -->
+    <string name="generic_loading">Loading, please wait…</string>
+    <string name="generic_error_null">(null-error)</string>
+
+    <!-- Foodplan -->
+    <string name="foodplan_menu_no">Menu #%d</string>
+    <string name="foodplan_error">Error: %s</string>
+    <string name="foodplan_error_empty">(no meal service)</string>
 
     <string name="push_channel_name">Substitution plan notifications</string>
     <string name="push_channel_desc">Notifies you when a new substitution plan is available</string>

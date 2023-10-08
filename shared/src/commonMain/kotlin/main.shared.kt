@@ -16,10 +16,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.xorg.gsapp.ui.state
-
-enum class ViewState {
-    SUBSTITUTIONS,
-    FOODPLAN,
-    SETTINGS
-}
+// Dunno why, but Android Studio wants this somewhere :S
+expect fun getPlatformName(): String
