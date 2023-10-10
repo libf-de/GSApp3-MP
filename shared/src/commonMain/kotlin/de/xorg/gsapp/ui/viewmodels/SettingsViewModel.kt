@@ -103,8 +103,7 @@ class SettingsViewModel(
             }
         }
     }
-
-    @Composable
+    
     fun setPush(state: PushState) {
         if(state == PushState.ENABLED || state == PushState.LIKE_FILTER) {
             pushUtil.ensurePushPermissions {  success ->

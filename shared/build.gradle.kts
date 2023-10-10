@@ -64,24 +64,41 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
+                // Common Compose Multiplatform dependencies
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.animation)
                 implementation(compose.material3)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-                implementation(compose.components.resources)
+                implementation(compose.components.resources) //TODO: Is this needed?
+
+                // Support for Kotlin Coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+
+                // Support for immutable Collections (should improve recomposing performance) TODO: Does it?
                 implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
+
+                // Kodein Dependency Injection +Compose Support
                 implementation("org.kodein.di:kodein-di-framework-compose:7.19.0")
-                implementation("org.kodein.di:kodein-di-conf:7.19.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+                // KStore (kv-storage using json files) -> used in JsonDataSource TODO: Remove
                 implementation("io.github.xxfast:kstore:0.6.0")
                 implementation("io.github.xxfast:kstore-file:0.6.0")
+
+                // Kotlinx Datetime -> Crossplatform DateTime implementation
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+
+                // Ktor -> used to do web requests
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
+
+                // Multiplatform Settings
                 implementation("com.russhwolf:multiplatform-settings:1.0.0")
+
+                // Insetsx -> Provides paddings respecting on-screen keyboards
                 implementation("com.moriatsushi.insetsx:insetsx:0.1.0-alpha10")
+
+                // Precompose -> Multiplatform Navigation
                 api("moe.tlaster:precompose:$precomposeVersion")
                 api("moe.tlaster:precompose-viewmodel:$precomposeVersion")
             }
@@ -89,17 +106,22 @@ kotlin {
         val androidMain by getting {
             dependsOn(commonMain)
             dependencies {
+                // Compose Multiplatform
                 api("androidx.activity:activity-compose:1.7.2")
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.10.1")
+
+                // Skrapeit -> used for html parsing
                 implementation("it.skrape:skrapeit:1.2.2")
 
+                // Android Database Driver
                 implementation("app.cash.sqldelight:android-driver:2.0.0")
 
-                /*implementation("com.google.android.material:material:1.9.0")*/
-                //implementation("com.google.firebase:firebase-common-ktx:20.3.3")
+                // Firebase Messaging -> used for push notification
                 implementation("com.google.firebase:firebase-messaging-ktx:23.2.1")
-                implementation("androidx.compose.ui:ui-tooling")
+
+
+                //implementation("androidx.compose.ui:ui-tooling")
                 implementation(compose.preview)
             }
         }
