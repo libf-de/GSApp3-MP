@@ -35,11 +35,13 @@ actual fun getPlatformName(): String = "iOS"
 fun MainViewController() = WindowInsetsUIViewController { PreComposeApplication {
     withDI({
         bind<Settings>() with singleton { NSUserDefaultsSettings(standardUserDefaults()) }
-        bind<SqlDriver>() with singleton {
+        /*bind<SqlDriver>() with singleton {
             NativeSqliteDriver(GsAppDatabase.Schema, "gsapp.db")
-        }
+        }*/
 
         //bind<SettingsSource>() with singleton { SettingsSource(NSObject()) }
         import(mainModule)
-    }) { GSApp() }
+    }) {
+        GSApp()
+    }
 } }

@@ -45,7 +45,7 @@ kotlin {
         ios.deploymentTarget = "14.1" // TODO: Can I go lower?
         podfile = project.file("../iosApp/Podfile")
         pod("HTMLKit") // Used for html parsing on iOS
-        pod("FirebaseMessaging") // Used (in the future) for push notifications on iOS
+        //pod("FirebaseMessaging") // Used (in the future) for push notifications on iOS
         framework {
             baseName = "shared"
             isStatic = true
