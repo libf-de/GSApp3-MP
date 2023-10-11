@@ -40,16 +40,16 @@ kotlin {
 
     cocoapods {
         version = "1.0.0"
-        summary = "Some description for the Shared Module"
-        homepage = "Link to the Shared Module homepage"
-        ios.deploymentTarget = "14.1"
+        summary = "GSApp Multiplatform cocoapod pod"
+        homepage = "https://libf.de/gsapp"
+        ios.deploymentTarget = "14.1" // TODO: Can I go lower?
         podfile = project.file("../iosApp/Podfile")
-        pod("HTMLKit")
-        pod("FirebaseMessaging")
+        pod("HTMLKit") // Used for html parsing on iOS
+        pod("FirebaseMessaging") // Used (in the future) for push notifications on iOS
         framework {
             baseName = "shared"
             isStatic = true
-            /*export("io.github.hoc081098:kmp-viewmodel:0.4.0")*/
+            // Used to provide (localized) resources on iOS
             export("dev.icerock.moko:resources:0.23.0")
             export("dev.icerock.moko:graphics:0.9.0") // toUIColor here
         }
@@ -120,27 +120,40 @@ kotlin {
                 // Firebase Messaging -> used for push notification
                 implementation("com.google.firebase:firebase-messaging-ktx:23.2.1")
 
-
-                //implementation("androidx.compose.ui:ui-tooling")
+                // Preview android composables
                 implementation(compose.preview)
             }
         }
         val iosMain by getting {
             dependencies {
                 dependsOn(commonMain)
+
+                // Sqldelight iOS database driver
                 implementation("app.cash.sqldelight:native-driver:2.0.0")
+
+                // Ktor iOS driver TODO: Needed?
                 implementation("io.ktor:ktor-client-darwin:$ktorVersion")
             }
         }
         val desktopMain by getting {
             dependencies {
                 dependsOn(commonMain)
+
+                //Compose Multiplatform dependencies
                 implementation(compose.desktop.common)
                 implementation(compose.desktop.macos_x64)
                 implementation(compose.preview)
+
+                // Sqldelight desktop database driver
                 implementation("app.cash.sqldelight:sqlite-driver:2.0.0")
+
+                // Used to get cache folder on desktop OSes TODO: Remove, only used in JsonDataSource
                 implementation("net.harawata:appdirs:1.2.2")
+
+                // Skrapeit, used for html parsing
                 implementation("it.skrape:skrapeit:1.2.2")
+
+                // Kotlinx coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
             }
         }
@@ -175,7 +188,7 @@ android {
 }
 
 dependencies {
-    commonMainApi("dev.icerock.moko:resources:0.23.0")
+    commonMainApi("dev.icerock.moko:resources:0.23.0") // TODO: Move to commonMain
     commonMainApi("dev.icerock.moko:resources-compose:0.23.0") // for compose multiplatform
 
     commonTestImplementation("dev.icerock.moko:resources-test:0.23.0") // for testing

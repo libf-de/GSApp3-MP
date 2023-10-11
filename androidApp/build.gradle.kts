@@ -78,9 +78,9 @@ android {
 }
 
 dependencies {
-    /*implementation("org.kodein.di:kodein-di-framework-android-x:7.19.0")
-    implementation("org.kodein.di:kodein-di-conf:7.19.0")*/
+    // Kodein dependency injection, Android-specific modules TODO: Remove, shouldnt be needed
     implementation("org.kodein.di:kodein-di-framework-compose:7.19.0")
+
+    // Firebase Messaging, for push notifications on android
     implementation("com.google.firebase:firebase-messaging-ktx:23.2.1")
-    //implementation("com.google.firebase:firebase-common-ktx:20.3.3")
 }

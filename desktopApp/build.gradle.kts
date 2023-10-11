@@ -41,8 +41,8 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "KotlinMultiplatformComposeDesktopApplication"
-            packageVersion = "1.0.0"
+            packageName = "GSApp Desktop"
+            packageVersion = "1.0.0" //TODO: Have one global version code
         }
     }
 }
