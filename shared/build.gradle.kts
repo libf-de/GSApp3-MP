@@ -57,7 +57,7 @@ kotlin {
             baseName = "shared"
             isStatic = true
 
-            linkerOpts.add("-lsqlite3")
+            linkerOpts.add("-lsqlite3")  // TODO: Find out which linker flags are actually needed
 
             // Used to provide (localized) resources on iOS
             export("dev.icerock.moko:resources:0.23.0")
@@ -71,6 +71,7 @@ kotlin {
     sourceSets {
         val ktorVersion = "2.3.4"
         val precomposeVersion = "1.5.1"
+        val loggingVersion = "1.3.0"
 
         val commonMain by getting {
             dependencies {
@@ -81,6 +82,9 @@ kotlin {
                 implementation(compose.material3)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources) //TODO: Is this needed?
+
+                // Logging
+                api("org.lighthousegames:logging:$loggingVersion")
 
                 // Support for Kotlin Coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")

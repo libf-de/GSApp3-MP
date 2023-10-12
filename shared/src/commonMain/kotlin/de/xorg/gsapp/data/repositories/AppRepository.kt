@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDate
 import org.kodein.di.DI
 import org.kodein.di.instance
+import org.lighthousegames.logging.logging
 import kotlin.time.measureTime
 
 /**
@@ -94,6 +95,10 @@ import kotlin.time.measureTime
 
 class AppRepository(di: DI) : GSAppRepository {
 
+    companion object {
+        val log = logging()
+    }
+
     //Get data sources from DI
     private val apiDataSource: RemoteDataSource by di.instance()
     private val localDataSource: LocalDataSource by di.instance()
@@ -136,16 +141,24 @@ class AppRepository(di: DI) : GSAppRepository {
             val dbTime = measureTime {
                 cached = localDataSource.loadSubstitutionPlan()
             }
-            println("read db in ${dbTime.inWholeMilliseconds}ms")
+            log.d {"read db in ${dbTime.inWholeMilliseconds}ms" }
 
-            if(cached?.isSuccess == true) emit(cached!!)
+            if(cached?.isSuccess == true) {
+                log.d {"emitting database"}
+                emit(cached!!)
+            }
         }
 
         getWebSubstitutions().collect { web ->
+            log.d {"collected a web substitution"}
             if(web.isSuccess) {
+                log.d {"web is success"}
                 if(!reload && cached != null) {
-                    if(cached!!.isSuccess && cached!!.getOrNull() == web.getOrNull())
+                    log.d { "not reloading, cache exists"}
+                    if(cached!!.isSuccess && cached!!.getOrNull() == web.getOrNull()) {
+                        log.d {"web same as cache"}
                         return@collect //Do nothing if web is same as cache
+                    }
                 }
 
                 //TODO: Remove; don't measure time in release builds
@@ -154,9 +167,14 @@ class AppRepository(di: DI) : GSAppRepository {
                 }
                 println("stored in db in ${dbStoreTime.inWholeMilliseconds}ms")
 
+                log.d {"emitting web"}
                 emit(web) // & emit web
             } else if(!reload && cached != null) {
-                if (!cached!!.isSuccess) emit(web) //Emit web error if there's no cache
+                log.d {"not reloading, cache exists :("}
+                if (!cached!!.isSuccess) {
+                    log.d {"emitting web error"}
+                    emit(web) //Emit web error if there's no cache
+                }
             }
         }
     }

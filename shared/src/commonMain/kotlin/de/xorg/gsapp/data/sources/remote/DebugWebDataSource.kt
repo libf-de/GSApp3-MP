@@ -18,23 +18,23 @@
 
 package de.xorg.gsapp.data.sources.remote
 
-import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.exceptions.UnexpectedStatusCodeException
-import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
-import de.xorg.gsapp.data.model.Teacher
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
-import kotlinx.datetime.LocalDate
+import org.lighthousegames.logging.logging
 
 /**
  * This is a version of GsWebsiteDataSource that uses debug urls, to be able to test
  * substitution plans during holidays.
  */
 class DebugWebDataSource : GsWebsiteDataSource() {
+    companion object {
+        val log = logging()
+    }
+    
     private val parser = GsWebsiteParser()
     private val client = HttpClient()
 
@@ -44,18 +44,21 @@ class DebugWebDataSource : GsWebsiteDataSource() {
         try {
             val response: HttpResponse =
                 client.get("https://agdsn.me/~xorg/gsapp/debug/vpl.html")
-            if (response.status.value !in 200..299) return Result.failure(
-                UnexpectedStatusCodeException("Unexpected code $response")
-            )
+            if (response.status.value !in 200..299) {
+                log.d {"loadSubstitutionPlan() unexpected code $response" }
+                return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
+            }
 
             return try {
+                log.d { "calling parseSubstitutionTable" }
                 parser.parseSubstitutionTable(response.body())
             } catch (ex: Exception) {
+                log.d { "loadSubstitutionPlan() inner exception: \n${ex.stackTraceToString()}" }
                 ex.printStackTrace()
                 Result.failure(ex)
             }
         } catch(ex2: Exception) {
-            println("Outer ex2 occurred in loadSubstitutionPlan")
+            log.d { "loadSubstitutionPlan() outer exception: \n${ex2.stackTraceToString()}" }
             ex2.printStackTrace()
             return Result.failure(ex2)
         }

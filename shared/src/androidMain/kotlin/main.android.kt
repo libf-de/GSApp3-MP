@@ -47,6 +47,5 @@ actual fun getPlatformName(): String = "Android"
     )}
     import(mainModule)
 }) {
-
     GSApp()
 }
