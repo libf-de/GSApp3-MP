@@ -78,7 +78,7 @@ fun SubstitutionsScreen(
             MediumTopAppBar(
                 title = {
                     Text(text = stringResource(MR.strings.tab_substitutions),
-                        fontFamily = fontFamilyResource(MR.fonts.LondrinaSolid.black),
+                        fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
                         style = MaterialTheme.typography.headlineMedium
                     )
                 },
