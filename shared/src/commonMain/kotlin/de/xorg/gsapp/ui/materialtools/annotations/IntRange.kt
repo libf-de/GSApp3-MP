@@ -39,7 +39,7 @@ package de.xorg.gsapp.ui.materialtools.annotations
     AnnotationTarget.LOCAL_VARIABLE,
     AnnotationTarget.ANNOTATION_CLASS
 )
-public annotation class IntRange(
+annotation class IntRange(
     /** Smallest value, inclusive  */
     val from: Long = Long.MIN_VALUE,
     /** Largest value, inclusive  */

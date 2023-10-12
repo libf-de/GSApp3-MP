@@ -23,7 +23,6 @@ import cocoapods.HTMLKit.HTMLElement
 import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.ElementNotFoundException
 import de.xorg.gsapp.data.exceptions.HolidayException
-import de.xorg.gsapp.data.exceptions.InvalidElementTypeException
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.SubstitutionApiModel
@@ -120,7 +119,7 @@ actual class GsWebsiteParser {
             val lastRow = doc.querySelectorAll("table[class=\"eAusgeben\"] > tbody > tr")
                 .last() as HTMLElement
             val attrMap = lastRow.querySelector("td > a:nth-last-child(2)")?.attributes!!
-            val hrefAttr = attrMap.allValues.get(attrMap.allKeys.indexOf("href")) as String
+            val hrefAttr = attrMap.allValues[attrMap.allKeys.indexOf("href")] as String
             hrefAttr.substringAfter("seite=").toInt()
         } catch(ex: Exception) {
             log.w { ex.stackTraceToString() }
@@ -347,7 +346,7 @@ actual class GsWebsiteParser {
                             }
                             currentColumn++
                         }
-                        dayOffset++;
+                        dayOffset++
                     }
 
             exams.sortBy { it.date }

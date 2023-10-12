@@ -21,7 +21,6 @@ package de.xorg.gsapp.data.sources.local
 import net.harawata.appdirs.AppDirsFactory
 import org.kodein.di.DI
 import org.kodein.di.DIAware
-import java.util.prefs.Preferences
 
 actual class PathSource actual constructor(override val di: DI) : DIAware {
 

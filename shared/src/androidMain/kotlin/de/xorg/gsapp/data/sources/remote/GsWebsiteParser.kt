@@ -32,8 +32,13 @@ import it.skrape.selects.ElementNotFoundException
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
+import org.lighthousegames.logging.logging
 
 actual class GsWebsiteParser {
+    companion object {
+        val log = logging()
+    }
+
     actual suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet>  {
         return htmlDocument(result) {
             var dateText = "(kein Datum)"
@@ -102,8 +107,7 @@ actual class GsWebsiteParser {
     actual suspend fun parseTeachersNumPages(html: String): Int {
         return htmlDocument(html) {
             findFirst("table[class=\"eAusgeben\"] > tbody > tr:last-child > td > a:nth-last-child(2)") {
-                this
-                    .attribute("href")
+                this.attribute("href")
                     .substringAfter("seite=")
                     .toInt()
             }
@@ -115,19 +119,17 @@ actual class GsWebsiteParser {
         list: MutableList<Teacher>
     ) {
         return htmlDocument(html) {
-            findAll("table.eAusgeben > tbody > tr:not(:first-child,:last-child)") {
-                forEach {
-                    it.findFirst("td.eEintragGrau,td.eEintragWeiss") {
-                        if(!this.html.contains("<br>")) return@findFirst
-                        val teacherName = this.html.split("<br>")[0]
-                        val teacherShort = this.html.substringAfter("Kürzel:").trim()
-                        list.add(
-                            Teacher(
-                                longName = teacherName,
-                                shortName = teacherShort
-                            )
+            findAll("table.eAusgeben > tbody > tr:not(:first-child,:last-child)").forEach {
+                it.findFirst("td.eEintragGrau,td.eEintragWeiss") {
+                    if(!this.html.contains("<br>")) return@findFirst
+                    val teacherName = this.html.split("<br>")[0]
+                    val teacherShort = this.html.substringAfter("Kürzel:").trim()
+                    list.add(
+                        Teacher(
+                            longName = teacherName,
+                            shortName = teacherShort
                         )
-                    }
+                    )
                 }
             }
         }
@@ -136,41 +138,40 @@ actual class GsWebsiteParser {
     actual suspend fun parseFoodOffers(html: String): Result<Map<LocalDate, List<Food>>> {
         val foods = mutableMapOf<LocalDate, MutableList<Food>>()
         return htmlDocument(html) {
-            findAll("table#menu-table_KW td[mealid]") {
-                forEach { meal ->
-                    try {
-                        val mealDate = LocalDate.parse(meal.attribute("day"))
-                        val mealId = meal.attribute("mealid").toInt()
-                        var mealName = ""
-                        var mealAdditives = emptyList<String>()
+            findAll("table#menu-table_KW td[mealid]") .forEach { meal ->
+                try {
+                    val mealDate = LocalDate.parse(meal.attribute("day"))
+                    val mealId = meal.attribute("mealid").toInt()
+                    var mealName = ""
+                    var mealAdditives = emptyList<String>()
 
-                        //Look for a mealtxt span - if we found one with text -> assign to mealName
-                        if(!meal.findFirst("span[id=mealtext]") {
+                    //Look for a mealtxt span - if we found one with text -> assign to mealName
+                    if(!meal.findFirst("span[id=mealtext]") {
                             if(this.text.isNotEmpty()) {
                                 mealName = this.text.trim()
                                 return@findFirst true //<- We've got mealtxt
                             } else {
-                                println("[loadFoodPlan]: Got food with empty name, on html: ${meal.html}") //TODO: This happens in holidays!
+                                //TODO: This happens in holidays!
+                                log.w { "[loadFoodPlan]: Got food with empty name, on html: ${meal.html}" }
                                 return@findFirst false //<- No mealtxt, continue with next meal
                             }
                         }) return@forEach //Continue with next meal if no mealtxt
 
-                        meal.findFirst("sub") {
-                            mealAdditives = this.text.replace(Regex("\\s"), "")
-                                                     .split(",").toList()
-                        }
-
-                        if(!foods.containsKey(mealDate)) foods[mealDate] = mutableListOf()
-                        foods[mealDate]!!.add(
-                            Food(
-                                num = mealId,
-                                name = mealName,
-                                additives = mealAdditives
-                            )
-                        )
-                    } catch(e: Exception) {
-                        e.printStackTrace()
+                    meal.findFirst("sub") {
+                        mealAdditives = this.text.replace("\\s".toRegex(), "").split(",").toList()
                     }
+
+                    if(!foods.containsKey(mealDate)) foods[mealDate] = mutableListOf()
+                    foods[mealDate]!!.add(
+                        Food(
+                            num = mealId,
+                            name = mealName,
+                            additives = mealAdditives
+                        )
+                    )
+                } catch(e: Exception) {
+                    log.w { e.stackTraceToString() }
+                    return@htmlDocument Result.failure(e)
                 }
             }
 
@@ -180,35 +181,42 @@ actual class GsWebsiteParser {
 
     actual suspend fun parseAdditives(html: String): Result<Map<String, String>> {
         val additiveMap = mutableMapOf<String, String>()
-        return htmlDocument(html) {
-            findAll("ingredients dl").forEach {
-                var isShort = true
-                var shortVal = ""
-                it.children.forEach {
-                    if(!it.text.trim().endsWith(")") && it.text.trim().length > 3) {
-                        //probably not the shortcode
-                        if(isShort) {
-                            println("[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT (upper): ${it.html}")
-                            return@forEach
+        return try {
+            htmlDocument(html) {
+                findAll("ingredients dl").forEach { additives ->
+                    var isShort = true
+                    var shortVal = ""
+                    additives.children.forEach forAdditive@{
+                        if (!it.text.trim().endsWith(")") && it.text.trim().length > 3) {
+                            //probably not the shortcode
+                            if (isShort) {
+                                log.w { "[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT " +
+                                        "(upper): ${it.html}" }
+                                return@forAdditive
+                            }
+                        } else {
+                            if (!isShort) {
+                                log.w { "[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT " +
+                                        "(lower): ${it.html}" }
+                                return@forAdditive
+                            }
                         }
-                    } else {
-                        if(!isShort) {
-                            println("[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT (lower): ${it.html}")
-                            return@forEach
-                        }
-                    }
 
 
-                    if(isShort) {
-                        shortVal = it.text.trim().removeSuffix(")")
-                        isShort = false
-                    } else {
-                        additiveMap[shortVal] = it.text.trim()
-                        isShort = true
+                        if (isShort) {
+                            shortVal = it.text.trim().removeSuffix(")")
+                            isShort = false
+                        } else {
+                            additiveMap[shortVal] = it.text.trim()
+                            isShort = true
+                        }
                     }
                 }
+                Result.success(additiveMap)
             }
-            Result.success(additiveMap)
+        } catch(ex: Exception) {
+            log.w { ex.stackTraceToString() }
+            Result.failure(ex)
         }
     }
 
@@ -238,8 +246,7 @@ actual class GsWebsiteParser {
                 //years[0] = "2023/2024", [1] = 2023, [2] = 2024
                 val years = Regex("([0-9]{4})/([0-9]{4})").find(header)?.groupValues ?: emptyList()
 
-                if (years.size != 3)
-                    println("WARNING: Years array size != 3!!")
+                if (years.size != 3) println("WARNING: Years array size != 3!!")
 
                 findAll("td[class=kopf] ~ td").map { dateHeader -> //find all dates in table headings
                     val weekStart: String = dateHeader.html.split("<br>")[0] //TODO: Doof.
@@ -286,8 +293,8 @@ actual class GsWebsiteParser {
 
                     if (it.hasElement("td[class*=\"kopf\"]")) {
                         //This is the "second" header row containing the dates, parse them!
-                        dates = it.findAll("td[class=kopf]").filter {
-                            it.text.isNotBlank()
+                        dates = it.findAll("td[class=kopf]").filter { one ->
+                            one.text.isNotBlank()
                         }.map { dateHeader -> //find all dates in table headings
                             val weekStartDate: String = dateHeader.html.split("<br>")[0] //TODO: Doof.
                             val protoDate = germanDateWithoutYearRegex
@@ -318,11 +325,14 @@ actual class GsWebsiteParser {
                     currentColumn = 0
                     it.findAll("td").forEach forCell@{ cell ->
                         if (dates == null) {
-                            println("dates array does not exist, this should not happen -> dateHeader was not found!")
+                            log.w { "dates array does not exist, this should not happen -> " +
+                                    "dateHeader was not found!" }
+
                             return@htmlDocument Result.failure(
                                 ElementNotFoundException(
-                                "dates array does not exist, this should not happen -> dateHeader was not found!"
-                            )
+                                    "dates array does not exist, this should not happen -> " +
+                                    "dateHeader was not found!"
+                                )
                             )
                         }
 
@@ -338,7 +348,7 @@ actual class GsWebsiteParser {
                                 cell.text == "Ferien"
                             ) {
                                 //TODO: Is there anything to do here? Continue??
-                            } else if (cell.text.equals("Abgabe SF")) {
+                            } else if (cell.text == "Abgabe SF") {
                                 //This is submission of seminar papers, add it!
                                 exams.add(
                                     Exam(
@@ -365,7 +375,7 @@ actual class GsWebsiteParser {
                         currentColumn++
                     }
 
-                    dayOffset++;
+                    dayOffset++
                 }
 
                 exams.sortBy { it.date }
@@ -375,6 +385,7 @@ actual class GsWebsiteParser {
                 )
             }
         } catch (ex: Exception) {
+            log.w { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }

@@ -232,7 +232,6 @@ fun FilterSettingsScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                             .onKeyEvent {
-                                println(it.key)
                                 if (it.key == Key.Enter) {
                                     if (teacherCandidate != null)
                                         confirmFocusReq.requestFocus()

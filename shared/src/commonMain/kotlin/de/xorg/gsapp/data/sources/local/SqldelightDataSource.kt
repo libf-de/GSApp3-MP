@@ -19,7 +19,6 @@
 package de.xorg.gsapp.data.sources.local
 
 import androidx.compose.ui.graphics.Color
-import de.xorg.gsapp.data.DbFood
 import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.EmptyStoreException
 import de.xorg.gsapp.data.model.Exam
@@ -32,6 +31,7 @@ import de.xorg.gsapp.data.sql.GsAppDatabase
 import kotlinx.datetime.LocalDate
 import org.kodein.di.DI
 import org.kodein.di.instance
+import org.lighthousegames.logging.logging
 
 
 /**
@@ -46,18 +46,12 @@ import org.kodein.di.instance
 
 class SqldelightDataSource(di: DI) : LocalDataSource {
 
-    val database: GsAppDatabase by di.instance()
+    companion object {
+        val log = logging()
+    }
 
-    /*
-    klass: String,
-        lessonNr: String,
-        origSubject: Subject,
-        substTeacher: Teacher,
-        substRoom: String,
-        substSubject: Subject,
-        notes: String,
-        isNew: Boolean
-     */
+    private val database: GsAppDatabase by di.instance()
+
     override suspend fun loadSubstitutionPlan(): Result<SubstitutionSet> {
         return try {
             val latest = database.dbSubstitutionSetQueries.selectLatest().executeAsOneOrNull()
@@ -97,8 +91,8 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 )
             )
         } catch(ex: Exception) {
-            ex.printStackTrace()
-            Result.failure(ex);
+            log.e { ex.stackTraceToString() }
+            Result.failure(ex)
         }
     }
 
@@ -152,6 +146,7 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 Subject(shortName = it.shortName, longName = it.longName, color = it.color ?: Color.Magenta)
             })
         } catch (ex: Exception) {
+            log.e { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }
@@ -174,6 +169,7 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 Teacher(shortName = it.shortName, longName = it.longName)
             })
         } catch (ex: Exception) {
+            log.e { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }
@@ -192,18 +188,22 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
     override suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>> {
         return try {
             Result.success(
-                database.dbFoodQueries.selectAll().executeAsList().groupBy<DbFood, LocalDate> {
-                    it.date
-                }.mapValues { foodList ->
-                    foodList.value.map { dbFood ->
-                        Food(
-                            num = dbFood.foodId.toInt(),
-                            name = dbFood.name,
-                            additives = dbFood.additives
-                        )
+                database.dbFoodQueries
+                    .selectAll()
+                    .executeAsList()
+                    .groupBy { it.date }
+                    .mapValues { foodList ->
+                        foodList.value.map { dbFood ->
+                            Food(
+                                num = dbFood.foodId.toInt(),
+                                name = dbFood.name,
+                                additives = dbFood.additives
+                            )
+                        }
                     }
-                })
+            )
         } catch (ex: Exception) {
+            log.e { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }
@@ -226,11 +226,12 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
     override suspend fun loadAdditives(): Result<Map<String, String>> {
         return try {
             Result.success(
-                database.dbAdditiveQueries.selectAll().executeAsList().map {
+                database.dbAdditiveQueries.selectAll().executeAsList().associate {
                     it.shortName to it.longName
-                }.toMap()
+                }
             )
         } catch(ex: Exception) {
+            log.e { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }
@@ -265,6 +266,7 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 }.groupBy { it.date }
             )
         } catch(ex: Exception) {
+            log.e { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }

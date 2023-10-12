@@ -80,6 +80,7 @@ import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
+import org.lighthousegames.logging.logging
 
 /**
  * The foodplan-tab composable
@@ -89,6 +90,8 @@ import org.kodein.di.instance
 fun FoodplanScreen(
     navController: Navigator
 ) {
+    val log = logging()
+
     val di = localDI()
 
     val viewModel by di.instance<GSAppViewModel>()
@@ -218,7 +221,8 @@ fun FoodplanScreen(
                                         (240 / fpFoods[page].size) * foodNum.toFloat(),
                                         0.6f, 0.5f
                                     )
-                                    //DEBUG: println("on page $foodNum -> ${(240 / fpFoods[page].size) * foodNum.toFloat()}")
+                                    log.d { "on page $foodNum -> " +
+                                            (240 / fpFoods[page].size) * foodNum.toFloat() }
 
                                     FoodplanCard(
                                         food = it,

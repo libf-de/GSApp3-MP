@@ -47,7 +47,7 @@ import kotlin.time.measureTime
  * This combines all data sources (local cache and remote apis), as well as app settings into a
  * single interface to be used by the UI layer.
  *
- * All of the "get" flows (marked with [GET]) roughly follow this chart:
+ * All of the "get" flows (marked with |GET|) roughly follow this chart:
  * (if flow does not support reload ==>  reloading = false)
  * ┌──────────┐
  * │Reloading?│
@@ -132,7 +132,7 @@ class AppRepository(di: DI) : GSAppRepository {
         }
     }
 
-    // [GET] Substitutions
+    // |GET| Substitutions
     // This is the "master" substitutions flow, combining web-api and local-cached sources.
     override suspend fun getSubstitutions(reload: Boolean): Flow<Result<SubstitutionSet>> = flow {
         var cached: Result<SubstitutionSet>? = null
@@ -165,7 +165,7 @@ class AppRepository(di: DI) : GSAppRepository {
                 val dbStoreTime = measureTime {
                     localDataSource.storeSubstitutionPlan(web.getOrNull()!!) //Store web plan in cache
                 }
-                println("stored in db in ${dbStoreTime.inWholeMilliseconds}ms")
+                log.d { "stored in db in ${dbStoreTime.inWholeMilliseconds}ms" }
 
                 log.d {"emitting web"}
                 emit(web) // & emit web
@@ -179,7 +179,7 @@ class AppRepository(di: DI) : GSAppRepository {
         }
     }
 
-    // [GET] Subjects - combines "remote" and local sources for subjects
+    // |GET| Subjects - combines "remote" and local sources for subjects
     // As there is no subject list on the website, we'll provide some defaults.
     // I'll probably have to change the logic here to not overwrite the user's subjects
     // with the default values TODO: Review logic to prevent overwriting user settings
@@ -264,7 +264,7 @@ class AppRepository(di: DI) : GSAppRepository {
 
     //****************** TEACHER ******************
 
-    // [GET] Teachers
+    // |GET| Teachers
     override val teachers: Flow<Result<List<Teacher>>> = flow {
         val cached = localDataSource.loadTeachers()
         if(cached.isSuccess) emit(cached)
@@ -332,8 +332,8 @@ class AppRepository(di: DI) : GSAppRepository {
 
     /**
      * Updates the given subject in local source.
-     * @param oldSub Subject to be edited
-     * @param newSub Subject with changes
+     * @param oldTea Subject to be edited
+     * @param newTea Subject with changes
      * @return old subject?
      * TODO: Use database properly!
      */
@@ -348,7 +348,7 @@ class AppRepository(di: DI) : GSAppRepository {
 
     //****************** FOOD PLAN ******************
 
-    // [GET] Gets the "pure" foodplan from the web api? TODO: Store processed foodplan in database OR process directly in database?
+    // |GET| Gets the "pure" foodplan from the web api? TODO: Store processed foodplan in database OR process directly in database?
     private val apiFoodPlan: Flow<Result<Map<LocalDate, List<Food>>>> = flow {
         val cached: Result<Map<LocalDate, List<Food>>> = localDataSource.loadFoodPlan()
         if(cached.isSuccess) emit(cached)
@@ -366,7 +366,7 @@ class AppRepository(di: DI) : GSAppRepository {
         emit(web)
     }
 
-    // [GET] Additives
+    // |GET| Additives
     override val additives: Flow<Result<Map<String, String>>> = flow {
         val cached = localDataSource.loadAdditives()
         if(cached.isSuccess) emit(cached)
@@ -406,7 +406,7 @@ class AppRepository(di: DI) : GSAppRepository {
 
     //****************** EXAMS ******************
 
-    // [GET] Exam flow for the given ExamCourse.
+    // |GET| Exam flow for the given ExamCourse.
     // TODO: Should I use one flow for this?
     override suspend fun getExams(course: ExamCourse, reload: Boolean): Flow<Result<Map<LocalDate, List<Exam>>>> = flow {
         val cached = localDataSource.loadExams(course)

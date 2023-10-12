@@ -96,12 +96,12 @@ object ColorUtils {
     }
 
     /** Returns the blue component of a color in ARGB format.  */
-    fun blueFromArgb(argb: Int): Int {
+    private fun blueFromArgb(argb: Int): Int {
         return argb and 255
     }
 
     /** Returns whether a color in ARGB format is opaque.  */
-    @Deprecated("use Color.alpha instead")
+    @Deprecated("use Color.alpha instead", ReplaceWith("isOpaque(argb: Color)"))
     fun isOpaque(argb: Int): Boolean = alphaFromArgb(argb) >= 255
 
     fun isOpaque(argb: Color): Boolean = argb.alpha >= 255
@@ -151,7 +151,7 @@ object ColorUtils {
         targetMax: Float,
         inputMin: Float,
         inputMax: Float): Float {
-        return (targetMax - targetMin) * (inputValue - inputMin) / (inputMax - inputMin) + targetMin;
+        return (targetMax - targetMin) * (inputValue - inputMin) / (inputMax - inputMin) + targetMin
     }
 
     /** Converts a color represented in Lab color space into an ARGB integer.  */
@@ -414,7 +414,7 @@ object ColorUtils {
             g -> (60 * (b - r) / (maxV - minV)) + 120
             b -> (60 * (r - g) / (maxV - minV)) + 240
             else -> 0f
-        };
+        }
 
         val l = (maxV + minV) / 2
 
@@ -432,6 +432,6 @@ private fun Float.scale(targetMin: Float,
                         targetMax: Float,
                         inputMin: Float,
                         inputMax: Float): Float {
-    return (targetMax - targetMin) * (this - inputMin) / (inputMax - inputMin) + targetMin;
+    return (targetMax - targetMin) * (this - inputMin) / (inputMax - inputMin) + targetMin
     TODO("Not yet implemented")
 }

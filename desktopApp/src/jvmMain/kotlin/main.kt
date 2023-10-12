@@ -16,10 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import dev.icerock.moko.resources.compose.stringResource
 import de.xorg.gsapp.res.MR
+import dev.icerock.moko.resources.compose.stringResource
 import moe.tlaster.precompose.PreComposeWindow
 
 fun main() = application {

@@ -31,6 +31,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import kotlinx.datetime.LocalDate
+import org.lighthousegames.logging.logging
 
 
 /**
@@ -45,6 +46,10 @@ import kotlinx.datetime.LocalDate
  */
 
 open class GsWebsiteDataSource : RemoteDataSource {
+    companion object {
+        val log = logging()
+    }
+
     private val parser = GsWebsiteParser()
     private val client = HttpClient()
 
@@ -54,19 +59,19 @@ open class GsWebsiteDataSource : RemoteDataSource {
         try {
             val response: HttpResponse =
                 client.get("https://www.gymnasium-sonneberg.de/Informationen/vp.php5")
-            if (response.status.value !in 200..299) return Result.failure(
-                UnexpectedStatusCodeException("Unexpected code $response")
-            )
+            if (response.status.value !in 200..299) {
+                log.e { "loadSubstitutionPlan(): Unexpected code: $response" }
+                return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
+            }
 
             return try {
                 parser.parseSubstitutionTable(response.body())
             } catch (ex: Exception) {
-                ex.printStackTrace()
+                log.e { "inner ex: ${ex.stackTraceToString()}" }
                 Result.failure(ex)
             }
         } catch(ex2: Exception) {
-            println("Outer ex2 occurred in loadSubstitutionPlan")
-            ex2.printStackTrace()
+            log.e { "outer ex2: ${ex2.stackTraceToString()}" }
             return Result.failure(ex2)
         }
     }
@@ -77,8 +82,10 @@ open class GsWebsiteDataSource : RemoteDataSource {
                 urlString = "https://www.gymnasium-sonneberg.de/Kontakt/Sprech/ausgeben.php5?seite=1"
             )
 
-            if (response.status.value !in 200..299)
+            if (response.status.value !in 200..299) {
+                log.e { "loadTeachers(): Unexpected code: $response" }
                 return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
+            }
 
             val teachers = ArrayList<Teacher>()
             parser.parseTeachers(response.body(), teachers)
@@ -89,14 +96,17 @@ open class GsWebsiteDataSource : RemoteDataSource {
                             + page.toString()
                 )
 
-                if (nextResponse.status.value !in 200..299)
-                    return Result.failure(UnexpectedStatusCodeException("Unexpected code $nextResponse"))
+                if (response.status.value !in 200..299) {
+                    log.e { "loadTeachers(): (subpage) Unexpected code: $response" }
+                    return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
+                }
 
                 parser.parseTeachers(nextResponse.body(), teachers)
             }
 
             return Result.success(teachers)
         } catch(ex: Exception) {
+            log.e { ex.stackTraceToString() }
             return Result.failure(ex)
         }
     }
@@ -138,15 +148,15 @@ open class GsWebsiteDataSource : RemoteDataSource {
         try {
             val response: HttpResponse = client.get("https://schulkueche-bestellung.de/de/menu/14")
 
-            if(response.status.value !in 200..299) return Result.failure(
-                UnexpectedStatusCodeException("Unexpected code $response")
-            )
+            if (response.status.value !in 200..299) {
+                log.e { "loadFoodPlan(): Unexpected code: $response" }
+                return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
+            }
 
             foodplanHtmlCache = response.body()
             return parser.parseFoodOffers(response.body())
         } catch (e: Exception) {
-            //Log.e(TAG, "Konnte Serverantwort nicht verarbeiten: ${e.message}")
-            e.printStackTrace()
+            log.e { e.stackTraceToString() }
             return Result.failure(e)
         }
     }
@@ -159,12 +169,14 @@ open class GsWebsiteDataSource : RemoteDataSource {
 
             val response: HttpResponse = client.get("https://schulkueche-bestellung.de/de/menu/14")
 
-            if(response.status.value !in 200..299) return Result.failure(
-                UnexpectedStatusCodeException("Unexpected code $response")
-            )
+            if (response.status.value !in 200..299) {
+                log.e { "loadAdditives(): Unexpected code: $response" }
+                return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
+            }
 
             return parser.parseAdditives(response.body())
         } catch (ex: Exception){
+            log.e { ex.stackTraceToString() }
             return Result.failure(ex)
         }
     }
@@ -174,14 +186,14 @@ open class GsWebsiteDataSource : RemoteDataSource {
             val response: HttpResponse = client.get(
                 "https://www.gymnasium-sonneberg.de/Schueler/KursArb/ka.php5?seite=${course.ordinal}")
 
-            if(response.status.value !in 200..299) return Result.failure(
-                UnexpectedStatusCodeException("Unexpected code $response")
-            )
+            if (response.status.value !in 200..299) {
+                log.e { "loadExams(): Unexpected code: $response" }
+                return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
+            }
 
             return parser.parseExams(response.body(), course)
         } catch (e: Exception) {
-            //Log.e(TAG, "Konnte Serverantwort nicht verarbeiten: ${e.message}")
-            e.printStackTrace()
+            log.e { e.stackTraceToString() }
             return Result.failure(e)
         }
     }

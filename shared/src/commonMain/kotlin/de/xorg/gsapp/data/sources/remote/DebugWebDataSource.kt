@@ -45,21 +45,17 @@ class DebugWebDataSource : GsWebsiteDataSource() {
             val response: HttpResponse =
                 client.get("https://agdsn.me/~xorg/gsapp/debug/vpl.html")
             if (response.status.value !in 200..299) {
-                log.d {"loadSubstitutionPlan() unexpected code $response" }
                 return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
             }
 
             return try {
-                log.d { "calling parseSubstitutionTable" }
                 parser.parseSubstitutionTable(response.body())
             } catch (ex: Exception) {
-                log.d { "loadSubstitutionPlan() inner exception: \n${ex.stackTraceToString()}" }
-                ex.printStackTrace()
+                log.e { "loadSubstitutionPlan() inner exception: \n${ex.stackTraceToString()}" }
                 Result.failure(ex)
             }
         } catch(ex2: Exception) {
-            log.d { "loadSubstitutionPlan() outer exception: \n${ex2.stackTraceToString()}" }
-            ex2.printStackTrace()
+            log.e { "loadSubstitutionPlan() outer exception: \n${ex2.stackTraceToString()}" }
             return Result.failure(ex2)
         }
     }

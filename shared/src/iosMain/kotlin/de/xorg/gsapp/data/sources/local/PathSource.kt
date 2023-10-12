@@ -42,7 +42,7 @@ import platform.Foundation.pathWithComponents
 actual class PathSource actual constructor(override val di: DI) : DIAware {
 
     private val paths =
-        NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true);
+        NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)
 
     @OptIn(ExperimentalForeignApi::class)
     fun ensureDir() {
@@ -53,7 +53,7 @@ actual class PathSource actual constructor(override val di: DI) : DIAware {
             )
         )
         val cBooleanPointer: CPointer<BooleanVar> = nativeHeap.alloc(true).ptr
-        var isExistent = NSFileManager.defaultManager.fileExistsAtPath(
+        val isExistent = NSFileManager.defaultManager.fileExistsAtPath(
             path = cacheDir,
             isDirectory = cBooleanPointer
         )
@@ -67,7 +67,6 @@ actual class PathSource actual constructor(override val di: DI) : DIAware {
 
     }
 
-    @OptIn(ExperimentalForeignApi::class)
     fun getPath(fileName: String): String {
         return NSString.pathWithComponents(
             NSArray.arrayWithObjects(

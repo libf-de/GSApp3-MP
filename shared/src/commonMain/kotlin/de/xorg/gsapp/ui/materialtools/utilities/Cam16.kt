@@ -263,9 +263,9 @@ class Cam16
             val bT = x * matrix[2][0] + y * matrix[2][1] + z * matrix[2][2]
 
             // Discount illuminant
-            val rD: Double = viewingConditions.rgbD.get(0) * rT
-            val gD: Double = viewingConditions.rgbD.get(1) * gT
-            val bD: Double = viewingConditions.rgbD.get(2) * bT
+            val rD: Double = viewingConditions.rgbD[0] * rT
+            val gD: Double = viewingConditions.rgbD[1] * gT
+            val bD: Double = viewingConditions.rgbD[2] * bT
 
             // Chromatic adaptation
             val rAF: Double =

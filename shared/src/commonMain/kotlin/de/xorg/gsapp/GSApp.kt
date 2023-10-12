@@ -20,7 +20,6 @@ package de.xorg.gsapp
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.material3.Icon
@@ -35,13 +34,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import de.xorg.gsapp.ui.screens.ExamsScreen
 import de.xorg.gsapp.ui.screens.FoodplanScreen
-import de.xorg.gsapp.ui.screens.settings.SettingsScreen
 import de.xorg.gsapp.ui.screens.SubstitutionsScreen
 import de.xorg.gsapp.ui.screens.screens
 import de.xorg.gsapp.ui.screens.settings.FilterSettingsScreen
+import de.xorg.gsapp.ui.screens.settings.SettingsScreen
 import de.xorg.gsapp.ui.theme.GSAppTheme
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
@@ -71,7 +69,7 @@ fun GSApp() {
                     exit = fadeOut(),
                     enter = fadeIn(),
                 ) {
-                    NavigationBar() {
+                    NavigationBar {
                         val navBackStackEntry by navigator.currentEntry.collectAsState(null)
                         screens.forEach { screen ->
                             val title = stringResource(screen.title)

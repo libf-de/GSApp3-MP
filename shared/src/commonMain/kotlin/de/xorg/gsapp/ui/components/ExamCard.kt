@@ -81,7 +81,7 @@ fun ExamCard(
                     style = MaterialTheme.typography.titleLarge)
             }
 
-            Text(text = exam.date.todayUntilString(),)
+            Text(text = exam.date.todayUntilString())
         }
 
     }

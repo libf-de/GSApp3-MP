@@ -26,12 +26,10 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import moe.tlaster.precompose.lifecycle.setContent
 import androidx.core.view.WindowCompat
 import de.xorg.gsapp.ui.state.PushState
 import moe.tlaster.precompose.lifecycle.PreComposeActivity
-import org.kodein.di.DI
-import org.kodein.di.DIAware
+import moe.tlaster.precompose.lifecycle.setContent
 
 class MainActivity : PreComposeActivity() {
 

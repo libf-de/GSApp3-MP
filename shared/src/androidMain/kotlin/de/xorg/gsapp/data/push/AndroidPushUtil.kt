@@ -19,17 +19,10 @@
 package de.xorg.gsapp.data.push
 
 import android.app.Activity
-import android.content.pm.PackageManager
-import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
-import androidx.core.content.ContextCompat
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
-import de.xorg.gsapp.ui.state.PushState
 import org.kodein.di.DI
 import org.kodein.di.instance
 

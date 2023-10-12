@@ -38,4 +38,4 @@ package de.xorg.gsapp.ui.materialtools.annotations
     AnnotationTarget.LOCAL_VARIABLE,
     AnnotationTarget.FIELD
 )
-public annotation class ColorInt
+annotation class ColorInt

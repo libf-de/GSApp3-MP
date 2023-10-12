@@ -40,7 +40,7 @@ package de.xorg.gsapp.ui.materialtools.annotations
     AnnotationTarget.LOCAL_VARIABLE,
     AnnotationTarget.ANNOTATION_CLASS
 )
-public annotation class FloatRange(
+annotation class FloatRange(
     /**
      * Smallest value. Whether it is inclusive or not is determined
      * by [.fromInclusive]
