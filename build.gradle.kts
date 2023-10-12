@@ -38,7 +38,7 @@ buildscript {
     }
 }
 
-subprojects {
+/*subprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         kotlinOptions {
             if (project.findProperty("composeCompilerReports") == "true") {
@@ -55,4 +55,4 @@ subprojects {
             }
         }
     }
-}
+}*/

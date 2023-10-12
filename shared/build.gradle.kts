@@ -38,17 +38,27 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
 
+    targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
+        binaries.withType<org.jetbrains.kotlin.gradle.plugin.mpp.Framework> {
+            linkerOpts.add("-lsqlite3")
+        }
+    }
+
     cocoapods {
         version = "1.0.0"
         summary = "GSApp Multiplatform cocoapod pod"
         homepage = "https://libf.de/gsapp"
         ios.deploymentTarget = "14.1" // TODO: Can I go lower?
         podfile = project.file("../iosApp/Podfile")
+        pod("sqlite3")
         pod("HTMLKit") // Used for html parsing on iOS
         //pod("FirebaseMessaging") // Used (in the future) for push notifications on iOS
         framework {
             baseName = "shared"
             isStatic = true
+
+            linkerOpts.add("-lsqlite3")
+
             // Used to provide (localized) resources on iOS
             export("dev.icerock.moko:resources:0.23.0")
             export("dev.icerock.moko:graphics:0.9.0") // toUIColor here
@@ -96,7 +106,7 @@ kotlin {
                 implementation("com.russhwolf:multiplatform-settings:1.0.0")
 
                 // Insetsx -> Provides paddings respecting on-screen keyboards
-                implementation("com.moriatsushi.insetsx:insetsx:0.1.0-alpha10")
+                //implementation("com.moriatsushi.insetsx:insetsx:0.1.0-alpha10")
 
                 // Precompose -> Multiplatform Navigation
                 api("moe.tlaster:precompose:$precomposeVersion")

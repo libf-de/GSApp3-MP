@@ -244,8 +244,14 @@ actual class GsWebsiteParser {
         return try {
             val doc = HTMLDocument.documentWithString(html)
 
-            var header: HTMLElement = doc.querySelector("td[class*=ueberschr]") ?:
-                            return Result.failure(ElementNotFoundException("header not found :("))
+            var header: HTMLElement
+            val mHeader = doc.querySelector("td[class*=ueberschr]")
+            if(mHeader != null)
+                header = mHeader
+            else {
+                println("Header not found :(")
+                return Result.failure(ElementNotFoundException("header not found :("))
+            }
 
             val years = Regex("([0-9]{4})/([0-9]{4})").find(header.innerHTML)?.groupValues ?: emptyList()
 
@@ -259,17 +265,20 @@ actual class GsWebsiteParser {
 
             doc.querySelectorAll("tr").forEach forRow@{ tableRow ->
                 if(tableRow !is HTMLElement) {
+                    println("a tableRow not a HTMLElement!")
                     return Result.failure(ElementNotFoundException("a tableRow not a HTMLElement!"))
                 }
 
                 if(tableRow.querySelector("td[class*=\"ueberschr\"]") != null) {
                     //We've found the header row, no need to parse columns...
+                    println("got header row")
                     return@forRow //...just continue with the next row
                 }
 
                 val headElements = tableRow.querySelectorAll("td[class=kopf]")
                                            .filterIsInstance<HTMLElement>()
                 if(headElements.isNotEmpty()) {
+                    println("headElements not empty")
                     //This is the "second" header row containing the dates, parse them!
                     dates = headElements.filter { it.textContent.isNotBlank() }.map { dateHeader ->
                         val weekStartDate: String = dateHeader.innerHTML.split("<br>")[0] //TODO: Doof.
@@ -311,10 +320,12 @@ actual class GsWebsiteParser {
 
                         if (cell.classList.contains("tag")) {
                             //This is the first column containing date names. Skip that.
+                            println("got tag cell")
                             return@forCell
                         }
 
                         if (cell.textContent.isNotEmpty()) {
+                            println("got exam cell!")
                             //There are some exams in this cell!
                             val examDay = dates!![currentColumn].plus(dayOffset, DateTimeUnit.DAY)
                             if (Regex("[^a-zA-Z0-9\\s]").matches(cell.textContent) ||
@@ -352,7 +363,7 @@ actual class GsWebsiteParser {
                 }
 
             exams.sortBy { it.date }
-
+            println("sukzess, got ${exams.size} exams")
             Result.success(exams.groupBy { it.date })
         } catch(ex: Exception) {
             ex.printStackTrace()

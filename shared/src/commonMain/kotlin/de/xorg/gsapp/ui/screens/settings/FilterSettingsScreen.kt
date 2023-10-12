@@ -65,8 +65,8 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.moriatsushi.insetsx.ExperimentalSoftwareKeyboardApi
-import com.moriatsushi.insetsx.imePadding
+/*import com.moriatsushi.insetsx.ExperimentalSoftwareKeyboardApi
+import com.moriatsushi.insetsx.imePadding*/
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.settings.ClassListItem
@@ -84,9 +84,7 @@ import org.kodein.di.instance
 /**
  * This composable is the "substitution plan filter" settings dialog.
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalSoftwareKeyboardApi::class
-)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FilterSettingsScreen(
     navController: Navigator,
@@ -136,7 +134,7 @@ fun FilterSettingsScreen(
                 .padding(scaffoldPadding)
                 .padding(start = 18.dp,
                          end = 18.dp)
-                .imePadding()
+                /*.imePadding()*/
         ) {
             Text(text = stringResource(MR.strings.filter_dialog_description),
                  textAlign = TextAlign.Center,

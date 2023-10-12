@@ -79,7 +79,7 @@ fun ExamsScreen(
         topBar = {
             MediumTopAppBar(
                 title = {
-                    Text(text = stringResource(MR.strings.tab_substitutions),
+                    Text(text = stringResource(MR.strings.tab_exams),
                         fontFamily = fontFamilyResource(MR.fonts.LondrinaSolid.black),
                         style = MaterialTheme.typography.headlineMedium
                     )
@@ -135,11 +135,5 @@ fun ExamsScreen(
                 Text("Fehler: ${viewModel.uiState.substitutionError.message}")
             }
         }
-
-
-
-
-
-
     }
 }
