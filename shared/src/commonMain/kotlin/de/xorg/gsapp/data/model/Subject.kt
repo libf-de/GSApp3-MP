@@ -19,8 +19,6 @@
 package de.xorg.gsapp.data.model
 
 import androidx.compose.ui.graphics.Color
-import de.xorg.gsapp.data.serializers.ColorSerializer
-import kotlinx.serialization.Serializable
 
 //TODO: Maybe add indication if this was changed by the user, or store separate from defaults?
 
@@ -30,11 +28,9 @@ import kotlinx.serialization.Serializable
  * @property longName long name, as it will be displayed to the user
  * @property color to color the cards of this subject with
  */
-@Serializable
 data class Subject(
     val shortName: String,
     val longName: String,
-    @Serializable(ColorSerializer::class)
     val color: Color
 ) {
     /**

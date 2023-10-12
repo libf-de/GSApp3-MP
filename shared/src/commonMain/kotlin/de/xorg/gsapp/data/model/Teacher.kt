@@ -18,8 +18,6 @@
 
 package de.xorg.gsapp.data.model
 
-import kotlinx.serialization.Serializable
-
 /**
  * Data class to represent a teacher. Could probably be replaced with a map, but will keep this,
  * maybe will add gender later to display teacher in substitutions like "Hr. Mustermann" instead of
@@ -28,7 +26,6 @@ import kotlinx.serialization.Serializable
  * @param shortName short name, as displayed in substitution plan on website
  * @param longName long name that will be shown to the user.
  */
-@Serializable
 data class Teacher(
     val shortName: String,
     val longName: String

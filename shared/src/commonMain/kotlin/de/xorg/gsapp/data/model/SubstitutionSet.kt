@@ -18,8 +18,6 @@
 
 package de.xorg.gsapp.data.model
 
-import kotlinx.serialization.Serializable
-
 /**
  * A complete representation of a substitution plan, consisting of "global" date and notes, and
  * a mapping of Class -> List<Substitution>
@@ -30,7 +28,6 @@ import kotlinx.serialization.Serializable
  * @param notes as displayed on website
  * @param substitutions map of classes to List<Substitution>
  */
-@Serializable
 data class SubstitutionSet(
     val date: String,
     val notes: String,

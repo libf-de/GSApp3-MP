@@ -18,9 +18,6 @@
 
 package de.xorg.gsapp.data.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 enum class SubstitutionType {
     NORMAL, //Normale Vertretung
     CANCELLATION, //Ausfall

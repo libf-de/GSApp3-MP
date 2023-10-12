@@ -18,7 +18,7 @@
 
 package de.xorg.gsapp.data.model
 
-import kotlinx.serialization.Serializable
+//import kotlinx.serialization.Serializable
 
 /**
  * Data class to hold a single food offer
@@ -26,7 +26,6 @@ import kotlinx.serialization.Serializable
  * @property name - meal name
  * @property additives - list of additives (might be short or long form!)
  */
-@Serializable
 data class Food(
     val num: Int,
     val name: String,

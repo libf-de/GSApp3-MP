@@ -18,8 +18,6 @@
 
 package de.xorg.gsapp.data.model
 
-import kotlinx.serialization.Serializable
-
 /**
  * Data class to hold a single substitution plan entry, as fetched from the website
  * Subjects and teachers are still represented as strings, which should be matched
@@ -34,7 +32,6 @@ import kotlinx.serialization.Serializable
  * @property isNew whether this is a new entry, as denoted by bold text on website
  */
 
-@Serializable
 data class SubstitutionApiModel(
     val klass: String,
     val lessonNr: String,

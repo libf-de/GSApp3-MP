@@ -18,8 +18,6 @@
 
 package de.xorg.gsapp.data.model
 
-import kotlinx.serialization.Serializable
-
 /**
  * Data class to hold a single substitution plan entry
  * @property type whether it's a cancellation, etc.
@@ -32,7 +30,6 @@ import kotlinx.serialization.Serializable
  * @property notes
  * @property isNew whether this is a new entry, as denoted by bold text on website
  */
-@Serializable
 data class Substitution(
     val type: SubstitutionType,
     val klass: String,
