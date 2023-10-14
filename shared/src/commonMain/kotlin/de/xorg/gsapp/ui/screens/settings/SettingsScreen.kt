@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import de.xorg.gsapp.GSAppRoutes
+import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.settings.SettingsItem
 import de.xorg.gsapp.ui.components.settings.SettingsRadioDialog
@@ -44,6 +45,7 @@ import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import getPlatformName
 import kotlinx.collections.immutable.toImmutableList
 import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
@@ -60,6 +62,7 @@ fun SettingsScreen(
 ) {
     val di = localDI()
     val viewModel: SettingsViewModel by di.instance()
+    val pushUtil: PushNotificationUtil by di.instance()
 
     var showPushDialog by remember { mutableStateOf(false) }
 
@@ -108,14 +111,16 @@ fun SettingsScreen(
                 )
             }
 
+
             item {
                 SettingsItem(
                     icon = { mod, tint -> Icon(imageVector = Icons.Rounded.Notifications,
                                                contentDescription = "",
                                                modifier = mod, tint = tint) },
                     title = stringResource(MR.strings.pref_push),
-                    subtitle = stringResource(viewModel.pushPreference.value.labelResource),
-                    onClick = { showPushDialog = true }
+                    subtitle = if(pushUtil.isSupported) stringResource(viewModel.pushPreference.value.labelResource)
+                               else stringResource(MR.strings.push_unavailable, getPlatformName()),
+                    onClick = { if(pushUtil.isSupported) showPushDialog = true }
                 )
 
             }

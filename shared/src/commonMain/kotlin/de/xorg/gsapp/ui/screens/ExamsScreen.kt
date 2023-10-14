@@ -80,7 +80,7 @@ fun ExamsScreen(
             MediumTopAppBar(
                 title = {
                     Text(text = stringResource(MR.strings.tab_exams),
-                        fontFamily = fontFamilyResource(MR.fonts.LondrinaSolid.black),
+                        fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
                         style = MaterialTheme.typography.headlineMedium
                     )
                 },

@@ -132,12 +132,12 @@ fun FoodplanScreen(
             MediumTopAppBar(
                 title = {
                     Text(text = stringResource(MR.strings.tab_foodplan),
-                        fontFamily = fontFamilyResource(MR.fonts.LondrinaSolid.black),
+                        fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
                         style = MaterialTheme.typography.headlineMedium
                     )
                 },
                 scrollBehavior = scrollBehavior,
-                colors = if(getPlatformName() == "Desktop") //TopAppBar currently does not color correctly on desktop TODO: Remove when fixed
+                colors = if(getPlatformName() != "Android") //TopAppBar currently does not color correctly on desktop/ios TODO: Remove when fixed
                             TopAppBarDefaults.mediumTopAppBarColors(
                                 containerColor = if (listState.firstVisibleItemIndex == 0)
                                     MaterialTheme.colorScheme.background

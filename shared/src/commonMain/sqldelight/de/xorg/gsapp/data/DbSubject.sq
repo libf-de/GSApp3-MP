@@ -1,9 +1,11 @@
 import androidx.compose.ui.graphics.Color;
+import kotlin.Boolean;
 
 CREATE TABLE DbSubject (
     shortName TEXT NOT NULL PRIMARY KEY,
     longName TEXT NOT NULL,
-    color INTEGER AS Color
+    color INTEGER AS Color,
+    isDefault INTEGER AS Boolean NOT NULL DEFAULT 1
 );
 
 selectAll:
