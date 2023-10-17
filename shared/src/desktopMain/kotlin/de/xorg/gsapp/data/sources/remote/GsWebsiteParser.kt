@@ -97,7 +97,8 @@ actual class GsWebsiteParser {
             }
 
             Result.success(SubstitutionApiModelSet(
-                date = dateText,
+                dateStr = dateText,
+                date = parseSubstitutionDate(dateText),
                 notes = noteText,
                 substitutionApiModels = substitutionApiModels
             ))

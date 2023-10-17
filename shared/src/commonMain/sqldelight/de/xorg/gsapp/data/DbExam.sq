@@ -33,6 +33,15 @@ insert:
 INSERT OR IGNORE INTO DbExam(label, date, course, isCoursework, subject)
 VALUES (?, ?, ?, ?, ?);
 
+delete:
+DELETE FROM DbExam
+WHERE id = :id;
+
+deleteByValues:
+DELETE FROM DbExam
+WHERE label = :label
+AND date = :date;
+
 clearOlder:
 DELETE FROM DbExam
 WHERE date < :limitDate;

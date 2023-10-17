@@ -22,6 +22,7 @@ import app.cash.sqldelight.EnumColumnAdapter
 import de.xorg.gsapp.data.DbExam
 import de.xorg.gsapp.data.DbFood
 import de.xorg.gsapp.data.DbSubject
+import de.xorg.gsapp.data.DbSubstitutionSet
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.AppRepository
 import de.xorg.gsapp.data.repositories.GSAppRepository
@@ -54,6 +55,9 @@ val mainModule = DI.Module("mainModule") {
             ),
             DbExamAdapter = DbExam.Adapter(
                 courseAdapter = EnumColumnAdapter(),
+                dateAdapter = DateAdapter
+            ),
+            DbSubstitutionSetAdapter = DbSubstitutionSet.Adapter(
                 dateAdapter = DateAdapter
             )
         )

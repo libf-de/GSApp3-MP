@@ -118,6 +118,7 @@ class AppRepository(di: DI) : GSAppRepository {
         teachers, subjects) { subs, teachers, subjects ->
         subs.map {
             SubstitutionSet(
+                dateStr = it.dateStr,
                 date = it.date,
                 notes = it.notes,
                 substitutions = it.substitutionApiModels.map { sub -> //replace strings->objects
@@ -253,13 +254,25 @@ class AppRepository(di: DI) : GSAppRepository {
      * @return old subject?
      * TODO: Use database properly!
      */
-    override suspend fun updateSubject(oldSub: Subject, newSub: Subject): Result<Subject> {
-        val local = localDataSource.loadSubjects()
-        if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
+    override suspend fun updateSubject(
+        oldSub: Subject,
+        newLongName: String?,
+        newColor: Color?
+    ): Result<Subject> {
+        val newSub = Subject(
+            shortName = oldSub.shortName,
+            longName = newLongName ?: oldSub.longName,
+            color = newColor ?: oldSub.color
+        )
 
-        val newSubjects = local.getOrNull()!!.toMutableList()
-        val success = newSubjects.set(newSubjects.indexOf(oldSub), newSub)
-        return Result.success(success)
+        if(oldSub != newSub)
+            try {
+                localDataSource.updateSubject(newSub)
+            } catch(ex: Exception) {
+                return Result.failure(ex)
+            }
+
+        return Result.success(oldSub)
     }
 
     //****************** TEACHER ******************

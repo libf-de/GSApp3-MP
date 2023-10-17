@@ -23,7 +23,11 @@ FROM DbSubstitution;
 selectBySetId:
 SELECT *
 FROM DbSubstitution
-WHERE assSet == :id;
+WHERE assSet = :id;
+
+deleteBySetId:
+DELETE FROM DbSubstitution
+WHERE assSet = :id;
 
 findSubstitutionsBySetId:
 SELECT DbSubstitution.id,

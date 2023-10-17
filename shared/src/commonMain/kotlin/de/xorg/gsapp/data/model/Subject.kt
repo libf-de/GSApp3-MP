@@ -31,11 +31,12 @@ import androidx.compose.ui.graphics.Color
 data class Subject(
     val shortName: String,
     val longName: String,
-    val color: Color
+    val color: Color,
+    val isDefault: Boolean = false
 ) {
     /**
      * Constructor for "unknown" placeholder subject, will be marked in magenta.
      * Also has no long name, so the shortName will be displayed
      */
-    constructor(shortName: String) : this(shortName, shortName, Color.Magenta)
+    constructor(shortName: String) : this(shortName, shortName, Color.Magenta, true)
 }

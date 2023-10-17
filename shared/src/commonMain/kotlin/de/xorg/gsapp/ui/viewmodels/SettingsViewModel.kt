@@ -21,7 +21,9 @@ package de.xorg.gsapp.ui.viewmodels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.exceptions.NoException
+import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.GSAppRepository
@@ -53,18 +55,25 @@ class SettingsViewModel(
 
     private val _teachers: MutableStateFlow<List<Teacher>> = MutableStateFlow(emptyList())
     var teachers = _teachers.asStateFlow()
-    //private val _teacherState: MutableStateFlow<UiState> = MutableStateFlow(UiState.EMPTY)
-    //var teacherState = _teacherState.asStateFlow()
+    private val _teacherError: MutableStateFlow<Throwable> = MutableStateFlow(NoException())
+    var teacherError = _teacherError.asStateFlow()
     var teacherState by mutableStateOf(UiState.EMPTY)
         private set
 
-    private val _teacherError: MutableStateFlow<Throwable> = MutableStateFlow(NoException())
-    var teacherError = _teacherError.asStateFlow()
+    private val _subjects: MutableStateFlow<List<Subject>> = MutableStateFlow(emptyList())
+    var subjects = _subjects.asStateFlow()
+    var subjectsState by mutableStateOf(UiState.EMPTY)
+        private set
+    private val _subjectsError: MutableStateFlow<Throwable> = MutableStateFlow(NoException())
+    var subjectsError = _subjectsError.asStateFlow()
+
+
 
 
     init {
         loadSettings() //TODO: Have settings loading state!
         loadTeachers()
+        loadSubjects()
     }
 
     private fun loadSettings() {
@@ -73,7 +82,29 @@ class SettingsViewModel(
             _filterPreference.value = appRepo.getFilterValue()
             _pushPreference.value = appRepo.getPush()
         }
+    }
 
+    private fun loadSubjects() {
+        subjectsState = UiState.LOADING
+
+        viewModelScope.launch {
+            appRepo.subjects.collect { subjectResult ->
+                if(subjectResult.isFailure) {
+                    subjectsState = UiState.FAILED
+                    _subjectsError.value = subjectResult.exceptionOrNull()!!
+                    return@collect
+                }
+
+                val subjectsList: List<Subject> = subjectResult.getOrNull()!!
+                if(subjectsList.isEmpty()) {
+                    subjectsState = UiState.EMPTY
+                    return@collect
+                }
+
+                subjectsState = UiState.NORMAL
+                _subjects.value = subjectsList
+            }
+        }
     }
 
     private fun loadTeachers() {
@@ -101,6 +132,21 @@ class SettingsViewModel(
                 _teachers.value = teacherList
             }
         }
+    }
+
+    fun setSubject(oldSubject: Subject, longName: String? = null, color: Color? = null) {
+        viewModelScope.launch {
+            appRepo.updateSubject(oldSubject, longName, color)
+            loadSubjects()
+        }
+    }
+
+    fun deleteSubject(toDelete: Subject) {
+        viewModelScope.launch {
+            appRepo.deleteSubject(toDelete)
+            loadSubjects()
+        }
+
     }
     
     fun setPush(state: PushState) {

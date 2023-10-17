@@ -19,14 +19,15 @@
 package de.xorg.gsapp.ui.screens.settings
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -39,14 +40,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.settings.ColorPicker
 import de.xorg.gsapp.ui.components.settings.SettingsItem
 import de.xorg.gsapp.ui.components.settings.SettingsRadioDialog
+import de.xorg.gsapp.ui.components.settings.SubjectListItem
 import de.xorg.gsapp.ui.state.PushState
+import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
@@ -61,17 +62,15 @@ import org.kodein.di.instance
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(
+fun SubjectManager(
     navController: Navigator,
     modifier: Modifier = Modifier,
 ) {
     val di = localDI()
     val viewModel: SettingsViewModel by di.instance()
-    val pushUtil: PushNotificationUtil by di.instance()
 
-    var colorState = remember { mutableStateOf(Color.Green)}
-
-    var showPushDialog by remember { mutableStateOf(false) }
+    var colorEditShow by remember { mutableStateOf(false) }
+    var colorEditValue by remember { mutableStateOf(Color.Transparent) }
 
     Scaffold(modifier = modifier,
         topBar = {
@@ -83,58 +82,33 @@ fun SettingsScreen(
                 IconButton(onClick = { navController.goBack() }) {
                     Icon(Icons.Rounded.ArrowBack, "")
                 }
-            },
+            }
         )
     }) {
-        if(showPushDialog) {
-            SettingsRadioDialog(
-                icon = { Icon(imageVector = Icons.Rounded.Notifications, contentDescription = "")},
-                title = stringResource(MR.strings.push_dialog_title),
-                message = stringResource(MR.strings.push_dialog_description),
-                dismissText = stringResource(MR.strings.dialog_cancel),
-                confirmText = stringResource(MR.strings.dialog_save),
-                items = PushState.entries.toImmutableList(),
-                selectedValue = viewModel.pushPreference.value,
-                onDismiss = { showPushDialog = false },
-                onConfirm = { selectedStringRes ->
-                    showPushDialog = false
-                    viewModel.setPush(selectedStringRes as PushState)
-                }
-            )
-        }
-
-
 
         LazyColumn(modifier = modifier.padding(it).fillMaxSize()) {
-            item {
-                SettingsItem(
-                    icon = { mod, tint -> Icon(painter = painterResource(MR.images.filter_value),
-                        contentDescription = "",
-                        modifier = mod, tint = tint) },
-                    title = stringResource(MR.strings.pref_filter),
-                    subtitle = stringResource(viewModel.rolePreference.value.descriptiveResource,
-                                              viewModel.filterPreference.value),
-                    onClick = { navController.navigate(GSAppRoutes.SETTINGS_FILTER) }
+            items(viewModel.subjects.value) { subject ->
+                SubjectListItem(
+                    modifier = Modifier,
+                    subject = subject,
+                    onDelete = { sub -> viewModel.deleteSubject(sub) },
+                    onNameEdited = { sub, name ->
+                        viewModel.setSubject(
+                            oldSubject = sub,
+                            longName = name
+                        )
+                    },
+                    onColorClick = { sub ->
+
+                    }
                 )
             }
+        }
 
-
-            item {
-                SettingsItem(
-                    icon = { mod, tint -> Icon(imageVector = Icons.Rounded.Notifications,
-                                               contentDescription = "",
-                                               modifier = mod, tint = tint) },
-                    title = stringResource(MR.strings.pref_push),
-                    subtitle = if(pushUtil.isSupported) stringResource(viewModel.pushPreference.value.labelResource)
-                               else stringResource(MR.strings.push_unavailable, getPlatformName()),
-                    onClick = { if(pushUtil.isSupported) showPushDialog = true }
-                )
-            }
-
-            item {
-                ColorPicker(colorState, modifier = Modifier.width(300.dp))
-            }
-
+        FloatingActionButton(
+            onClick = {   },
+        ) {
+            Icon(Icons.Rounded.Add, "Add new subject")
         }
     }
 }

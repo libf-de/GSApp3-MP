@@ -18,6 +18,7 @@
 
 package de.xorg.gsapp.data.repositories
 
+import androidx.compose.ui.graphics.Color
 import com.russhwolf.settings.SettingsListener
 import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.model.Exam
@@ -72,7 +73,7 @@ interface GSAppRepository {
 
     // Shall update the given subject in local storage, and return the old object or the exception
     // that occurred
-    suspend fun updateSubject(oldSub: Subject, newSub: Subject): Result<Subject>
+    suspend fun updateSubject(subject: Subject, newLongName: String? = null, newColor: Color? = null): Result<Subject>
 
     // Shall be a flow of a Result, mapping dates to their corresponding Lists of Food
     val foodPlan: Flow<Result<Map<LocalDate, List<Food>>>>

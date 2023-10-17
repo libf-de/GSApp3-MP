@@ -33,16 +33,23 @@ import kotlinx.datetime.LocalDate
 interface LocalDataSource {
     suspend fun loadSubstitutionPlan(): Result<SubstitutionSet>
     suspend fun storeSubstitutionPlan(value: SubstitutionSet)
+    suspend fun cleanupSubstitutionPlan()
     suspend fun loadSubjects(): Result<List<Subject>>
     suspend fun storeSubjects(value: List<Subject>)
+    suspend fun storeSubject(value: Subject)
+    suspend fun updateSubject(value: Subject)
+    suspend fun deleteSubject(value: Subject)
     suspend fun loadTeachers(): Result<List<Teacher>>
     suspend fun storeTeachers(value: List<Teacher>)
 
     suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>>
     suspend fun storeFoodPlan(value: Map<LocalDate, List<Food>>)
+    suspend fun cleanupFoodPlan()
     suspend fun loadAdditives(): Result<Map<String, String>>
     suspend fun storeAdditives(value: Map<String, String>)
 
     suspend fun loadExams(course: ExamCourse): Result<Map<LocalDate, List<Exam>>>
     suspend fun storeExams(value: Map<LocalDate, List<Exam>>)
+    suspend fun cleanupExams()
+    suspend fun deleteExam(toDelete: Exam)
 }

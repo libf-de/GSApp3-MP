@@ -14,8 +14,9 @@ fun SubjectListItemPreview() {
             "de",
             "Deutsch",
             Color.Blue
+        ),
+        onColorClick = { _ -> },
+        onNameEdited = { _,_ -> },
+        onDelete = { _ -> }
         )
-        , onClick = { /*TODO*/ }, onDelete = {
-
-        })
 }

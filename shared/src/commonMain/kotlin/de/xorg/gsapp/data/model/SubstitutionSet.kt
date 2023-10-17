@@ -18,6 +18,8 @@
 
 package de.xorg.gsapp.data.model
 
+import kotlinx.datetime.LocalDate
+
 /**
  * A complete representation of a substitution plan, consisting of "global" date and notes, and
  * a mapping of Class -> List<Substitution>
@@ -29,7 +31,8 @@ package de.xorg.gsapp.data.model
  * @param substitutions map of classes to List<Substitution>
  */
 data class SubstitutionSet(
-    val date: String,
+    val dateStr: String,
+    val date: LocalDate,
     val notes: String,
     val substitutions: Map<String, List<Substitution>>
 ) {
@@ -38,7 +41,8 @@ data class SubstitutionSet(
      * Constructor for an empty SubstitutionSet, used to initialize the app state.
      */
     constructor() : this(
-        date = "",
+        dateStr = "",
+        date = LocalDate.fromEpochDays(0),
         notes = "",
         substitutions = emptyMap())
 }

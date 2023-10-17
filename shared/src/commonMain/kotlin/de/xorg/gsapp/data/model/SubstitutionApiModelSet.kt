@@ -18,6 +18,8 @@
 
 package de.xorg.gsapp.data.model
 
+import kotlinx.datetime.LocalDate
+
 /**
  * A complete representation of a substitution plan, consisting of "global" date and notes, and
  * a list of entries
@@ -26,7 +28,8 @@ package de.xorg.gsapp.data.model
  * @param substitutionApiModels list of substitutions
  */
 data class SubstitutionApiModelSet(
-    val date: String,
+    val dateStr: String,
+    val date: LocalDate,
     val notes: String,
     val substitutionApiModels: List<SubstitutionApiModel>
 )

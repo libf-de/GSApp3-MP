@@ -28,7 +28,12 @@ import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sql.GsAppDatabase
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.todayIn
 import org.kodein.di.DI
 import org.kodein.di.instance
 import org.lighthousegames.logging.logging
@@ -85,6 +90,7 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 .groupBy { subs -> subs.klass }
             Result.success(
                 SubstitutionSet(
+                    dateStr = latest.dateStr,
                     date = latest.date,
                     notes = latest.notes ?: "",
                     substitutions = substitutions
@@ -119,6 +125,7 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
 
             database.dbSubstitutionSetQueries.insertSubstitutionSet(
                 date = value.date,
+                dateStr = value.dateStr,
                 notes = value.notes
             )
 
@@ -138,6 +145,24 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 )
             }
         }
+    }
+
+    override suspend fun cleanupSubstitutionPlan() {
+        val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+        val oldSets = database.dbSubstitutionSetQueries.getLegacyIds(today).executeAsList()
+        log.d { "cleanupSubstitutionPlan(): Found ${oldSets.size} old plans..." }
+
+        database.dbSubstitutionQueries.transaction {
+            oldSets.forEach { setId -> database.dbSubstitutionQueries.deleteBySetId(setId) }
+        }
+
+        database.dbSubstitutionSetQueries.transaction {
+            oldSets.forEach { setId ->
+                database.dbSubstitutionSetQueries.deleteSubstitutionSet(setId)
+            }
+        }
+
+        log.d { "cleanupSubstitutionPlan(): Cleanup done!" }
     }
 
     override suspend fun loadSubjects(): Result<List<Subject>> {
@@ -161,6 +186,26 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 )
             }
         }
+    }
+
+    override suspend fun storeSubject(subject: Subject) {
+        database.dbSubjectQueries.insertSubject(
+            shortName = subject.shortName,
+            longName = subject.longName,
+            color = subject.color
+        )
+    }
+
+    override suspend fun updateSubject(subject: Subject) {
+        database.dbSubjectQueries.updateSubject(
+            shortName = subject.shortName,
+            longName = subject.longName,
+            color = subject.color
+        )
+    }
+
+    override suspend fun deleteSubject(value: Subject) {
+        database.dbSubjectQueries.deleteSubject(value.shortName)
     }
 
     override suspend fun loadTeachers(): Result<List<Teacher>> {
@@ -223,6 +268,13 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         }
     }
 
+    override suspend fun cleanupFoodPlan() {
+        val sevenDaysAgo = Clock.System
+            .todayIn(TimeZone.currentSystemDefault())
+            .minus(7, DateTimeUnit.DAY)
+        database.dbFoodQueries.clearOld(sevenDaysAgo)
+    }
+
     override suspend fun loadAdditives(): Result<Map<String, String>> {
         return try {
             Result.success(
@@ -283,6 +335,17 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 )
             }
         }
+    }
+
+    override suspend fun cleanupExams() {
+        val aMonthAgo = Clock.System
+            .todayIn(TimeZone.currentSystemDefault())
+            .minus(1, DateTimeUnit.MONTH)
+        database.dbExamQueries.clearOlder(aMonthAgo)
+    }
+
+    override suspend fun deleteExam(toDelete: Exam) {
+        database.dbExamQueries.deleteByValues(toDelete.label, toDelete.date)
     }
 
 }

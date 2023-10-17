@@ -18,6 +18,7 @@
 
 package de.xorg.gsapp.data.sources.remote
 
+import androidx.compose.runtime.NoLiveLiterals
 import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.HolidayException
 import de.xorg.gsapp.data.model.Exam
@@ -34,6 +35,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import org.lighthousegames.logging.logging
 
+@NoLiveLiterals
 actual class GsWebsiteParser {
     companion object {
         val log = logging()
@@ -96,7 +98,8 @@ actual class GsWebsiteParser {
             }
 
             Result.success(SubstitutionApiModelSet(
-                date = dateText,
+                dateStr = dateText,
+                date = parseSubstitutionDate(dateText),
                 notes = noteText,
                 substitutionApiModels = substitutionApiModels
             ))
