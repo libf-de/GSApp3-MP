@@ -40,6 +40,7 @@ import de.xorg.gsapp.ui.screens.SubstitutionsScreen
 import de.xorg.gsapp.ui.screens.screens
 import de.xorg.gsapp.ui.screens.settings.FilterSettingsScreen
 import de.xorg.gsapp.ui.screens.settings.SettingsScreen
+import de.xorg.gsapp.ui.screens.settings.SubjectManager
 import de.xorg.gsapp.ui.theme.GSAppTheme
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
@@ -161,6 +162,15 @@ fun GSApp() {
                     hideNavBar = true
                     hideNavBarState.targetState = false
                     FilterSettingsScreen(navigator)
+                }
+
+                scene(
+                    route = GSAppRoutes.SETTINGS_SUBJECTS,
+                    navTransition = NavTransition(),
+                ) {
+                    hideNavBar = true
+                    hideNavBarState.targetState = false
+                    SubjectManager(navigator)
                 }
             }
         }

@@ -13,6 +13,15 @@ selectAll:
 SELECT *
 FROM DbFood;
 
+selectByDate:
+SELECT *
+FROM DbFood
+WHERE date = :date;
+
+selectAllDates:
+SELECT DISTINCT date
+FROM DbFood;
+
 insert:
 INSERT OR IGNORE INTO DbFood(date, foodId, name, additives)
 VALUES (?, ?, ?, ?);

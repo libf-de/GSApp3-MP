@@ -61,6 +61,8 @@
     <string name="pref_filter_student">Klasse %s</string>
     <string name="pref_filter_all">Keiner (alle anzeigen)</string>
     <string name="pref_push">Push-Benachrichtigung</string>
+    <string name="pref_subjects">Fächer bearbeiten</string>
+    <string name="pref_subjects_desc">(Namen und Farben)</string>
 
     <!-- Filter Dialog -->
     <string name="filter_dialog_title">Vertretungplan-Filter</string>
@@ -82,9 +84,19 @@
     <string name="push_dialog_description">Wähle aus ob du keine, nur wenn es dich betrifft oder immer über neue Vertretungspläne benachrichtigt werden willst.</string>
     <string name="push_unavailable">(Nicht verfügbar auf %s)</string>
 
+    <!-- Subject management -->
+    <string name="subject_manager_colorpicker_title">Wähle Farbe für %s</string>
+    <string name="subject_manager_colorpicker_nullsubject">ein Fach</string>
+    <string name="subject_manager_add_title">Fach hinzufügen</string>
+    <string name="subject_manager_add_desc">Gib das Kürzel des Fachs ein, wie es im Vertretungsplan steht. Langer Name und Farbe können anschließend geändert werden.</string>
+
     <!-- General dialog buttons -->
     <string name="dialog_save">Speichern</string>
     <string name="dialog_cancel">Abbrechen</string>
+    <string name="dialog_color_simple">Einfach</string>
+    <string name="dialog_color_simple_desc">Wähle aus einer Liste von Farben</string>
+    <string name="dialog_color_advanced">Erweitert</string>
+    <string name="dialog_color_advanced_desc">Wähle mittels Farbton, Sättigung und Helligkeit oder Hex-Code</string>
 
     <!-- Generic strings -->
     <string name="generic_loading">Wird geladen…</string>

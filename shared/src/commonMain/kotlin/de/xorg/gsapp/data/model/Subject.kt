@@ -19,8 +19,7 @@
 package de.xorg.gsapp.data.model
 
 import androidx.compose.ui.graphics.Color
-
-//TODO: Maybe add indication if this was changed by the user, or store separate from defaults?
+import de.xorg.gsapp.data.DbSubject
 
 /**
  * Data class to hold a single subject
@@ -31,12 +30,34 @@ import androidx.compose.ui.graphics.Color
 data class Subject(
     val shortName: String,
     val longName: String,
-    val color: Color,
-    val isDefault: Boolean = false
+    val color: Color
 ) {
     /**
      * Constructor for "unknown" placeholder subject, will be marked in magenta.
      * Also has no long name, so the shortName will be displayed
      */
-    constructor(shortName: String) : this(shortName, shortName, Color.Magenta, true)
+    constructor(shortName: String) : this(shortName, shortName, Color.Magenta)
+
+    constructor(dbSubject: DbSubject) : this(shortName = dbSubject.shortName,
+                                             longName = dbSubject.longName,
+                                             color = dbSubject.color ?: Color.Unspecified)
+
+    /**
+     * By default, two Subjects are the same if they have the same shortName.
+     * This is to easily merge app defaults and user preferences.
+     */
+    override fun equals(other: Any?): Boolean {
+        if(other !is Subject) return false
+        return other.shortName == this.shortName
+    }
+
+    /**
+     * Checks if shortName, longName and color of two subjects are the same
+     */
+    fun totallyEqual(other: Any?): Boolean {
+        if(other !is Subject) return false
+        return other.longName == this.longName &&
+                other.shortName == this.shortName &&
+                other.color == this.color
+    }
 }

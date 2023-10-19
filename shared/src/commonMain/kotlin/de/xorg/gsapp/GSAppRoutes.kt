@@ -27,4 +27,5 @@ object GSAppRoutes {
      const val EXAMS = "/main/exams"
      const val SETTINGS = "/settings"
      const val SETTINGS_FILTER = "/settings/filter"
+     const val SETTINGS_SUBJECTS = "/settings/subjects"
 }

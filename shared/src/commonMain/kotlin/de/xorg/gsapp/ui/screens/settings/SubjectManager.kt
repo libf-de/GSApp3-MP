@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -34,25 +33,20 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import de.xorg.gsapp.GSAppRoutes
-import de.xorg.gsapp.data.push.PushNotificationUtil
+import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.settings.SettingsItem
-import de.xorg.gsapp.ui.components.settings.SettingsRadioDialog
+import de.xorg.gsapp.ui.components.settings.InputTextDialog
+import de.xorg.gsapp.ui.components.settings.SelectColorDialog
 import de.xorg.gsapp.ui.components.settings.SubjectListItem
-import de.xorg.gsapp.ui.state.PushState
-import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
-import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import getPlatformName
-import kotlinx.collections.immutable.toImmutableList
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
@@ -69,8 +63,11 @@ fun SubjectManager(
     val di = localDI()
     val viewModel: SettingsViewModel by di.instance()
 
+    val subjects by viewModel.subjects.collectAsStateWithLifecycle()
+
     var colorEditShow by remember { mutableStateOf(false) }
-    var colorEditValue by remember { mutableStateOf(Color.Transparent) }
+    var colorEditSubject by remember { mutableStateOf<Subject?>(null) }
+    var showAddNewDialog by remember { mutableStateOf(false) }
 
     Scaffold(modifier = modifier,
         topBar = {
@@ -85,28 +82,59 @@ fun SubjectManager(
             }
         )
     }) {
+        if(colorEditShow) {
+            SelectColorDialog(
+                onConfirm = { selectedColor ->
+                    colorEditShow = false
+                    if(colorEditSubject != null)
+                        viewModel.updateSubject(colorEditSubject!!, color = selectedColor)
+                },
+                onCancel = {
+                    colorEditShow = false
+                },
+                preselectedColor = colorEditSubject?.color,
+                title = stringResource(MR.strings.subject_manager_colorpicker_title,
+                    colorEditSubject?.longName ?: stringResource(MR.strings.subject_manager_colorpicker_nullsubject)
+                ),
+                pickMode = viewModel.colorpickerMode.value,
+                onPickModeChanged = { pickerMode -> viewModel.setColorpickerMode(pickerMode) }
+            )
+        }
+
+        if(showAddNewDialog) {
+            InputTextDialog(
+                onConfirm = { shortName ->
+                    viewModel.addSubject(Subject(shortName = shortName))
+                    showAddNewDialog = false
+                },
+                onCancel = { showAddNewDialog = false },
+                title = stringResource(MR.strings.subject_manager_add_title),
+                message = stringResource(MR.strings.subject_manager_add_desc)
+            )
+        }
 
         LazyColumn(modifier = modifier.padding(it).fillMaxSize()) {
-            items(viewModel.subjects.value) { subject ->
+            items(subjects) { subject ->
                 SubjectListItem(
                     modifier = Modifier,
                     subject = subject,
                     onDelete = { sub -> viewModel.deleteSubject(sub) },
                     onNameEdited = { sub, name ->
-                        viewModel.setSubject(
+                        viewModel.updateSubject(
                             oldSubject = sub,
                             longName = name
                         )
                     },
                     onColorClick = { sub ->
-
+                        colorEditSubject = sub
+                        colorEditShow = true
                     }
                 )
             }
         }
 
         FloatingActionButton(
-            onClick = {   },
+            onClick = { showAddNewDialog = true },
         ) {
             Icon(Icons.Rounded.Add, "Add new subject")
         }

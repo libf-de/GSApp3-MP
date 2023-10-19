@@ -7,10 +7,13 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.LaunchedEffect
@@ -31,35 +34,57 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import dev.icerock.moko.resources.compose.stringResource
 import kotlin.math.max
 import kotlin.math.min
+import de.xorg.gsapp.res.MR
 
 
 @Composable
 fun ColorPicker(
-    colorState: MutableState<Color>,
+    colorState: MutableState<Color?>,
     modifier: Modifier = Modifier
 ) {
-    var h = remember { mutableStateOf(colorState.value.hue()) }
-    var s = remember { mutableStateOf(colorState.value.saturation()) }
-    var v = remember { mutableStateOf(colorState.value.value()) }
+    val h = remember { mutableStateOf(colorState.value?.hue() ?: 0f) }
+    val s = remember { mutableStateOf(colorState.value?.saturation() ?: 1f) }
+    val v = remember { mutableStateOf(colorState.value?.value() ?: 1f) }
+
+    var validHex by remember { mutableStateOf(false) }
 
     LaunchedEffect(colorState.value) {
-        h.value = colorState.value.hue()
-        s.value = colorState.value.saturation()
-        v.value = colorState.value.value()
+        h.value = colorState.value?.hue() ?: 0f
+        s.value = colorState.value?.saturation() ?: 1f
+        v.value = colorState.value?.value() ?: 1f
     }
 
     LaunchedEffect(h.value, s.value, v.value) {
         colorState.value = Color.hsv(h.value.coerceIn(0f..360f), s.value, v.value)
+        println(colorState.value.toString())
     }
 
     Column(modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SatValPanel(s, v, h.asFloatState())
         HueBar(h, modifier = modifier)
+        OutlinedTextField(
+            label = { Text(stringResource(MR.strings.dialog_color_hex)) },
+            modifier = Modifier.width(IntrinsicSize.Max),
+            value = colorState.value.toString(),
+            isError = validHex,
+            onValueChange = {
+                validHex = validHexColor(it)
+                if(validHex) {
+                    try {
+                        colorState.value = Color(it.removePrefix("#").toLong(16) or 0x00000000FF000000)
+                    } catch (_: Exception) { }
+                }
+            }
+        )
     }
+}
 
+private fun validHexColor(str: String): Boolean {
+    return Regex("#?([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})").matches(str)
 }
 
 private fun Color.hue(): Float {

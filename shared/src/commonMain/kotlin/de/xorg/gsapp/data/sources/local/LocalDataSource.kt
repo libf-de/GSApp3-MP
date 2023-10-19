@@ -24,31 +24,50 @@ import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
+import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 
 /**
+ * Offline-first data source.
+ *
+ * Must provide read functions that return flows for all data stores,
+ * and matching write suspend functions to update the stores from web.
+ *
  * Interface for device-local data sources.
  * Must provide read *and write* functions for all data stores.
  */
 interface LocalDataSource {
-    suspend fun loadSubstitutionPlan(): Result<SubstitutionSet>
-    suspend fun storeSubstitutionPlan(value: SubstitutionSet)
+    fun getSubstitutionPlanFlow(): Flow<Result<SubstitutionSet>>
+    suspend fun addSubstitutionPlan(value: SubstitutionSet)
     suspend fun cleanupSubstitutionPlan()
-    suspend fun loadSubjects(): Result<List<Subject>>
-    suspend fun storeSubjects(value: List<Subject>)
-    suspend fun storeSubject(value: Subject)
+
+    fun getSubjectsFlow(): Flow<Result<List<Subject>>>
+    suspend fun addAllSubjects(value: List<Subject>)
+    suspend fun addSubject(value: Subject)
     suspend fun updateSubject(value: Subject)
     suspend fun deleteSubject(value: Subject)
-    suspend fun loadTeachers(): Result<List<Teacher>>
-    suspend fun storeTeachers(value: List<Teacher>)
+    suspend fun subjectExists(shortName: String): Boolean
 
-    suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>>
-    suspend fun storeFoodPlan(value: Map<LocalDate, List<Food>>)
+    fun getTeachersFlow(): Flow<Result<List<Teacher>>>
+    suspend fun addAllTeachers(value: List<Teacher>)
+    suspend fun addTeacher(value: Teacher)
+    suspend fun updateTeacher(value: Teacher)
+    suspend fun deleteTeacher(value: Teacher)
+
+
+    fun getFoodMapFlow(): Flow<Result<Map<LocalDate, List<Food>>>>
+    fun getFoodsForDateFlow(date: LocalDate): Flow<Result<List<Food>>>
+    fun getFoodDatesFlow(): Flow<Result<List<LocalDate>>>
+    suspend fun addFood(value: Food)
+    suspend fun addAllFoods(value: List<Food>)
+    suspend fun updateFood(value: Food)
+    suspend fun deleteFood(value: Food)
     suspend fun cleanupFoodPlan()
-    suspend fun loadAdditives(): Result<Map<String, String>>
+
+    fun getAdditivesFlow(): Flow<Result<Map<String, String>>>
     suspend fun storeAdditives(value: Map<String, String>)
 
-    suspend fun loadExams(course: ExamCourse): Result<Map<LocalDate, List<Exam>>>
+    fun getExamsFlow(): Flow<Result<Map<LocalDate, List<Exam>>>>
     suspend fun storeExams(value: Map<LocalDate, List<Exam>>)
     suspend fun cleanupExams()
     suspend fun deleteExam(toDelete: Exam)

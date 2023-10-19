@@ -132,7 +132,14 @@ fun SettingsScreen(
             }
 
             item {
-                ColorPicker(colorState, modifier = Modifier.width(300.dp))
+                SettingsItem(
+                    icon = { mod, tint -> Icon(painter = painterResource(MR.images.subjects),
+                        contentDescription = "",
+                        modifier = mod, tint = tint) },
+                    title = stringResource(MR.strings.pref_subjects),
+                    subtitle = stringResource(MR.strings.pref_subjects_desc),
+                    onClick = { navController.navigate(GSAppRoutes.SETTINGS_SUBJECTS) }
+                )
             }
 
         }

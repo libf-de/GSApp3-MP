@@ -18,6 +18,8 @@
 
 package de.xorg.gsapp.data.model
 
+import de.xorg.gsapp.data.DbTeacher
+
 /**
  * Data class to represent a teacher. Could probably be replaced with a map, but will keep this,
  * maybe will add gender later to display teacher in substitutions like "Hr. Mustermann" instead of
@@ -35,4 +37,9 @@ data class Teacher(
      * Will display the shortName to the user.
      */
     constructor(shortName: String) : this(shortName, shortName)
+
+    /**
+     * Constructor that constructs a Teacher from a DbTeacher object
+     */
+    constructor(dbTeacher: DbTeacher) : this(dbTeacher.shortName, dbTeacher.longName)
 }

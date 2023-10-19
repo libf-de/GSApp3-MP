@@ -14,7 +14,7 @@ import de.xorg.gsapp.ui.components.settings.ColorPicker
 @Preview
 fun ColorPickerPreview() {
     //HueBar(setColor = { value -> })
-    var colorState = remember { mutableStateOf(Color.Green)}
+    var colorState = remember { mutableStateOf<Color?>(Color.Green)}
 
     ColorPicker(colorState, modifier = Modifier.width(300.dp))
 }

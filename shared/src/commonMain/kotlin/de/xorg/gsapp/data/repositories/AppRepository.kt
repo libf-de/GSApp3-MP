@@ -30,7 +30,7 @@ import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
-import de.xorg.gsapp.data.sources.local.LocalDataSource
+import de.xorg.gsapp.data.`sources-legacy`.local.LocalDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
@@ -185,20 +185,31 @@ class AppRepository(di: DI) : GSAppRepository {
     // I'll probably have to change the logic here to not overwrite the user's subjects
     // with the default values TODO: Review logic to prevent overwriting user settings
     override val subjects: Flow<Result<List<Subject>>> = flow {
-        val cached = localDataSource.loadSubjects()
-        if(cached.isSuccess) emit(cached)
+        val local = localDataSource.loadSubjects()
+        if(local.isSuccess) emit(local)
 
-        val web = apiDataSource.loadSubjects()
-        if(web.isSuccess) {
+        val defaults = apiDataSource.loadSubjects()
+
+        // If local subjects and default subjects were successful, merge them.
+        if(defaults.isSuccess && local.isSuccess) {
             //TODO: Can I compare results directly?
-            if(cached.isSuccess)
-                if(cached.getOrNull() == web.getOrNull())
-                    return@flow
-            localDataSource.storeSubjects(web.getOrNull()!!)
-            emit(web)
-        } else if (cached.isSuccess) { return@flow }
+            val localDb = local.getOrNull() ?: emptyList()
+            val remoteDb = defaults.getOrNull() ?: emptyList()
 
-        emit(web)
+            if(localDb.isEmpty()) // If there is no local configuration, store the defaults
+                localDataSource.storeSubjects(remoteDb) // in the local database
+
+            // Merge local and default subjects, preferring the subjects stored in Database
+            val mergedSubjects = localDb + remoteDb.filterNot { it in localDb }
+            emit(Result.success(mergedSubjects))
+        } else if (defaults.isSuccess && local.isFailure) {
+            log.w { "Failed to load subjects from local database, returning defaults!"}
+            emit(defaults)
+        } else if (defaults.isFailure && local.isFailure) {
+            emit(local) //If both fail, return the local database error
+        } else if (defaults.isFailure && local.isSuccess) { //We've already emitted local
+            return@flow
+        }
     }
 
     /**
@@ -265,7 +276,7 @@ class AppRepository(di: DI) : GSAppRepository {
             color = newColor ?: oldSub.color
         )
 
-        if(oldSub != newSub)
+        if(!oldSub.totallyEqual(newSub))
             try {
                 localDataSource.updateSubject(newSub)
             } catch(ex: Exception) {

@@ -19,15 +19,30 @@
 package de.xorg.gsapp.data.sources.local
 
 import androidx.compose.ui.graphics.Color
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import de.xorg.gsapp.data.enums.ExamCourse
+import de.xorg.gsapp.data.exceptions.ElementNotFoundException
 import de.xorg.gsapp.data.exceptions.EmptyStoreException
+import de.xorg.gsapp.data.exceptions.NoEntriesException
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
+import de.xorg.gsapp.data.`sources-legacy`.local.LocalDataSource
 import de.xorg.gsapp.data.sql.GsAppDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flattenConcat
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -56,6 +71,12 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
     }
 
     private val database: GsAppDatabase by di.instance()
+
+    private fun <T> tryFlow(flowToTry: Flow<Result<T>>): Flow<Result<T>> = try {
+        flowToTry
+    } catch (ex: Exception) {
+        flow {emit(Result.failure(ex)) }
+    }
 
     override suspend fun loadSubstitutionPlan(): Result<SubstitutionSet> {
         return try {
@@ -102,12 +123,66 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         }
     }
 
-    override suspend fun storeSubstitutionPlan(value: SubstitutionSet) {
+    override fun getSubstitutionPlanFlow(): Flow<Result<SubstitutionSet>> =
+        tryFlow(
+            database.dbSubstitutionSetQueries
+                .selectLatest()
+                .asFlow()
+                .mapToOneOrNull(Dispatchers.IO)
+                .flatMapLatest { dbSubset ->
+                    if(dbSubset == null) //Return exception if there is no latest SubstitutionSet
+                        return@flatMapLatest flow {
+                            emit(
+                                Result.failure(NoEntriesException())
+                            )
+                        }
+
+                    database.dbSubstitutionQueries
+                        .findSubstitutionsBySetId(dbSubset.id)
+                        .asFlow()
+                        .mapToList(Dispatchers.IO)
+                        .map {
+                            Result.success(
+                                SubstitutionSet(
+                                    dateStr = dbSubset.dateStr,
+                                    date = dbSubset.date,
+                                    notes = dbSubset.notes ?: "",
+                                    substitutions = it.map { dbSub ->
+                                        Substitution(
+                                            klass = dbSub.klass,
+                                            lessonNr = dbSub.lessonNr ?: "?",
+                                            origSubject = Subject(
+                                                shortName = dbSub.origShortName ?: "??",
+                                                longName = dbSub.origLongName ?: "??",
+                                                color = dbSub.origColor ?: Color.Magenta
+                                            ),
+                                            substTeacher = Teacher(
+                                                shortName = dbSub.substTeacherShortName ?: "??",
+                                                longName = dbSub.substTeacherLongName ?: "??"
+                                            ),
+                                            substRoom = dbSub.substRoom ?: "??",
+                                            substSubject = Subject(
+                                                shortName = dbSub.substShortName ?: "??",
+                                                longName = dbSub.substLongName ?: "??",
+                                                color = dbSub.substColor ?: Color.Magenta
+                                            ),
+                                            notes = dbSub.notes ?: "",
+                                            isNew = dbSub.isNew
+                                        )
+                                    }.groupBy { subs -> subs.klass }
+                                )
+                            )
+                        }
+                }
+        )
+
+    override suspend fun addSubstitutionPlan(value: SubstitutionSet) {
         val subsList = value.substitutions.flatMap { it.value }.distinct()
         val teachers = subsList.map { it.substTeacher }.distinct()
         val subjects = subsList.flatMap { listOf(it.origSubject, it.substSubject) }.distinct()
 
         database.transaction {
+            // Store missing teachers in the database
             teachers.forEach { teacher ->
                 database.dbTeacherQueries.insertTeacher(
                     shortName = teacher.shortName,
@@ -115,13 +190,14 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 )
             }
 
-            subjects.forEach { subject ->
+            // Store missing subjects in the database
+            /*subjects.forEach { subject ->
                 database.dbSubjectQueries.insertSubject(
                     shortName = subject.shortName,
                     longName = subject.longName,
                     color = subject.color
                 )
-            }
+            }*/
 
             database.dbSubstitutionSetQueries.insertSubstitutionSet(
                 date = value.date,
@@ -165,18 +241,20 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         log.d { "cleanupSubstitutionPlan(): Cleanup done!" }
     }
 
-    override suspend fun loadSubjects(): Result<List<Subject>> {
-        return try {
-            Result.success(database.dbSubjectQueries.selectAll().executeAsList().map {
-                Subject(shortName = it.shortName, longName = it.longName, color = it.color ?: Color.Magenta)
+    override fun getSubjectsFlow(): Flow<Result<List<Subject>>>
+        = tryFlow(database.dbSubjectQueries
+            .selectAll()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map {
+                Result.success(
+                    it.map { dbSub ->
+                        Subject(dbSub)
+                    }
+                )
             })
-        } catch (ex: Exception) {
-            log.e { ex.stackTraceToString() }
-            Result.failure(ex)
-        }
-    }
 
-    override suspend fun storeSubjects(value: List<Subject>) {
+    override suspend fun addAllSubjects(value: List<Subject>) {
         database.dbSubjectQueries.transaction {
             value.forEach { subject ->
                 database.dbSubjectQueries.insertSubject(
@@ -188,12 +266,133 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         }
     }
 
-    override suspend fun storeSubject(subject: Subject) {
+    override suspend fun addSubject(value: Subject) {
         database.dbSubjectQueries.insertSubject(
-            shortName = subject.shortName,
-            longName = subject.longName,
-            color = subject.color
+            shortName = value.shortName,
+            longName = value.longName,
+            color = value.color
         )
+    }
+
+    override suspend fun subjectExists(shortName: String): Boolean {
+        return try {
+            database.dbSubjectQueries.countByShort(shortName).executeAsOne() > 0
+        } catch(ex: Exception) {
+            log.w { "Exception while checking subject existence: ${ex.stackTraceToString()}"}
+            false
+        }
+    }
+
+    override fun getTeachersFlow(): Flow<Result<List<Teacher>>>
+        = database.dbTeacherQueries
+            .selectAll()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map {
+                Result.success(
+                    it.map { dbTeacher -> Teacher(dbTeacher) }
+                )
+            }
+
+    override suspend fun addAllTeachers(value: List<Teacher>) {
+        database.dbTeacherQueries.transaction {
+            value.forEach {teacher ->
+                database.dbTeacherQueries.insertTeacher(
+                    shortName = teacher.shortName,
+                    longName = teacher.longName
+                )
+            }
+        }
+    }
+
+    override suspend fun addTeacher(value: Teacher) {
+        database.dbTeacherQueries.insertTeacher(
+            shortName = value.shortName,
+            longName = value.longName
+        )
+    }
+
+    override suspend fun updateTeacher(value: Teacher) {
+        database.dbTeacherQueries.updateTeacher(
+            shortName = value.shortName,
+            longName = value.longName
+        )
+    }
+
+    override suspend fun deleteTeacher(value: Teacher) {
+        database.dbTeacherQueries.deleteTeacher(
+            shortName = value.shortName
+        )
+    }
+
+    override fun getFoodMapFlow(): Flow<Result<Map<LocalDate, List<Food>>>> =
+        database.dbFoodQueries
+            .selectAll()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { dbFoodList ->
+                Result.success(
+                    dbFoodList.groupBy { it.date }
+                      .mapValues { foodList ->
+                        foodList.value.map { dbFood ->
+                            Food(
+                                num = dbFood.foodId.toInt(),
+                                name = dbFood.name,
+                                additives = dbFood.additives
+                            )
+                        }
+                      }
+                )
+            }
+
+    override fun getFoodsForDateFlow(date: LocalDate): Flow<Result<List<Food>>>
+        = database.dbFoodQueries.selectByDate(date).asFlow().mapToList(Dispatchers.IO).map {
+            Result.success(
+                it.map { dbFood ->
+                    Food(
+                        num = dbFood.foodId.toInt(),
+                        name = dbFood.name,
+                        additives = dbFood.additives
+                    )
+                }
+            )
+        }
+
+    override fun getFoodDatesFlow(): Flow<Result<List<LocalDate>>>
+        = try {
+            database.dbFoodQueries
+                .selectAllDates()
+                .asFlow()
+                .mapToList(Dispatchers.IO)
+                .map {
+                    Result.success(it)
+                }
+        } catch(ex: Exception) {
+            flow { emit(Result.failure(ex)) }
+        }
+
+    override suspend fun addFood(value: Food) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun addAllFoods(value: List<Food>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateFood(value: Food) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteFood(value: Food) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun storeSubjects(value: List<Subject>) {
+
+    }
+
+    override suspend fun storeSubject(subject: Subject) {
+
     }
 
     override suspend fun updateSubject(subject: Subject) {
@@ -220,14 +419,7 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
     }
 
     override suspend fun storeTeachers(value: List<Teacher>) {
-        database.dbTeacherQueries.transaction {
-            value.forEach {teacher ->
-                database.dbTeacherQueries.insertTeacher(
-                    shortName = teacher.shortName,
-                    longName = teacher.longName
-                )
-            }
-        }
+
     }
 
     override suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>> {
@@ -275,6 +467,10 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         database.dbFoodQueries.clearOld(sevenDaysAgo)
     }
 
+    override fun getAdditivesFlow(): Flow<Result<Map<String, String>>> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun loadAdditives(): Result<Map<String, String>> {
         return try {
             Result.success(
@@ -294,6 +490,10 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 database.dbAdditiveQueries.insert(shortName = it.key, longName = it.value)
             }
         }
+    }
+
+    override fun getExamsFlow(): Flow<Result<Map<LocalDate, List<Exam>>>> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun loadExams(course: ExamCourse): Result<Map<LocalDate, List<Exam>>> {

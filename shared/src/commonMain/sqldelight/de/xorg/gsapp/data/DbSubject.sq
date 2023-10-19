@@ -1,16 +1,19 @@
 import androidx.compose.ui.graphics.Color;
-import kotlin.Boolean;
 
 CREATE TABLE DbSubject (
     shortName TEXT NOT NULL PRIMARY KEY,
     longName TEXT NOT NULL,
-    color INTEGER AS Color,
-    isDefault INTEGER AS Boolean NOT NULL DEFAULT 1
+    color INTEGER AS Color
 );
 
 selectAll:
 SELECT *
 FROM DbSubject;
+
+countByShort:
+SELECT COUNT()
+FROM DbSubject
+WHERE shortName = :shortName;
 
 insertSubject:
 INSERT OR IGNORE INTO DbSubject(shortName, longName, color)

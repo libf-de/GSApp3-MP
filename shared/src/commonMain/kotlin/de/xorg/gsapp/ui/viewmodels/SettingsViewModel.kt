@@ -27,6 +27,7 @@ import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.GSAppRepository
+import de.xorg.gsapp.ui.state.ColorPickerMode
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.state.UiState
@@ -67,6 +68,8 @@ class SettingsViewModel(
     private val _subjectsError: MutableStateFlow<Throwable> = MutableStateFlow(NoException())
     var subjectsError = _subjectsError.asStateFlow()
 
+    private val _colorpickerMode: MutableStateFlow<ColorPickerMode> = MutableStateFlow(ColorPickerMode.default)
+    var colorpickerMode = _colorpickerMode.asStateFlow()
 
 
 
@@ -74,6 +77,7 @@ class SettingsViewModel(
         loadSettings() //TODO: Have settings loading state!
         loadTeachers()
         loadSubjects()
+
     }
 
     private fun loadSettings() {
@@ -134,7 +138,14 @@ class SettingsViewModel(
         }
     }
 
-    fun setSubject(oldSubject: Subject, longName: String? = null, color: Color? = null) {
+    fun addSubject(subject: Subject) {
+        viewModelScope.launch {
+            appRepo.addSubject(subject)
+            loadSubjects()
+        }
+    }
+
+    fun updateSubject(oldSubject: Subject, longName: String? = null, color: Color? = null) {
         viewModelScope.launch {
             appRepo.updateSubject(oldSubject, longName, color)
             loadSubjects()
@@ -172,6 +183,10 @@ class SettingsViewModel(
             appRepo.setRole(role)
             appRepo.setFilterValue(filter)
         }
+    }
+
+    fun setColorpickerMode(pickerMode: ColorPickerMode) {
+        _colorpickerMode.value = pickerMode
     }
 
 }

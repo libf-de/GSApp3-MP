@@ -55,7 +55,6 @@
     <string name="subplan_dsc_teacher">Replacement teacher</string>
 
 
-
     <!--- Settings -->
     <string name="settings_title">Settings</string>
     <!-- Settings items -->
@@ -64,6 +63,8 @@
     <string name="pref_filter_student">Class %s</string>
     <string name="pref_filter_all">None (show all)</string>
     <string name="pref_push">Push notifications</string>
+    <string name="pref_subjects">Edit subjects</string>
+    <string name="pref_subjects_desc">(long names, colors)</string>
 
     <!-- Filter Dialog -->
     <string name="filter_dialog_title">Filter substitution plan</string>
@@ -85,10 +86,21 @@
     <string name="push_dialog_description">Choose whether you want to receive no notification, notification only when it affects you, or always notification of new substitution plans.</string>
     <string name="push_unavailable">(not available on %s)</string>
 
+    <!-- Subject management -->
+    <string name="subject_manager_colorpicker_title">Choose color for %s</string>
+    <string name="subject_manager_colorpicker_nullsubject">a subject</string>
+    <string name="subject_manager_add_title">Add subject</string>
+    <string name="subject_manager_add_desc">Enter the abbreviation of the subject as it appears in the substitution plan. Long name and color can be changed afterwards.</string>
+
 
     <!-- General dialog buttons -->
     <string name="dialog_save">Save</string>
     <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_color_simple">Simple</string>
+    <string name="dialog_color_simple_desc">Choose from a list of colors</string>
+    <string name="dialog_color_advanced">Advanced</string>
+    <string name="dialog_color_advanced_desc">Choose using hue, saturation and brightness or using a hex string</string>
+    <string name="dialog_color_hex">Hex:</string>
 
     <!-- Generic strings -->
     <string name="generic_loading">Loading, please wait…</string>

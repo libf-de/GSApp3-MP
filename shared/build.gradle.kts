@@ -109,6 +109,9 @@ kotlin {
                 // Multiplatform Settings
                 implementation("com.russhwolf:multiplatform-settings:1.0.0")
 
+                // Sqldelight coroutines extension
+                implementation("app.cash.sqldelight:coroutines-extensions:2.0.0")
+
                 // Insetsx -> Provides paddings respecting on-screen keyboards
                 //implementation("com.moriatsushi.insetsx:insetsx:0.1.0-alpha10")
 

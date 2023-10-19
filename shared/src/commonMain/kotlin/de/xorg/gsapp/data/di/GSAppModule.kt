@@ -26,9 +26,9 @@ import de.xorg.gsapp.data.DbSubstitutionSet
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.AppRepository
 import de.xorg.gsapp.data.repositories.GSAppRepository
-import de.xorg.gsapp.data.sources.local.LocalDataSource
+import de.xorg.gsapp.data.`sources-legacy`.local.LocalDataSource
 import de.xorg.gsapp.data.sources.local.PathSource
-import de.xorg.gsapp.data.sources.local.SqldelightDataSource
+import de.xorg.gsapp.data.`sources-legacy`.local.SqldelightDataSource
 import de.xorg.gsapp.data.sources.remote.DebugWebDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
 import de.xorg.gsapp.data.sql.GsAppDatabase
