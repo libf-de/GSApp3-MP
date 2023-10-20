@@ -4,7 +4,8 @@ CREATE TABLE DbSubstitutionSet (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     dateStr TEXT NOT NULL,
     date INTEGER AS LocalDate NOT NULL,
-    notes TEXT);
+    notes TEXT,
+    hashCode INTEGER NOT NULL);
 
 selectAll:
 SELECT *
@@ -17,8 +18,8 @@ ORDER BY id DESC
 LIMIT 1;
 
 insertSubstitutionSet:
-INSERT INTO DbSubstitutionSet(dateStr, date, notes)
-VALUES (?, ?, ?);
+INSERT INTO DbSubstitutionSet(dateStr, date, notes, hashCode)
+VALUES (?, ?, ?, ?);
 
 lastInsertRowId:
 SELECT last_insert_rowid();

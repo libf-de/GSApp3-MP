@@ -31,35 +31,65 @@ import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.ui.state.AppState
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.UiState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.kodein.di.DI
 import org.kodein.di.instance
+import org.lighthousegames.logging.logging
 
 /**
  * View model for the main app tabs
  */
 class GSAppViewModel(di: DI) : ViewModel() {
+
+    companion object {
+        val log = logging()
+    }
+
     private val appRepo: GSAppRepository by di.instance()
+    private val repoScope = CoroutineScope(Dispatchers.IO)
 
     var uiState by mutableStateOf(AppState())
         private set
 
-    private val _subStateFlow = MutableStateFlow(SubstitutionSet())
-    val subStateFlow = _subStateFlow.asStateFlow()
+    val subFlow = appRepo.getFilteredSubstitutions().shareIn(
+        viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
+    //private val _subStateFlow = MutableStateFlow(SubstitutionSet())
+    //val subStateFlow = _subStateFlow.asStateFlow()
 
-    private val _foodStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Food>>())
-    val foodStateFlow = _foodStateFlow.asStateFlow()
+    val foodFlow = appRepo.getFoodplan().shareIn(
+        viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
+    //private val _foodStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Food>>())
+    //val foodStateFlow = _foodStateFlow.asStateFlow()
 
-    private val _examStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Exam>>())
-    val examStateFlow = _examStateFlow.asStateFlow()
+    val examFlow = appRepo.getExams().shareIn(
+        viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
+    //private val _examStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Exam>>())
+    //val examStateFlow = _examStateFlow.asStateFlow()
 
     // Strong references for settings observers. Android Studio marks these as unused,
     // but it's necessary for the Listeners to work.
@@ -71,13 +101,202 @@ class GSAppViewModel(di: DI) : ViewModel() {
     val filterObserver = _filterObserver.asStateFlow()
 
     init {
+        initStateFromFlows()
+
         //TODO: Is it a good idea to load all tabs upon app creation?
-        loadSubstitutions()
-        loadFoodplan()
-        loadExams()
+        //loadSubstitutions()
+        //loadFoodplan()
+        //loadExams()
+        updateExams()
+        updateFoodplan()
+        updateExams()
     }
 
-    private suspend fun loadSettings() {
+    private fun initStateFromFlows() {
+        viewModelScope.launch {
+            subFlow.collect {
+                uiState = if (it.isFailure) {
+                    if (uiState.substitutionState == UiState.NORMAL_LOADING ||
+                        uiState.substitutionState == UiState.NORMAL
+                    ) {
+
+                        uiState.copy(
+                            substitutionState = UiState.NORMAL_FAILED,
+                            substitutionError = it.exceptionOrNull()!!
+                        )
+
+                    } else {
+                        uiState.copy(
+                            substitutionState = UiState.FAILED,
+                            substitutionError = it.exceptionOrNull()!!
+                        )
+                    }
+                } else {
+                    if (it.getOrNull()!!.substitutions.isEmpty()) {
+                        uiState.copy(substitutionState = UiState.EMPTY)
+                    } else {
+                        uiState.copy(substitutionState = UiState.NORMAL)
+                    }
+                }
+            }
+        }
+        viewModelScope.launch {
+            foodFlow.collect {
+                uiState = if (it.isFailure) {
+                    if (uiState.foodplanState == UiState.NORMAL_LOADING ||
+                        uiState.foodplanState == UiState.NORMAL
+                    ) {
+
+                        uiState.copy(
+                            foodplanState = UiState.NORMAL_FAILED,
+                            foodplanError = it.exceptionOrNull()!!
+                        )
+
+                    } else {
+                        uiState.copy(
+                            foodplanState = UiState.FAILED,
+                            foodplanError = it.exceptionOrNull()!!
+                        )
+                    }
+                } else {
+                    if (it.getOrNull()!!.isEmpty()) {
+                        uiState.copy(foodplanState = UiState.EMPTY)
+                    } else {
+                        uiState.copy(foodplanState = UiState.NORMAL)
+                    }
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            examFlow.collect {
+                uiState = if(it.isFailure) {
+                    if(uiState.examState == UiState.NORMAL_LOADING ||
+                        uiState.examState == UiState.NORMAL) {
+
+                        uiState.copy(examState = UiState.NORMAL_FAILED,
+                            examError = it.exceptionOrNull()!!)
+
+                    } else {
+                        uiState.copy(examState = UiState.FAILED,
+                            examError = it.exceptionOrNull()!!)
+                    }
+                } else {
+                    if(it.getOrNull()!!.isEmpty()) {
+                        uiState.copy(examState = UiState.EMPTY)
+                    } else {
+                        uiState.copy(examState = UiState.NORMAL)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateSubstitutions() {
+        uiState = if(uiState.substitutionState == UiState.NORMAL)
+            uiState.copy(substitutionState = UiState.NORMAL_LOADING)
+        else uiState.copy(substitutionState = UiState.LOADING)
+
+        repoScope.launch {
+            appRepo.updateSubstitutions {
+                if(it.isFailure) {
+                    log.w { "failed to update substitution plan: ${it.exceptionOrNull()}"}
+                    uiState = if (uiState.substitutionState == UiState.NORMAL_LOADING ||
+                        uiState.substitutionState == UiState.NORMAL
+                    ) {
+                        uiState.copy(
+                            substitutionState = UiState.NORMAL_FAILED,
+                            substitutionError = it.exceptionOrNull()!!
+                        )
+                    } else {
+                        uiState.copy(
+                            substitutionState = UiState.FAILED,
+                            substitutionError = it.exceptionOrNull()!!
+                        )
+                    }
+                } else {
+                    if(it.getOrNull() == false) {
+                        //TODO: Notify user of "no new data available"
+                        log.d { "No new data available (substitution plan)!" }
+                    } else {
+                        log.d { "New substitution data available!" }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateFoodplan() {
+        uiState = if(uiState.foodplanState == UiState.NORMAL)
+            uiState.copy(foodplanState = UiState.NORMAL_LOADING)
+        else uiState.copy(foodplanState = UiState.LOADING)
+
+        repoScope.launch {
+            appRepo.updateFoodplan {
+                if(it.isFailure) {
+                    log.w { "failed to update foodplan: ${it.exceptionOrNull()}"}
+                    uiState = if (uiState.foodplanState == UiState.NORMAL_LOADING ||
+                        uiState.foodplanState == UiState.NORMAL
+                    ) {
+                        uiState.copy(
+                            foodplanState = UiState.NORMAL_FAILED,
+                            foodplanError = it.exceptionOrNull()!!
+                        )
+                    } else {
+                        uiState.copy(
+                            foodplanState = UiState.FAILED,
+                            foodplanError = it.exceptionOrNull()!!
+                        )
+                    }
+                } else {
+                    if(it.getOrNull() == false) {
+                        //TODO: Notify user of "no new data available"
+                        log.d { "No new data available (foodplan)!" }
+                    } else {
+                        log.d { "New food data available!" }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateExams() {
+        uiState = if(uiState.examState == UiState.NORMAL)
+            uiState.copy(examState = UiState.NORMAL_LOADING)
+        else uiState.copy(examState = UiState.LOADING)
+
+        repoScope.launch {
+            appRepo.updateExams {
+                if(it.isFailure) {
+                    log.w { "failed to update exams: ${it.exceptionOrNull()}"}
+                    uiState = if (uiState.examState == UiState.NORMAL_LOADING ||
+                        uiState.examState == UiState.NORMAL
+                    ) {
+                        uiState.copy(
+                            examState = UiState.NORMAL_FAILED,
+                            examError = it.exceptionOrNull()!!
+                        )
+                    } else {
+                        uiState.copy(
+                            examState = UiState.FAILED,
+                            examError = it.exceptionOrNull()!!
+                        )
+                    }
+                } else {
+                    if(it.getOrNull() == false) {
+                        //TODO: Notify user of "no new data available"
+                        log.d { "No new data available (exam)!" }
+                    } else {
+                        log.d { "New exam data available!" }
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    /*private suspend fun loadSettings() {
         uiState = uiState.copy(
             filterRole = appRepo.getRole(),
             filter = appRepo.getFilterValue()
@@ -209,5 +428,5 @@ class GSAppViewModel(di: DI) : ViewModel() {
                 _foodStateFlow.value = foodplan
             }
         }
-    }
+    }*/
 }

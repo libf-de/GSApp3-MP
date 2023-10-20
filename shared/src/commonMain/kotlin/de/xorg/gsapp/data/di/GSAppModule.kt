@@ -26,11 +26,12 @@ import de.xorg.gsapp.data.DbSubstitutionSet
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.AppRepository
 import de.xorg.gsapp.data.repositories.GSAppRepository
-import de.xorg.gsapp.data.`sources-legacy`.local.LocalDataSource
-import de.xorg.gsapp.data.sources.local.PathSource
-import de.xorg.gsapp.data.`sources-legacy`.local.SqldelightDataSource
-import de.xorg.gsapp.data.sources.remote.DebugWebDataSource
+import de.xorg.gsapp.data.sources.defaults.DefaultsDataSource
+import de.xorg.gsapp.data.sources.defaults.GsDefaultsSource
+import de.xorg.gsapp.data.sources.local.LocalDataSource
+import de.xorg.gsapp.data.sources.local.SqldelightDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
+import de.xorg.gsapp.data.sources.remote.WebsiteDataSource
 import de.xorg.gsapp.data.sql.GsAppDatabase
 import de.xorg.gsapp.data.sql_adapters.ColorAdapter
 import de.xorg.gsapp.data.sql_adapters.CommaSeparatedListAdapter
@@ -62,10 +63,10 @@ val mainModule = DI.Module("mainModule") {
             )
         )
     }
-    //bind<RemoteDataSource>() with singleton { GsWebsiteDataSource() } TODO: Revert for release builds!
-    bind<RemoteDataSource>() with singleton { DebugWebDataSource() }
-    bind<PathSource>() with singleton { PathSource(di) }
+    //bind<RemoteDataSource>() with singleton { DebugWebDataSource() }
+    bind<RemoteDataSource>() with singleton { WebsiteDataSource(di) }
     bind<LocalDataSource>() with singleton { SqldelightDataSource(di) }
+    bind<DefaultsDataSource>() with singleton { GsDefaultsSource(di) }
     bind<GSAppRepository>() with singleton { AppRepository(di) }
     bind<PushNotificationUtil>() with singleton { PushNotificationUtil(di) }
     bind<GSAppViewModel>() with singleton { GSAppViewModel(di) }

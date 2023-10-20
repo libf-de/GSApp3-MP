@@ -19,8 +19,10 @@
 import androidx.compose.runtime.Composable
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.PreferencesSettings
-import com.russhwolf.settings.Settings
+import com.russhwolf.settings.coroutines.FlowSettings
+import com.russhwolf.settings.coroutines.toFlowSettings
 import de.xorg.gsapp.GSApp
 import de.xorg.gsapp.data.di.mainModule
 import de.xorg.gsapp.data.sql.GsAppDatabase
@@ -32,10 +34,11 @@ import java.util.prefs.Preferences
 
 actual fun getPlatformName(): String = "Desktop"
 
+@OptIn(ExperimentalSettingsApi::class)
 @Composable fun MainView() = withDI({
-    bind<Settings>() with singleton { PreferencesSettings(
+    bind<FlowSettings>() with singleton { PreferencesSettings(
         Preferences.userRoot()
-    ) }
+    ).toFlowSettings() }
     bind<SqlDriver>() with singleton {
         val dbPath = "gsapp.db"
 

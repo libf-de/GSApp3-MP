@@ -77,6 +77,7 @@ import de.xorg.gsapp.ui.tools.LETTERS
 import de.xorg.gsapp.ui.tools.classList
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.stringResource
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
@@ -92,7 +93,7 @@ fun FilterSettingsScreen(
 ) {
     val di = localDI()
     val viewModel: SettingsViewModel by di.instance()
-    val teachers by viewModel.teachers.collectAsState(emptyList())
+    val teachers by viewModel.teachers.collectAsStateWithLifecycle(Result.success(emptyList()))
 
     // FilterValue to store in settings
     // (Teacher shortName / Student class)
@@ -107,9 +108,15 @@ fun FilterSettingsScreen(
     val inputInteractionSource = remember { MutableInteractionSource() }
     //Long teacher name display value (right)
     var teacherLong by remember { mutableStateOf("") }
-    var teacherCandidate: Teacher? by remember { mutableStateOf(teachers.firstOrNull {
-        it.shortName == filterVal
-    }) }
+    var teacherCandidate: Teacher? by remember {
+        mutableStateOf(
+            teachers
+                .getOrDefault(emptyList())
+                .firstOrNull {
+                    it.shortName == filterVal
+                }
+        )
+    }
 
     val confirmFocusReq = remember { FocusRequester() }
 
@@ -209,9 +216,11 @@ fun FilterSettingsScreen(
                             filterVal = it.uppercase()  //Make input all-caps and alphanumeric
                                           .replace(Regex("[^A-Za-z0-9]"), "")
                             isValid = filterVal.length > 2 //Valid if TeacherShort +3 characters
-                            teacherCandidate = teachers.firstOrNull { teacher ->
-                                return@firstOrNull teacher.shortName == filterVal
-                            }
+                            teacherCandidate = teachers
+                                .getOrDefault(emptyList())
+                                .firstOrNull { teacher ->
+                                    return@firstOrNull teacher.shortName == filterVal
+                                }
                             teacherLong = teacherCandidate?.longName ?: ""
                             if(isValid) viewModel.setRoleAndFilter(roleVal, filterVal)
                         },
@@ -272,7 +281,7 @@ fun FilterSettingsScreen(
                 if(roleVal == FilterRole.TEACHER) {
                     if(viewModel.teacherState == UiState.NORMAL &&
                         teacherCandidate == null) {
-                        items(teachers.filter { teacher ->
+                        items(teachers.getOrDefault(emptyList()).filter { teacher ->
                             return@filter teacher.shortName
                                 .lowercase()
                                 .contains(filterVal.lowercase())

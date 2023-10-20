@@ -107,7 +107,9 @@ kotlin {
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")
 
                 // Multiplatform Settings
-                implementation("com.russhwolf:multiplatform-settings:1.0.0")
+                implementation("com.russhwolf:multiplatform-settings:1.1.0")
+                implementation("com.russhwolf:multiplatform-settings-coroutines:1.1.0")
+
 
                 // Sqldelight coroutines extension
                 implementation("app.cash.sqldelight:coroutines-extensions:2.0.0")
@@ -136,6 +138,11 @@ kotlin {
 
                 // Firebase Messaging -> used for push notification
                 implementation("com.google.firebase:firebase-messaging-ktx:23.2.1")
+
+                // Android implementation of FlowSettings
+                implementation("com.russhwolf:multiplatform-settings-datastore:1.1.0")
+                implementation("androidx.datastore:datastore-preferences:1.0.0")
+
 
                 // Preview android composables
                 implementation(compose.preview)

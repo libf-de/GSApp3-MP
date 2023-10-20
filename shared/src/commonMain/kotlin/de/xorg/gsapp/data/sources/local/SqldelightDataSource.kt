@@ -22,27 +22,23 @@ import androidx.compose.ui.graphics.Color
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
-import de.xorg.gsapp.data.enums.ExamCourse
-import de.xorg.gsapp.data.exceptions.ElementNotFoundException
 import de.xorg.gsapp.data.exceptions.EmptyStoreException
 import de.xorg.gsapp.data.exceptions.NoEntriesException
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.Substitution
+import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
-import de.xorg.gsapp.data.`sources-legacy`.local.LocalDataSource
 import de.xorg.gsapp.data.sql.GsAppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flattenConcat
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -78,60 +74,15 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         flow {emit(Result.failure(ex)) }
     }
 
-    override suspend fun loadSubstitutionPlan(): Result<SubstitutionSet> {
-        return try {
-            val latest = database.dbSubstitutionSetQueries.selectLatest().executeAsOneOrNull()
-                ?: return Result.failure(EmptyStoreException())
-            val substitutions: Map<String, List<Substitution>> = database.dbSubstitutionQueries
-                .findSubstitutionsBySetId(latest.id)
-                .executeAsList()
-                .map {
-                    Substitution(
-                        klass = it.klass,
-                        lessonNr = it.lessonNr ?: "?",
-                        origSubject = Subject(
-                            shortName = it.origShortName ?: "??",
-                            longName = it.origLongName ?: "??",
-                            color = it.origColor ?: Color.Magenta
-                        ),
-                        substTeacher = Teacher(
-                            shortName = it.substTeacherShortName ?: "??",
-                            longName = it.substTeacherLongName ?: "??"
-                        ),
-                        substRoom = it.substRoom ?: "??",
-                        substSubject = Subject(
-                            shortName = it.substShortName ?: "??",
-                            longName = it.substLongName ?: "??",
-                            color = it.substColor ?: Color.Magenta
-                        ),
-                        notes = it.notes ?: "",
-                        isNew = it.isNew
-                    )
-                }
-                .groupBy { subs -> subs.klass }
-            Result.success(
-                SubstitutionSet(
-                    dateStr = latest.dateStr,
-                    date = latest.date,
-                    notes = latest.notes ?: "",
-                    substitutions = substitutions
-                )
-            )
-        } catch(ex: Exception) {
-            log.e { ex.stackTraceToString() }
-            Result.failure(ex)
-        }
-    }
-
     override fun getSubstitutionPlanFlow(): Flow<Result<SubstitutionSet>> =
         tryFlow(
             database.dbSubstitutionSetQueries
                 .selectLatest()
                 .asFlow()
                 .mapToOneOrNull(Dispatchers.IO)
-                .flatMapLatest { dbSubset ->
+                .flatMapConcat { dbSubset -> //flatMapLatest?
                     if(dbSubset == null) //Return exception if there is no latest SubstitutionSet
-                        return@flatMapLatest flow {
+                        return@flatMapConcat flow {
                             emit(
                                 Result.failure(NoEntriesException())
                             )
@@ -176,7 +127,64 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 }
         )
 
-    override suspend fun addSubstitutionPlan(value: SubstitutionSet) {
+    override fun getLatestSubstitutionHashAndDate(): Result<Pair<Int, LocalDate>> {
+        return try {
+            val latestSet = database
+                .dbSubstitutionSetQueries
+                .selectLatest()
+                .executeAsOneOrNull()
+
+            Result.success(
+                Pair(latestSet?.hashCode?.toInt() ?: -1, latestSet?.date ?: LocalDate.fromEpochDays(0))
+            )
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
+    }
+
+    override fun getLatestSubstitutionHash(): Result<Int> {
+        return try {
+            Result.success(
+                database
+                    .dbSubstitutionSetQueries
+                    .selectLatest()
+                    .executeAsOneOrNull()
+                    ?.hashCode
+                    ?.toInt() ?: -1
+            )
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
+    }
+
+    override suspend fun addSubstitutionPlan(value: SubstitutionApiModelSet) {
+        database.transaction {
+            database.dbSubstitutionSetQueries.insertSubstitutionSet(
+                dateStr = value.dateStr,
+                date = value.date,
+                notes = value.notes,
+                hashCode = value.hashCode().toLong()
+            )
+
+            val setId = database.dbSubstitutionSetQueries.lastInsertRowId().executeAsOne()
+
+            value.substitutionApiModels.forEach {
+                database.dbSubstitutionQueries.insertSubstitution(
+                    assSet = setId,
+                    klass = it.klass,
+                    lessonNr = it.lessonNr,
+                    origSubject = it.origSubject,
+                    substTeacher = it.substTeacher,
+                    substRoom = it.substRoom,
+                    substSubject = it.substSubject,
+                    notes = it.notes,
+                    isNew = it.isNew
+                )
+            }
+        }
+    }
+
+    /*override suspend fun addSubstitutionPlan(value: SubstitutionSet) {
         val subsList = value.substitutions.flatMap { it.value }.distinct()
         val teachers = subsList.map { it.substTeacher }.distinct()
         val subjects = subsList.flatMap { listOf(it.origSubject, it.substSubject) }.distinct()
@@ -221,7 +229,7 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 )
             }
         }
-    }
+    }*/
 
     override suspend fun cleanupSubstitutionPlan() {
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
@@ -283,8 +291,17 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         }
     }
 
+    override suspend fun countSubjects(): Result<Long> {
+        return try {
+            Result.success(database.dbSubjectQueries.countAll().executeAsOne())
+        } catch (ex: Exception) {
+            Result.failure(ex)
+        }
+    }
+
     override fun getTeachersFlow(): Flow<Result<List<Teacher>>>
-        = database.dbTeacherQueries
+    = tryFlow(
+        database.dbTeacherQueries
             .selectAll()
             .asFlow()
             .mapToList(Dispatchers.IO)
@@ -293,6 +310,7 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                     it.map { dbTeacher -> Teacher(dbTeacher) }
                 )
             }
+    )
 
     override suspend fun addAllTeachers(value: List<Teacher>) {
         database.dbTeacherQueries.transaction {
@@ -346,7 +364,8 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
             }
 
     override fun getFoodsForDateFlow(date: LocalDate): Flow<Result<List<Food>>>
-        = database.dbFoodQueries.selectByDate(date).asFlow().mapToList(Dispatchers.IO).map {
+    = tryFlow(
+        database.dbFoodQueries.selectByDate(date).asFlow().mapToList(Dispatchers.IO).map {
             Result.success(
                 it.map { dbFood ->
                     Food(
@@ -357,6 +376,7 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 }
             )
         }
+    )
 
     override fun getFoodDatesFlow(): Flow<Result<List<LocalDate>>>
         = try {
@@ -371,81 +391,45 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
             flow { emit(Result.failure(ex)) }
         }
 
-    override suspend fun addFood(value: Food) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun addAllFoods(value: List<Food>) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun updateFood(value: Food) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun deleteFood(value: Food) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun storeSubjects(value: List<Subject>) {
-
-    }
-
-    override suspend fun storeSubject(subject: Subject) {
-
-    }
-
-    override suspend fun updateSubject(subject: Subject) {
-        database.dbSubjectQueries.updateSubject(
-            shortName = subject.shortName,
-            longName = subject.longName,
-            color = subject.color
-        )
-    }
-
-    override suspend fun deleteSubject(value: Subject) {
-        database.dbSubjectQueries.deleteSubject(value.shortName)
-    }
-
-    override suspend fun loadTeachers(): Result<List<Teacher>> {
-        return try {
-            Result.success(database.dbTeacherQueries.selectAll().executeAsList().map {
-                Teacher(shortName = it.shortName, longName = it.longName)
-            })
-        } catch (ex: Exception) {
-            log.e { ex.stackTraceToString() }
-            Result.failure(ex)
-        }
-    }
-
-    override suspend fun storeTeachers(value: List<Teacher>) {
-
-    }
-
-    override suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>> {
+    override fun getLatestFoods(): Result<List<Food>> {
         return try {
             Result.success(
-                database.dbFoodQueries
-                    .selectAll()
+                database
+                    .dbFoodQueries
+                    .selectLatestFoods()
                     .executeAsList()
-                    .groupBy { it.date }
-                    .mapValues { foodList ->
-                        foodList.value.map { dbFood ->
-                            Food(
-                                num = dbFood.foodId.toInt(),
-                                name = dbFood.name,
-                                additives = dbFood.additives
-                            )
-                        }
+                    .map {
+                        Food(
+                            num = it.foodId.toInt(),
+                            name = it.name,
+                            additives = it.additives
+                        )
                     }
             )
-        } catch (ex: Exception) {
-            log.e { ex.stackTraceToString() }
+
+        } catch(ex: Exception) {
             Result.failure(ex)
         }
     }
 
-    override suspend fun storeFoodPlan(value: Map<LocalDate, List<Food>>) {
+    override fun getLatestFoodDate(): Result<LocalDate> {
+        return try {
+            val latestSet = database
+                .dbFoodQueries
+                .selectLatestFoods()
+                .executeAsList()
+
+            if(latestSet.isEmpty())
+                Result.success(LocalDate.fromEpochDays(0))
+            else
+                Result.success(latestSet.first().date)
+
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
+    }
+
+    override suspend fun addFoodMap(value: Map<LocalDate, List<Food>>) {
         database.dbFoodQueries.transaction {
             value.forEach { dayFoods ->
                 dayFoods.value.forEach { food ->
@@ -460,6 +444,18 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         }
     }
 
+    override suspend fun updateSubject(value: Subject) {
+        database.dbSubjectQueries.updateSubject(
+            shortName = value.shortName,
+            longName = value.longName,
+            color = value.color
+        )
+    }
+
+    override suspend fun deleteSubject(value: Subject) {
+        database.dbSubjectQueries.deleteSubject(value.shortName)
+    }
+
     override suspend fun cleanupFoodPlan() {
         val sevenDaysAgo = Clock.System
             .todayIn(TimeZone.currentSystemDefault())
@@ -467,24 +463,22 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         database.dbFoodQueries.clearOld(sevenDaysAgo)
     }
 
-    override fun getAdditivesFlow(): Flow<Result<Map<String, String>>> {
-        TODO("Not yet implemented")
-    }
+    override fun getAdditivesFlow(): Flow<Result<Map<String, String>>>
+    = tryFlow(
+        database.dbAdditiveQueries
+            .selectAll()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { additiveList ->
+                Result.success(
+                    additiveList.associate {
+                        it.shortName to it.longName
+                    }
+                )
+            }
+    )
 
-    override suspend fun loadAdditives(): Result<Map<String, String>> {
-        return try {
-            Result.success(
-                database.dbAdditiveQueries.selectAll().executeAsList().associate {
-                    it.shortName to it.longName
-                }
-            )
-        } catch(ex: Exception) {
-            log.e { ex.stackTraceToString() }
-            Result.failure(ex)
-        }
-    }
-
-    override suspend fun storeAdditives(value: Map<String, String>) {
+    override suspend fun addAllAdditives(value: Map<String, String>) {
         database.dbAdditiveQueries.transaction {
             value.forEach {
                 database.dbAdditiveQueries.insert(shortName = it.key, longName = it.value)
@@ -492,40 +486,83 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         }
     }
 
-    override fun getExamsFlow(): Flow<Result<Map<LocalDate, List<Exam>>>> {
-        TODO("Not yet implemented")
-    }
+    override fun getExamsFlow(): Flow<Result<List<Exam>>>
+    = tryFlow(
+        database.dbExamQueries
+            .selectAllWithSubjects()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { examList ->
+                Result.success(
+                    examList
+                        .map {
+                            val subject = if(it.subject == null ||
+                                it.subjectLongName == null ||
+                                it.subjectColor == null)
+                                null
+                            else
+                                Subject(
+                                    shortName = it.subject,
+                                    longName = it.subjectLongName,
+                                    color = it.subjectColor
+                                )
 
-    override suspend fun loadExams(course: ExamCourse): Result<Map<LocalDate, List<Exam>>> {
+                            Exam(
+                                label = it.label,
+                                date = it.date,
+                                course = it.course,
+                                subject = subject,
+                                isCoursework = it.isCoursework
+                            )}
+                )
+            }
+    )
+
+    override suspend fun getAllExams(): Result<List<Exam>> {
         return try {
             Result.success(
-                database.dbExamQueries.selectByCourseWithSubjects(course).executeAsList().map {
+                database.dbExamQueries.selectAllWithSubjects().executeAsList().map {
                     val subject = if(it.subject == null ||
-                                  it.subjectLongName == null ||
-                                  it.subjectColor == null)
-                                    null
-                               else
-                                    Subject(
-                                        shortName = it.subject,
-                                        longName = it.subjectLongName,
-                                        color = it.subjectColor
-                                    )
+                        it.subjectLongName == null ||
+                        it.subjectColor == null)
+                        null
+                    else
+                        Subject(
+                            shortName = it.subject,
+                            longName = it.subjectLongName,
+                            color = it.subjectColor
+                        )
                     Exam(label = it.label,
-                         date = it.date,
-                         course = it.course,
-                         isCoursework = it.isCoursework,
-                         subject = subject)
-                }.groupBy { it.date }
+                        date = it.date,
+                        course = it.course,
+                        isCoursework = it.isCoursework,
+                        subject = subject)
+                }
             )
         } catch(ex: Exception) {
-            log.e { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }
 
-    override suspend fun storeExams(value: Map<LocalDate, List<Exam>>) {
+    override suspend fun clearAndAddAllExams(value: List<Exam>) {
         database.dbExamQueries.transaction {
-            value.flatMap { it.value }.forEach {
+            database.dbExamQueries.clearAll()
+
+            value.forEach {
+                database.dbExamQueries.insert(
+                    label = it.label,
+                    date = it.date,
+                    course = it.course,
+                    isCoursework = it.isCoursework,
+                    subject = it.subject?.shortName
+                )
+            }
+        }
+    }
+
+    override suspend fun addAllExams(value: List<Exam>) {
+        database.dbExamQueries.transaction {
+            value.forEach {
                 database.dbExamQueries.insert(
                     label = it.label,
                     date = it.date,

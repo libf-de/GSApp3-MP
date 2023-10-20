@@ -31,8 +31,12 @@ import de.xorg.gsapp.ui.state.ColorPickerMode
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.state.UiState
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
@@ -54,16 +58,26 @@ class SettingsViewModel(
     var pushPreference = _pushPreference.asStateFlow()
     private val pushUtil: PushNotificationUtil by di.instance()
 
-    private val _teachers: MutableStateFlow<List<Teacher>> = MutableStateFlow(emptyList())
-    var teachers = _teachers.asStateFlow()
+    /*private val _teachers: MutableStateFlow<List<Teacher>> = MutableStateFlow(emptyList())
+    var teachers = _teachers.asStateFlow()*/
+    val teachers = appRepo.getTeachers().shareIn(
+        viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
     private val _teacherError: MutableStateFlow<Throwable> = MutableStateFlow(NoException())
     var teacherError = _teacherError.asStateFlow()
     var teacherState by mutableStateOf(UiState.EMPTY)
         private set
 
-    private val _subjects: MutableStateFlow<List<Subject>> = MutableStateFlow(emptyList())
-    var subjects = _subjects.asStateFlow()
-    var subjectsState by mutableStateOf(UiState.EMPTY)
+    var subjects = appRepo.getSubjects().shareIn(
+        viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
+    /*private val _subjects: MutableStateFlow<List<Subject>> = MutableStateFlow(emptyList())
+    var subjects = _subjects.asStateFlow()*/
+    var subjectsState by mutableStateOf(UiState.LOADING)
         private set
     private val _subjectsError: MutableStateFlow<Throwable> = MutableStateFlow(NoException())
     var subjectsError = _subjectsError.asStateFlow()
@@ -74,10 +88,54 @@ class SettingsViewModel(
 
 
     init {
+        viewModelScope.launch {
+            appRepo.updateSubjects {  }
+        }
         loadSettings() //TODO: Have settings loading state!
-        loadTeachers()
-        loadSubjects()
+        initStateFromFlows()
 
+    }
+
+    private fun initStateFromFlows() {
+        viewModelScope.launch {
+            subjects.collect {
+                subjectsState = if (it.isFailure) {
+                    if (subjectsState == UiState.NORMAL_LOADING ||
+                        subjectsState == UiState.NORMAL
+                    ) {
+                        UiState.NORMAL_FAILED
+                    } else {
+                        UiState.FAILED
+                    }
+                } else {
+                    if (it.getOrNull()!!.isEmpty()) {
+                        UiState.EMPTY
+                    } else {
+                        UiState.NORMAL
+                    }
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            teachers.collect {
+                teacherState = if (it.isFailure) {
+                    if (teacherState == UiState.NORMAL_LOADING ||
+                        teacherState == UiState.NORMAL
+                    ) {
+                        UiState.NORMAL_FAILED
+                    } else {
+                        UiState.FAILED
+                    }
+                } else {
+                    if (it.getOrNull()!!.isEmpty()) {
+                        UiState.EMPTY
+                    } else {
+                        UiState.NORMAL
+                    }
+                }
+            }
+        }
     }
 
     private fun loadSettings() {
@@ -88,11 +146,11 @@ class SettingsViewModel(
         }
     }
 
-    private fun loadSubjects() {
+    /*private fun loadSubjects() {
         subjectsState = UiState.LOADING
 
         viewModelScope.launch {
-            appRepo.subjects.collect { subjectResult ->
+            appRepo.collect { subjectResult ->
                 if(subjectResult.isFailure) {
                     subjectsState = UiState.FAILED
                     _subjectsError.value = subjectResult.exceptionOrNull()!!
@@ -109,9 +167,9 @@ class SettingsViewModel(
                 _subjects.value = subjectsList
             }
         }
-    }
+    }*/
 
-    private fun loadTeachers() {
+    /*private fun loadTeachers() {
         teacherState = UiState.LOADING
         //_teacherState.value = UiState.LOADING
 
@@ -136,26 +194,23 @@ class SettingsViewModel(
                 _teachers.value = teacherList
             }
         }
-    }
+    }*/
 
     fun addSubject(subject: Subject) {
         viewModelScope.launch {
             appRepo.addSubject(subject)
-            loadSubjects()
         }
     }
 
     fun updateSubject(oldSubject: Subject, longName: String? = null, color: Color? = null) {
         viewModelScope.launch {
-            appRepo.updateSubject(oldSubject, longName, color)
-            loadSubjects()
+            appRepo.editSubject(oldSubject, longName, color)
         }
     }
 
     fun deleteSubject(toDelete: Subject) {
         viewModelScope.launch {
             appRepo.deleteSubject(toDelete)
-            loadSubjects()
         }
 
     }

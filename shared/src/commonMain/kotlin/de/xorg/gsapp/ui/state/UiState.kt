@@ -23,6 +23,8 @@ package de.xorg.gsapp.ui.state
  */
 enum class UiState {
     LOADING, // Show loading component
+    NORMAL_LOADING, // Data loaded, but also still refreshing
+    NORMAL_FAILED, // Data loaded, but refreshing failed
     FAILED, // An error occurred, and no data is available. If there is data available, the app currently fails silently. TODO: Don't fail silently!!!
     NO_DATASOURCE, // There is no valid data source available. Should never occur.
     EMPTY, // There are no entries in the loaded plan.

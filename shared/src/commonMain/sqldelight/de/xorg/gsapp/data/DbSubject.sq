@@ -10,6 +10,10 @@ selectAll:
 SELECT *
 FROM DbSubject;
 
+countAll:
+SELECT COUNT()
+FROM DbSubject;
+
 countByShort:
 SELECT COUNT()
 FROM DbSubject

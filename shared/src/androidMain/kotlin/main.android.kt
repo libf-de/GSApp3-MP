@@ -19,17 +19,31 @@
 import android.app.Activity
 import android.content.Context.MODE_PRIVATE
 import androidx.compose.runtime.Composable
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.SharedPreferencesMigration
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.preferences.preferencesDataStoreFile
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
+import com.russhwolf.settings.coroutines.FlowSettings
+import com.russhwolf.settings.datastore.DataStoreSettings
 import de.xorg.gsapp.GSApp
 import de.xorg.gsapp.data.cache.AndroidCacheManager
 import de.xorg.gsapp.data.cache.CacheManager
 import de.xorg.gsapp.data.di.mainModule
 import de.xorg.gsapp.data.sql.GsAppDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.kodein.di.bind
 import org.kodein.di.compose.withDI
+import org.kodein.di.instance
 import org.kodein.di.provider
 import org.kodein.di.singleton
 
@@ -41,9 +55,17 @@ actual fun getPlatformName(): String = "Android"
     }
     bind<Activity>() with provider { ctx }
     bind<CacheManager>() with singleton { AndroidCacheManager(ctx) }
-    bind<Settings>() with singleton { SharedPreferencesSettings(
-        ctx.getSharedPreferences("GSApp", MODE_PRIVATE)
-    )}
+    bind<DataStore<Preferences>>() with singleton {
+        PreferenceDataStoreFactory.create(
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { emptyPreferences() }
+            ),
+            migrations = listOf(SharedPreferencesMigration(ctx, "GSApp")),
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+            produceFile = { ctx.preferencesDataStoreFile("GSApp") }
+        )
+    }
+    bind<FlowSettings>() with singleton { DataStoreSettings(instance()) }
     import(mainModule)
 }) {
     GSApp()

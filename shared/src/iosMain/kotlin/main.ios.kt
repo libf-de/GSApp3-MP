@@ -18,9 +18,12 @@
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
+import com.russhwolf.settings.ExperimentalSettingsApi
 //import com.moriatsushi.insetsyx.WindowInsetsUIViewController
 import com.russhwolf.settings.NSUserDefaultsSettings
 import com.russhwolf.settings.Settings
+import com.russhwolf.settings.coroutines.FlowSettings
+import com.russhwolf.settings.coroutines.toFlowSettings
 import de.xorg.gsapp.GSApp
 import de.xorg.gsapp.data.di.mainModule
 import de.xorg.gsapp.data.sql.GsAppDatabase
@@ -32,9 +35,12 @@ import platform.Foundation.NSUserDefaults.Companion.standardUserDefaults
 
 actual fun getPlatformName(): String = "iOS"
 
+@OptIn(ExperimentalSettingsApi::class)
 fun MainViewController() = /*WindowInsetsUIViewController {*/ PreComposeApplication {
     withDI({
-        bind<Settings>() with singleton { NSUserDefaultsSettings(standardUserDefaults()) }
+        bind<FlowSettings>() with singleton {
+            NSUserDefaultsSettings(standardUserDefaults()).toFlowSettings()
+        }
         bind<SqlDriver>() with singleton {
             NativeSqliteDriver(GsAppDatabase.Schema, "gsapp.db")
         }

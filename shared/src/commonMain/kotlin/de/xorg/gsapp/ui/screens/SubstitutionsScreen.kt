@@ -35,12 +35,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.xorg.gsapp.GSAppRoutes
+import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.LoadingComponent
 import de.xorg.gsapp.ui.components.SubstitutionCard
@@ -48,6 +50,7 @@ import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
@@ -64,7 +67,8 @@ fun SubstitutionsScreen(
 
     val viewModel by di.instance<GSAppViewModel>()
 
-    val sds = viewModel.subStateFlow.collectAsState().value
+    //val sds = viewModel.subStateFlow.collectAsState().value
+    val sds by viewModel.subFlow.collectAsStateWithLifecycle(Result.success(SubstitutionSet()))
     var isFirst = false
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -97,26 +101,28 @@ fun SubstitutionsScreen(
                 LazyColumn(
                     modifier = Modifier.padding(innerPadding).padding(bottom = 80.dp)
                 ) {
-                    sds.substitutions.forEach {
-                        item {
-                            Text(
-                                text = it.key,
-                                modifier = Modifier.padding(
-                                    start = 28.dp,
-                                    top = if(!isFirst) 12.dp else 0.dp,
-                                    end = 0.dp,
-                                    bottom = 0.dp
-                                ),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                    sds.getOrDefault(SubstitutionSet())
+                        .substitutions
+                        .forEach {
+                            item {
+                                Text(
+                                    text = it.key,
+                                    modifier = Modifier.padding(
+                                        start = 28.dp,
+                                        top = if(!isFirst) 12.dp else 0.dp,
+                                        end = 0.dp,
+                                        bottom = 0.dp
+                                    ),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            items(it.value) { substitution ->
+                                SubstitutionCard(value = substitution)
+                            }
+                            isFirst = false
                         }
-                        items(it.value) { substitution ->
-                            SubstitutionCard(value = substitution)
-                        }
-                        isFirst = false
-                    }
                 }
             }
             UiState.LOADING -> {

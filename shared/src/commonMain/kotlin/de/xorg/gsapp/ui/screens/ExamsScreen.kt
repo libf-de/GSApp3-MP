@@ -35,6 +35,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +50,7 @@ import de.xorg.gsapp.ui.tools.DateUtil
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
@@ -65,7 +67,9 @@ fun ExamsScreen(
 
     val viewModel: GSAppViewModel by di.instance()
 
-    val exams = viewModel.examStateFlow.collectAsState().value
+    val exams by viewModel.examFlow.collectAsStateWithLifecycle(
+        Result.success(emptyList())
+    )
 
     var isFirst = false
 
@@ -99,27 +103,29 @@ fun ExamsScreen(
                 LazyColumn(
                     modifier = Modifier.padding(innerPadding).padding(bottom = 80.dp)
                 ) {
-                    exams.forEach {
-                        item {
-                            Text(
-                                text = "${DateUtil.getWeekdayLong(it.key)}, " +
-                                        DateUtil.getDateAsString(it.key),
-                                modifier = Modifier.padding(
-                                    start = 28.dp,
-                                    top = if(!isFirst) 12.dp else 0.dp,
-                                    end = 0.dp,
-                                    bottom = 0.dp
-                                ),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                    (exams.getOrNull() ?: emptyList())
+                        .groupBy { it.date }
+                        .forEach {
+                            item {
+                                Text(
+                                    text = "${DateUtil.getWeekdayLong(it.key)}, " +
+                                            DateUtil.getDateAsString(it.key),
+                                    modifier = Modifier.padding(
+                                        start = 28.dp,
+                                        top = if(!isFirst) 12.dp else 0.dp,
+                                        end = 0.dp,
+                                        bottom = 0.dp
+                                    ),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            items(it.value) { substitution ->
+                                ExamCard(exam = substitution)
+                            }
+                            isFirst = false
                         }
-                        items(it.value) { substitution ->
-                            ExamCard(exam = substitution)
-                        }
-                        isFirst = false
-                    }
                 }
             }
             UiState.LOADING -> {

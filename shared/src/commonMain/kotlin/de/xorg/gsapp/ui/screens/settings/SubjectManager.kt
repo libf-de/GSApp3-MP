@@ -44,6 +44,7 @@ import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.settings.InputTextDialog
 import de.xorg.gsapp.ui.components.settings.SelectColorDialog
 import de.xorg.gsapp.ui.components.settings.SubjectListItem
+import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.stringResource
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -63,7 +64,9 @@ fun SubjectManager(
     val di = localDI()
     val viewModel: SettingsViewModel by di.instance()
 
-    val subjects by viewModel.subjects.collectAsStateWithLifecycle()
+    val subjects by viewModel.subjects.collectAsStateWithLifecycle(initial = Result.success(
+        emptyList()
+    ))
 
     var colorEditShow by remember { mutableStateOf(false) }
     var colorEditSubject by remember { mutableStateOf<Subject?>(null) }
@@ -113,8 +116,9 @@ fun SubjectManager(
             )
         }
 
+        // TODO: Handle subjectsState properly!
         LazyColumn(modifier = modifier.padding(it).fillMaxSize()) {
-            items(subjects) { subject ->
+            items(subjects.getOrNull() ?: emptyList()) { subject ->
                 SubjectListItem(
                     modifier = Modifier,
                     subject = subject,
@@ -132,6 +136,8 @@ fun SubjectManager(
                 )
             }
         }
+
+
 
         FloatingActionButton(
             onClick = { showAddNewDialog = true },

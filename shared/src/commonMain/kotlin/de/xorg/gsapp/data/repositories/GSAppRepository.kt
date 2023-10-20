@@ -36,70 +36,65 @@ import kotlinx.datetime.LocalDate
  * find the time and motivation to write tests.
  * Maybe will revert to just the implementation if modifying both interface and implementation
  * continues to annoy me when writing new features.
+ * ----
+ * The repository shall contain functions to…
+ * - load data synchronously from local, as Flow<> -> get_____()
+ * - update the local data asynchronously from remote -> update_____()
+ * - add new data, entered by the user -> add______()
+ * - update existing data, edited by the user -> edit_____()
+ * - delete local data -> delete______()
  */
 
 interface GSAppRepository {
+    fun getSubstitutions(): Flow<Result<SubstitutionSet>>
+    suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit)
 
-    // Shall return a flow of a Result, containing a processed SubstitutionSet.
-    // Shall only use remote sources and not emit anything if that fails if reload is true
-    suspend fun getSubstitutions(reload: Boolean): Flow<Result<SubstitutionSet>>
+    fun getFoodplan(): Flow<Result<Map<LocalDate, List<Food>>>> //TODO: Maybe switch to separate datelist + query foods per date?
+    suspend fun updateFoodplan(callback: (Result<Boolean>) -> Unit)
 
-    // Shall be a flow of a Result, containing the teacher list (from local, then remote)
-    val teachers: Flow<Result<List<Teacher>>>
+    fun getExams(): Flow<Result<List<Exam>>>
+    suspend fun updateExams(callback: (Result<Boolean>) -> Unit)
+    // No Create, Update and Delete functions, as above types are not user-editable.
 
-    // Shall insert the given teacher into local storage, and return whether that was successful
-    // or the exception that occurred TODO: Not needed?
+    fun getTeachers(): Flow<Result<List<Teacher>>>
+    suspend fun updateTeachers(callback: (Result<Boolean>) -> Unit)
     suspend fun addTeacher(value: Teacher): Result<Boolean>
-
-    // Shall delete the given teacher from local storage, and return whether that was successful
-    // or the exception that occurred TODO: Not needed?
+    suspend fun editTeacher(oldTea: Teacher, newLongName: String): Result<Teacher>
     suspend fun deleteTeacher(value: Teacher): Result<Boolean>
 
-    // Shall update the given teacher in local storage, and return the old object or the exception
-    // that occurred TODO: Not needed?
-    suspend fun updateTeacher(oldTea: Teacher, newTea: Teacher): Result<Teacher>
-
-    // Shall be a flow of a Result, containing the subject list from local storage
-    // If that's empty, it should be filled with defaults.
-    val subjects: Flow<Result<List<Subject>>>
-
-    // Shall insert the given subject into local storage, and return whether that was successful
-    // or the exception that occurred
+    fun getSubjects(): Flow<Result<List<Subject>>>
+    suspend fun updateSubjects(callback: (Result<Boolean>) -> Unit) //stub as currently subjects are not fetched from remote
     suspend fun addSubject(value: Subject): Result<Boolean>
-
-    // Shall delete the given subject from local storage, and return whether that was successful
-    // or the exception that occurred
     suspend fun deleteSubject(value: Subject): Result<Boolean>
+    suspend fun editSubject(subject: Subject, newLongName: String? = null, newColor: Color? = null): Result<Subject>
 
-    // Shall update the given subject in local storage, and return the old object or the exception
-    // that occurred
-    suspend fun updateSubject(subject: Subject, newLongName: String? = null, newColor: Color? = null): Result<Subject>
 
-    // Shall be a flow of a Result, mapping dates to their corresponding Lists of Food
-    val foodPlan: Flow<Result<Map<LocalDate, List<Food>>>>
-
-    // Shall be a flow of a Result, mapping additive short names to their long names.
-    val additives: Flow<Result<Map<String, String>>>
-
-    // Shall return a flow of a Result, mapping dates to their  corresponding Lists of Exam,
-    // for the given ExamCourse. Shall only use remote sources and not emit anything if that fails
-    // if reload is true
-    suspend fun getExams(course: ExamCourse, reload: Boolean): Flow<Result<Map<LocalDate, List<Exam>>>>
 
     /**
      * These shall return the value stored in settings, store the given value in settings or
      * setup an observer that triggers when the setting was changed. See implementation
      * for further documentation
      */
+    fun getRoleFlow(): Flow<FilterRole>
+
+    @Deprecated("use flow instead", replaceWith = ReplaceWith("getRoleFlow()"))
     suspend fun getRole(): FilterRole
     suspend fun setRole(value: FilterRole)
+    @Deprecated("use flow instead", replaceWith = ReplaceWith("getRoleFlow()"))
     suspend fun observeRole(callback: (FilterRole) -> Unit): SettingsListener?
 
+    fun getFilterValueFlow(): Flow<String>
+    @Deprecated("use flow instead", replaceWith = ReplaceWith("getFilterValueFlow()"))
     suspend fun getFilterValue(): String
     suspend fun setFilterValue(value: String)
+    @Deprecated("use flow instead", replaceWith = ReplaceWith("getFilterValueFlow()"))
     suspend fun observeFilterValue(callback: (String) -> Unit): SettingsListener?
 
+    fun getPushFlow(): Flow<PushState>
+    @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))
     suspend fun getPush(): PushState
     suspend fun setPush(value: PushState)
+    @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))
     suspend fun observePush(callback: (PushState) -> Unit): SettingsListener?
+    fun getFilteredSubstitutions(): Flow<Result<SubstitutionSet>>
 }

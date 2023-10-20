@@ -235,7 +235,7 @@ actual class GsWebsiteParser {
     actual suspend fun parseExams(
         html: String,
         course: ExamCourse
-    ): Result<Map<LocalDate, List<Exam>>> {
+    ): Result<List<Exam>> {
         val exams: MutableList<Exam> = mutableListOf()
         val germanDateRegex = Regex("([0-3]?[0-9])\\.([0-1]?[0-9])\\.([0-9]{1,4})")
         val germanDateWithoutYearRegex = Regex("([0-3]?[0-9])\\.([0-1]?[0-9])\\.")
@@ -383,9 +383,7 @@ actual class GsWebsiteParser {
 
                 exams.sortBy { it.date }
 
-                Result.success(
-                    exams.groupBy { it.date }
-                )
+                Result.success(exams)
             }
         } catch (ex: Exception) {
             log.w { ex.stackTraceToString() }

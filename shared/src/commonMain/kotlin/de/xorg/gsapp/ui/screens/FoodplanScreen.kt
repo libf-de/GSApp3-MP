@@ -77,6 +77,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
@@ -96,10 +97,16 @@ fun FoodplanScreen(
 
     val viewModel by di.instance<GSAppViewModel>()
 
-    val foodplan = viewModel.foodStateFlow.collectAsState().value
+    val foodplan by viewModel.foodFlow.collectAsStateWithLifecycle(
+        Result.success(emptyMap())
+    )
 
-    val fpDates = foodplan.keys.toList()
-    val fpFoods = foodplan.values.toList()
+    val tfoodplan = foodplan.getOrNull() ?: emptyMap()
+
+    //TODO: Have loading/error/... states!!
+
+    val fpDates = tfoodplan.keys.toList()
+    val fpFoods = tfoodplan.values.toList()
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 

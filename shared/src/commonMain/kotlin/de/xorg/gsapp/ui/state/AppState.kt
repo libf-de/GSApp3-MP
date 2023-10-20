@@ -26,17 +26,17 @@ import de.xorg.gsapp.data.exceptions.NoException
  * occurred while loading, as well as the selected filter for substitution plan.
  */
 data class AppState(
-    val substitutionState: UiState = UiState.EMPTY,
+    val substitutionState: UiState = UiState.LOADING,
     val substitutionReloading: Boolean = false,
     val substitutionError: Throwable = NoException(),
     val filterRole: FilterRole = FilterRole.ALL,
     val filter: String = "",
 
-    val foodplanState: UiState = UiState.EMPTY,
+    val foodplanState: UiState = UiState.LOADING,
     val foodplanReloading: Boolean = false,
     val foodplanError: Throwable = NoException(),
 
-    val examState: UiState = UiState.EMPTY,
+    val examState: UiState = UiState.LOADING,
     val examReloading: Boolean = false,
     val examError: Throwable = NoException(),
 )
