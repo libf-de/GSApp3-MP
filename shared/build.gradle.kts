@@ -110,7 +110,6 @@ kotlin {
                 implementation("com.russhwolf:multiplatform-settings:1.1.0")
                 implementation("com.russhwolf:multiplatform-settings-coroutines:1.1.0")
 
-
                 // Sqldelight coroutines extension
                 implementation("app.cash.sqldelight:coroutines-extensions:2.0.0")
 

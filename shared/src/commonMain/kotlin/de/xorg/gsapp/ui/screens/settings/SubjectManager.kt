@@ -33,6 +33,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +48,9 @@ import de.xorg.gsapp.ui.components.settings.SubjectListItem
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.stringResource
+import kotlinx.coroutines.flow.collect
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.lifecycle.LocalLifecycleOwner
 import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
@@ -64,9 +67,22 @@ fun SubjectManager(
     val di = localDI()
     val viewModel: SettingsViewModel by di.instance()
 
-    val subjects by viewModel.subjects.collectAsStateWithLifecycle(initial = Result.success(
-        emptyList()
-    ))
+    /*val subFlow by remember { mutableStateOf(viewModel.subjects) }
+
+
+    val subjects by sub*/
+
+    val sub = viewModel.subjects.collectAsStateWithLifecycle(
+        initial = Result.success(emptyList()))
+
+    var subjects by remember { mutableStateOf(Result.success(listOf<Subject>())) }
+
+    LaunchedEffect(Unit) {
+        viewModel.subjects.collect {
+            subjects = it
+            println(subjects)
+        }
+    }
 
     var colorEditShow by remember { mutableStateOf(false) }
     var colorEditSubject by remember { mutableStateOf<Subject?>(null) }
@@ -118,6 +134,14 @@ fun SubjectManager(
 
         // TODO: Handle subjectsState properly!
         LazyColumn(modifier = modifier.padding(it).fillMaxSize()) {
+            if(subjects.isSuccess) {
+                item {
+                    Text(
+                        subjects.getOrDefault(listOf(Subject("leer"))).firstOrNull()?.longName ?: "leer"
+                    )
+                }
+            }
+
             items(subjects.getOrNull() ?: emptyList()) { subject ->
                 SubjectListItem(
                     modifier = Modifier,

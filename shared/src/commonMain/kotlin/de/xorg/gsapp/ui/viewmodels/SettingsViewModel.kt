@@ -18,6 +18,7 @@
 
 package de.xorg.gsapp.ui.viewmodels
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -31,12 +32,16 @@ import de.xorg.gsapp.ui.state.ColorPickerMode
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.state.UiState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
@@ -88,9 +93,9 @@ class SettingsViewModel(
 
 
     init {
-        viewModelScope.launch {
+        /*viewModelScope.launch {
             appRepo.updateSubjects {  }
-        }
+        }*/
         loadSettings() //TODO: Have settings loading state!
         initStateFromFlows()
 
@@ -99,6 +104,8 @@ class SettingsViewModel(
     private fun initStateFromFlows() {
         viewModelScope.launch {
             subjects.collect {
+                //println(it)
+
                 subjectsState = if (it.isFailure) {
                     if (subjectsState == UiState.NORMAL_LOADING ||
                         subjectsState == UiState.NORMAL

@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
+import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.FancyIndicator
 import de.xorg.gsapp.ui.components.FoodplanCard
@@ -73,8 +74,11 @@ import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -97,29 +101,14 @@ fun FoodplanScreen(
 
     val viewModel by di.instance<GSAppViewModel>()
 
-    val foodplan by viewModel.foodFlow.collectAsStateWithLifecycle(
-        Result.success(emptyMap())
-    )
+    val foodplan by viewModel.foodFlow
+        .mapLatest { it.getOrDefault(emptyMap()) }
+        .collectAsStateWithLifecycle(emptyMap())
 
-    val tfoodplan = foodplan.getOrNull() ?: emptyMap()
-
-    //TODO: Have loading/error/... states!!
-
-    val fpDates = tfoodplan.keys.toList()
-    val fpFoods = tfoodplan.values.toList()
-
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-
-    val listState = rememberLazyListState()
-
-    // TODO: Merge this?
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-    val todayIndex = if(fpDates.contains(today)) fpDates.indexOf(today) else 0
-    val pages = (fpDates.indices).toList()
-    val pagerState = rememberPagerState(initialPage = todayIndex) { fpDates.size }
-    var currentPageIndex by remember {
-        mutableStateOf(todayIndex)
-    }
+    val todayIndex = if(foodplan.keys.contains(today)) foodplan.keys.indexOf(today) else 0
+    val pagerState = rememberPagerState(initialPage = todayIndex) { foodplan.size }
+    var currentPageIndex by remember { mutableStateOf(todayIndex) }
 
     with(pagerState) {
         LaunchedEffect(key1 = currentPageIndex) {
@@ -130,6 +119,10 @@ fun FoodplanScreen(
             }
         }
     }
+
+    //TODO: Have loading/error/... states!!
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val listState = rememberLazyListState()
 
     Scaffold(
         modifier = Modifier
@@ -164,8 +157,9 @@ fun FoodplanScreen(
             )
         }
     ) { innerPadding ->
-        when (viewModel.uiState.foodplanState) {
-            UiState.NORMAL -> {
+
+        when(viewModel.uiState.foodplanState) {
+            UiState.NORMAL, UiState.NORMAL_FAILED, UiState.NORMAL_LOADING -> {
                 LazyColumn(
                     modifier = Modifier.padding(innerPadding),
                     state = listState,
@@ -182,24 +176,24 @@ fun FoodplanScreen(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
                                 selectedTabIndex = pagerState.currentPage,
                                 indicator = { tabPos ->
-                                    FancyIndicator(modifier = Modifier
-                                        .tabIndicatorOffset(tabPos[pagerState.currentPage])
+                                    FancyIndicator(modifier = if(tabPos.size > pagerState.currentPage)
+                                        Modifier.tabIndicatorOffset(tabPos[pagerState.currentPage])
+                                    else Modifier
                                     )
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                pages.forEach { dayOffset ->
-                                    val date = fpDates[dayOffset]
+                                foodplan.entries.forEachIndexed { index, entry ->
                                     Tab(
                                         modifier = Modifier.wrapContentWidth(),
                                         text = {
-                                            Text("${DateUtil.getWeekdayLong(date)}\n" +
-                                                    DateUtil.getDateAsString(date)
+                                            Text("${DateUtil.getWeekdayLong(entry.key)}\n" +
+                                                    DateUtil.getDateAsString(entry.key)
                                             )
                                         },
-                                        selected = pagerState.currentPage == dayOffset,
+                                        selected = pagerState.currentPage == index,
                                         onClick = {
-                                            currentPageIndex = dayOffset
+                                            currentPageIndex = index
                                         }
                                     )
                                 }
@@ -222,14 +216,21 @@ fun FoodplanScreen(
                                     ),
                                 verticalArrangement = Arrangement.Top
                             ) {
+                                if(page >= foodplan.size) {
+                                    Text("Fehler: aktuelle Seite ist nicht im Speiseplan enthalten :/")
+                                    return@Column
+                                }
+
                                 var foodNum = 0
-                                fpFoods[page].forEach {
+                                val todayFoods = foodplan.values.toList()[page]
+
+                                todayFoods.forEach {
                                     val color = Color.hsl(
-                                        (240 / fpFoods[page].size) * foodNum.toFloat(),
+                                        (240 / todayFoods.size) * foodNum.toFloat(),
                                         0.6f, 0.5f
                                     )
                                     log.d { "on page $foodNum -> " +
-                                            (240 / fpFoods[page].size) * foodNum.toFloat() }
+                                            (240 / todayFoods.size) * foodNum.toFloat() }
 
                                     FoodplanCard(
                                         food = it,
@@ -239,8 +240,6 @@ fun FoodplanScreen(
 
                                     foodNum++
                                 }
-
-
 
                                 Spacer(modifier = Modifier.height(80.dp))
                             }

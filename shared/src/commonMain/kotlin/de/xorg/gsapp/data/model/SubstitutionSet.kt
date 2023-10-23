@@ -34,7 +34,9 @@ data class SubstitutionSet(
     val dateStr: String,
     val date: LocalDate,
     val notes: String,
-    val substitutions: Map<String, List<Substitution>>
+    val substitutions: Map<String, List<Substitution>>,
+    val haveUnknownSubs: Boolean = false,
+    val haveUnknownTeachers: Boolean = false
 ) {
 
     /**

@@ -67,7 +67,7 @@ class GSAppViewModel(di: DI) : ViewModel() {
     var uiState by mutableStateOf(AppState())
         private set
 
-    val subFlow = appRepo.getFilteredSubstitutions().shareIn(
+    val subFlow = appRepo.getSubstitutions().shareIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         replay = 1
@@ -103,13 +103,9 @@ class GSAppViewModel(di: DI) : ViewModel() {
     init {
         initStateFromFlows()
 
-        //TODO: Is it a good idea to load all tabs upon app creation?
-        //loadSubstitutions()
-        //loadFoodplan()
-        //loadExams()
         updateExams()
         updateFoodplan()
-        updateExams()
+        updateSubstitutions()
     }
 
     private fun initStateFromFlows() {
@@ -132,6 +128,13 @@ class GSAppViewModel(di: DI) : ViewModel() {
                         )
                     }
                 } else {
+                    if(it.getOrNull()!!.haveUnknownSubs)
+                        updateSubjects()
+
+                    if(it.getOrNull()!!.haveUnknownTeachers)
+                        updateTeachers()
+
+
                     if (it.getOrNull()!!.substitutions.isEmpty()) {
                         uiState.copy(substitutionState = UiState.EMPTY)
                     } else {
@@ -192,12 +195,24 @@ class GSAppViewModel(di: DI) : ViewModel() {
         }
     }
 
+    private fun updateSubjects() {
+        repoScope.launch {
+            appRepo.updateSubjects { }
+        }
+    }
+
+    private fun updateTeachers() {
+        repoScope.launch {
+            appRepo.updateTeachers { }
+        }
+    }
+
     private fun updateSubstitutions() {
         uiState = if(uiState.substitutionState == UiState.NORMAL)
             uiState.copy(substitutionState = UiState.NORMAL_LOADING)
         else uiState.copy(substitutionState = UiState.LOADING)
 
-        repoScope.launch {
+        viewModelScope.launch {
             appRepo.updateSubstitutions {
                 if(it.isFailure) {
                     log.w { "failed to update substitution plan: ${it.exceptionOrNull()}"}
@@ -223,6 +238,9 @@ class GSAppViewModel(di: DI) : ViewModel() {
                     }
                 }
             }
+        }
+        repoScope.launch {
+
         }
     }
 
@@ -293,140 +311,4 @@ class GSAppViewModel(di: DI) : ViewModel() {
             }
         }
     }
-
-
-
-    /*private suspend fun loadSettings() {
-        uiState = uiState.copy(
-            filterRole = appRepo.getRole(),
-            filter = appRepo.getFilterValue()
-        )
-
-        _roleObserver.value = appRepo.observeRole {
-            uiState = uiState.copy(filterRole = it)
-        } // Should basically not be necessary
-
-        _filterObserver.value = appRepo.observeFilterValue {
-            if(it == uiState.filter) return@observeFilterValue
-            uiState = uiState.copy(filter = it)
-            loadSubstitutions()
-        }
-    }
-
-    // This is here if I decide to implement pull-to-refresh (or a refresh button).
-    fun reloadSubstitutions() {
-        loadSubstitutions(true)
-    }
-
-    private fun loadExams(reload: Boolean = false) {
-        uiState = if(reload) uiState.copy(examReloading = true)
-        else uiState.copy(examState = UiState.LOADING)
-
-        viewModelScope.launch {
-            val twoDigitYear = Clock.System.todayIn(TimeZone.currentSystemDefault())
-                .year.toString().substring(2)
-            val defaultCourse = if(uiState.filterRole == FilterRole.STUDENT &&
-                uiState.filter == "A${twoDigitYear}") ExamCourse.COURSE_12
-            else ExamCourse.COURSE_11
-
-            appRepo.getExams(defaultCourse, reload).collect { examResult ->
-                if(examResult.isFailure) {
-                    uiState = if(reload) uiState.copy(examReloading = false,
-                        examError = examResult.exceptionOrNull()!!)
-                    else uiState.copy(examState = UiState.FAILED,
-                        examError = examResult.exceptionOrNull()!!)
-                    return@collect
-                }
-
-                _examStateFlow.value = examResult.getOrNull()!!
-
-                uiState = uiState.copy(
-                    examState = if(examResult.getOrNull()!!.isEmpty())
-                        UiState.EMPTY
-                    else
-                        UiState.NORMAL,
-                    examReloading = false
-                )
-            }
-        }
-    }
-
-    private fun loadSubstitutions(reload: Boolean = false) {
-        uiState = if(reload) uiState.copy(substitutionReloading = true)
-                  else uiState.copy(substitutionState = UiState.LOADING)
-
-        viewModelScope.launch {
-            loadSettings()
-
-            appRepo.getSubstitutions(reload).collect { sdsResult ->
-                if(sdsResult.isFailure) {
-                    uiState = if(reload) uiState.copy(substitutionReloading = false,
-                                                      substitutionError = sdsResult.exceptionOrNull()!!)
-                              else uiState.copy(substitutionState = UiState.FAILED,
-                                                substitutionError = sdsResult.exceptionOrNull()!!)
-                    return@collect
-                }
-
-                val substitutions = when (uiState.filterRole) {
-                    FilterRole.STUDENT -> {
-                        sdsResult.getOrNull()!!.substitutions.filterKeys { entry ->
-                            entry.lowercase().contains(uiState.filter.lowercase())
-                        }
-                    }
-
-                    FilterRole.TEACHER -> {
-                        sdsResult.getOrNull()!!.substitutions.mapValues { klassSubs ->
-                            klassSubs.value.filter { aSub ->
-                                aSub.substTeacher.shortName.lowercase() == uiState.filter.lowercase()
-                            }
-                        }.filter { klassSubs ->
-                            klassSubs.value.isNotEmpty()
-                        }
-                    }
-
-                    else -> {
-                        sdsResult.getOrNull()!!.substitutions
-                    }
-                }
-
-                _subStateFlow.value = sdsResult.getOrNull()!!.copy(
-                    substitutions = substitutions
-                )
-
-                uiState = uiState.copy(
-                    substitutionState = if(substitutions.isEmpty())
-                        UiState.EMPTY
-                    else
-                        UiState.NORMAL,
-                    substitutionReloading = false
-                )
-            }
-        }
-    }
-
-    private fun loadFoodplan() {
-        uiState = uiState.copy(
-            foodplanState = UiState.LOADING
-        )
-
-        viewModelScope.launch {
-            appRepo.foodPlan.collect {fpResult ->
-                if(fpResult.isFailure) {
-                    uiState = uiState.copy(
-                        foodplanState = UiState.FAILED,
-                        foodplanError = fpResult.exceptionOrNull()!!
-                    )
-                    return@collect
-                }
-
-                val foodplan = fpResult.getOrNull()!!
-
-                uiState = uiState.copy(
-                    foodplanState = if(foodplan.isEmpty()) UiState.EMPTY else UiState.NORMAL
-                )
-
-                _foodStateFlow.value = foodplan
-            }
-        }
-    }*/
 }

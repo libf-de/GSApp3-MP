@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
-import de.xorg.gsapp.data.exceptions.EmptyStoreException
 import de.xorg.gsapp.data.exceptions.NoEntriesException
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
@@ -36,7 +35,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
@@ -93,34 +91,49 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                         .asFlow()
                         .mapToList(Dispatchers.IO)
                         .map {
+                            var haveUnknownSubs = false
+                            var haveUnknwonTeas = false
+
                             Result.success(
                                 SubstitutionSet(
                                     dateStr = dbSubset.dateStr,
                                     date = dbSubset.date,
                                     notes = dbSubset.notes ?: "",
                                     substitutions = it.map { dbSub ->
+                                        val origSubjShort = dbSub.origShortName ?: "!!"
+                                        val substSubjShort = dbSub.substShortName ?: "!!"
+                                        val substTeaShort = dbSub.substTeacherShortName ?: "!!"
+
+                                        if(dbSub.origLongName == null || dbSub.substLongName == null)
+                                            haveUnknownSubs = true
+
+                                        if(dbSub.substTeacherLongName == null)
+                                            haveUnknwonTeas = true
+
                                         Substitution(
                                             klass = dbSub.klass,
                                             lessonNr = dbSub.lessonNr ?: "?",
                                             origSubject = Subject(
-                                                shortName = dbSub.origShortName ?: "??",
-                                                longName = dbSub.origLongName ?: "??",
+                                                shortName = origSubjShort,
+                                                longName = dbSub.origLongName ?: origSubjShort,
                                                 color = dbSub.origColor ?: Color.Magenta
                                             ),
                                             substTeacher = Teacher(
-                                                shortName = dbSub.substTeacherShortName ?: "??",
-                                                longName = dbSub.substTeacherLongName ?: "??"
+                                                shortName = substTeaShort,
+                                                longName = dbSub.substTeacherLongName ?: substTeaShort
                                             ),
                                             substRoom = dbSub.substRoom ?: "??",
                                             substSubject = Subject(
-                                                shortName = dbSub.substShortName ?: "??",
-                                                longName = dbSub.substLongName ?: "??",
+                                                shortName = substSubjShort,
+                                                longName = dbSub.substLongName ?: substSubjShort,
                                                 color = dbSub.substColor ?: Color.Magenta
                                             ),
                                             notes = dbSub.notes ?: "",
                                             isNew = dbSub.isNew
                                         )
-                                    }.groupBy { subs -> subs.klass }
+                                    }.groupBy { subs -> subs.klass },
+                                    haveUnknownSubs = haveUnknownSubs,
+                                    haveUnknownTeachers = haveUnknwonTeas
                                 )
                             )
                         }
@@ -135,7 +148,8 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
                 .executeAsOneOrNull()
 
             Result.success(
-                Pair(latestSet?.hashCode?.toInt() ?: -1, latestSet?.date ?: LocalDate.fromEpochDays(0))
+                //Pair(latestSet?.hashCode?.toInt() ?: -1, latestSet?.date ?: LocalDate.fromEpochDays(0))
+                Pair(-1, latestSet?.date ?: LocalDate.fromEpochDays(0))
             )
         } catch(ex: Exception) {
             Result.failure(ex)
@@ -144,26 +158,35 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
 
     override fun getLatestSubstitutionHash(): Result<Int> {
         return try {
-            Result.success(
+            /*Result.success(
                 database
                     .dbSubstitutionSetQueries
                     .selectLatest()
                     .executeAsOneOrNull()
                     ?.hashCode
                     ?.toInt() ?: -1
-            )
+            )*/
+            Result.success(1)
         } catch(ex: Exception) {
             Result.failure(ex)
         }
     }
 
     override suspend fun addSubstitutionPlan(value: SubstitutionApiModelSet) {
+        //val subsList = value.substitutions.flatMap { it.value }.distinct()
+        val teachers = value.substitutionApiModels.map { it.substTeacher }.distinct()
+        val subjects = value.substitutionApiModels.flatMap { listOf(it.origSubject, it.substSubject) }.distinct()
+
+        //val teachers = value.map { it.substTeacher }.distinct()
+        //val subjects = subsList.flatMap { listOf(it.origSubject, it.substSubject) }.distinct()
+
         database.transaction {
             database.dbSubstitutionSetQueries.insertSubstitutionSet(
                 dateStr = value.dateStr,
                 date = value.date,
                 notes = value.notes,
                 hashCode = value.hashCode().toLong()
+                /*hashCode = 12L*/
             )
 
             val setId = database.dbSubstitutionSetQueries.lastInsertRowId().executeAsOne()

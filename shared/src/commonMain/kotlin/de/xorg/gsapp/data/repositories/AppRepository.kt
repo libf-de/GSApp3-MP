@@ -33,6 +33,7 @@ import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sources.defaults.DefaultsDataSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
+import de.xorg.gsapp.data.sql.GsAppDatabase
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
@@ -285,7 +286,7 @@ class AppRepository(di: DI) : GSAppRepository {
                     return
                 }
 
-                if(localLatest.getOrNull() == this.getOrNull()!!) {
+                if(localLatest.getOrNull() != this.getOrNull()!!) {
                     localDataSource.clearAndAddAllExams(this.getOrNull()!!)
                     callback(Result.success(true))
                 } else {
