@@ -48,6 +48,7 @@ fun MainViewController() = /*WindowInsetsUIViewController {*/ PreComposeApplicat
         //bind<SettingsSource>() with singleton { SettingsSource(NSObject()) }
         import(mainModule)
     }) {
+
         GSApp()
     }
 } /*}*/

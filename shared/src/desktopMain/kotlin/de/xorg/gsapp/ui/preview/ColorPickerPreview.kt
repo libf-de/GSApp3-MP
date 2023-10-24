@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.ui.components.settings.ColorPicker
+import de.xorg.gsapp.ui.tools.ScreenOrientation
 
 @Composable
 @Preview
@@ -16,5 +17,9 @@ fun ColorPickerPreview() {
     //HueBar(setColor = { value -> })
     var colorState = remember { mutableStateOf<Color?>(Color.Green)}
 
-    ColorPicker(colorState, modifier = Modifier.width(300.dp))
+    ColorPicker(
+        colorState = colorState,
+        orientation = ScreenOrientation.LANDSCAPE,
+        maxDim = 300,
+        modifier = Modifier.width(300.dp))
 }

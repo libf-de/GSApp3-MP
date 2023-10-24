@@ -18,7 +18,10 @@
 
 package de.xorg.gsapp.ui.screens.settings
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,6 +32,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -40,11 +44,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.settings.InputTextDialog
 import de.xorg.gsapp.ui.components.settings.SelectColorDialog
 import de.xorg.gsapp.ui.components.settings.SubjectListItem
+import de.xorg.gsapp.ui.materialtools.MaterialColors
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.stringResource
@@ -67,22 +75,8 @@ fun SubjectManager(
     val di = localDI()
     val viewModel: SettingsViewModel by di.instance()
 
-    /*val subFlow by remember { mutableStateOf(viewModel.subjects) }
-
-
-    val subjects by sub*/
-
-    val sub = viewModel.subjects.collectAsStateWithLifecycle(
+    val subjects by viewModel.subjects.collectAsStateWithLifecycle(
         initial = Result.success(emptyList()))
-
-    var subjects by remember { mutableStateOf(Result.success(listOf<Subject>())) }
-
-    LaunchedEffect(Unit) {
-        viewModel.subjects.collect {
-            subjects = it
-            println(subjects)
-        }
-    }
 
     var colorEditShow by remember { mutableStateOf(false) }
     var colorEditSubject by remember { mutableStateOf<Subject?>(null) }
@@ -90,17 +84,25 @@ fun SubjectManager(
 
     Scaffold(modifier = modifier,
         topBar = {
-        TopAppBar(
-            title = {
-                Text(text = stringResource(MR.strings.settings_title))
-            },
-            navigationIcon = {
-                IconButton(onClick = { navController.goBack() }) {
-                    Icon(Icons.Rounded.ArrowBack, "")
+            TopAppBar(
+                title = {
+                    Text(text = stringResource(MR.strings.settings_title))
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.goBack() }) {
+                        Icon(Icons.Rounded.ArrowBack, "")
+                    }
                 }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddNewDialog = true },
+            ) {
+                Icon(Icons.Rounded.Add, "Add new subject")
             }
-        )
-    }) {
+        }
+    ) {
         if(colorEditShow) {
             SelectColorDialog(
                 onConfirm = { selectedColor ->
@@ -133,15 +135,10 @@ fun SubjectManager(
         }
 
         // TODO: Handle subjectsState properly!
-        LazyColumn(modifier = modifier.padding(it).fillMaxSize()) {
-            if(subjects.isSuccess) {
-                item {
-                    Text(
-                        subjects.getOrDefault(listOf(Subject("leer"))).firstOrNull()?.longName ?: "leer"
-                    )
-                }
-            }
-
+        LazyColumn(
+            modifier = modifier.padding(it).fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+        ) {
             items(subjects.getOrNull() ?: emptyList()) { subject ->
                 SubjectListItem(
                     modifier = Modifier,
@@ -159,14 +156,10 @@ fun SubjectManager(
                     }
                 )
             }
-        }
 
-
-
-        FloatingActionButton(
-            onClick = { showAddNewDialog = true },
-        ) {
-            Icon(Icons.Rounded.Add, "Add new subject")
+            item {
+                Spacer(modifier.height(72.dp))
+            }
         }
     }
 }

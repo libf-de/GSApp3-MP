@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -16,8 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import de.xorg.gsapp.ui.materialtools.MaterialColors
 
 @Composable
 fun ColorListPicker(
@@ -25,12 +28,19 @@ fun ColorListPicker(
     colors: List<Color> = DEFAULT_COLORS,
     itemSize: Dp = 48.dp
 ) {
+    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+
     LazyVerticalGrid(
         columns = GridCells.Adaptive(itemSize)
     ) {
         val itemModifier = Modifier.padding(4.dp).size(itemSize).aspectRatio(1f)
 
-        items(colors) {
+        items(colors.map {
+            Color(
+                MaterialColors.harmonize(colorToHarmonize = it.toArgb(),
+                    colorToHarmonizeWith = primaryColor)
+            )
+        }) {
             ColorItem(
                 color = it,
                 onClick = { color -> colorState.value = color },

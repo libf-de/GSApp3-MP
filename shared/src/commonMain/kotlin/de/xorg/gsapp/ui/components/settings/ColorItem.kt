@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import de.xorg.gsapp.ui.tools.foregroundColorForBackground
 
 @Composable
 fun ColorItem(
@@ -31,7 +32,7 @@ fun ColorItem(
     modifier: Modifier = Modifier
 ) {
     val mod = if(isSelected)
-                modifier.border(2.dp, Color.White, CircleShape)
+                modifier.border(2.dp, foregroundColorForBackground(color), CircleShape)
                         .padding(1.dp)
               else modifier
     Box(contentAlignment = Alignment.Center,

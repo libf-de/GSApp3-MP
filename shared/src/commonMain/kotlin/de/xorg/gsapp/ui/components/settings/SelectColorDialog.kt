@@ -1,9 +1,11 @@
 package de.xorg.gsapp.ui.components.settings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,13 +19,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.state.ColorPickerMode
+import de.xorg.gsapp.ui.tools.ScreenOrientation
+import de.xorg.gsapp.ui.tools.ScreenUtil
+import de.xorg.gsapp.ui.tools.getOrientation
 import dev.icerock.moko.resources.compose.stringResource
+import getPlatformName
 
 @Composable
 fun SelectColorDialog(
@@ -39,8 +47,31 @@ fun SelectColorDialog(
     val selectedColor = remember { mutableStateOf(preselectedColor) }
     val selectedPickMode = remember { mutableStateOf(pickMode) }
 
+    val isDesktop = rememberSaveable { getPlatformName() == "Desktop" }
+
+    val orientation = remember { mutableStateOf(ScreenOrientation.SQUARE) }
+
+
+    LaunchedEffect(ScreenUtil.getScreenOrientation()) {
+        if(!isDesktop)
+            orientation.value = ScreenUtil.getScreenOrientation()
+    }
+
     LaunchedEffect(selectedPickMode.value) {
         onPickModeChanged(selectedPickMode.value)
+    }
+
+    /**
+     * Bodge-fix to get window size on desktop
+     * TODO: Use proper way if there is one.
+     */
+    if(isDesktop) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .onSizeChanged {
+                orientation.value = it.getOrientation()
+            }
+        )
     }
 
     AlertDialog(
@@ -81,7 +112,11 @@ fun SelectColorDialog(
 
                     ColorPickerMode.ADVANCED -> {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            ColorPicker(selectedColor, modifier = Modifier.width(300.dp))
+                            ColorPicker(
+                                colorState = selectedColor,
+                                orientation = orientation.value,
+                                maxDim = 200,
+                                modifier = Modifier)
                         }
                     }
                 }

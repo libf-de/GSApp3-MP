@@ -4,11 +4,14 @@ package de.xorg.gsapp.ui.components.settings
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,16 +36,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.stringResource
 import kotlin.math.max
 import kotlin.math.min
 import de.xorg.gsapp.res.MR
+import de.xorg.gsapp.ui.tools.ScreenOrientation
+import de.xorg.gsapp.ui.tools.ScreenUtil
+import de.xorg.gsapp.ui.tools.toHexString
 
 
 @Composable
 fun ColorPicker(
     colorState: MutableState<Color?>,
+    orientation: ScreenOrientation,
+    maxDim: Int,
     modifier: Modifier = Modifier
 ) {
     val h = remember { mutableStateOf(colorState.value?.hue() ?: 0f) }
@@ -62,29 +71,62 @@ fun ColorPicker(
         println(colorState.value.toString())
     }
 
+
     Column(modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SatValPanel(s, v, h.asFloatState())
-        HueBar(h, modifier = modifier)
-        OutlinedTextField(
-            label = { Text(stringResource(MR.strings.dialog_color_hex)) },
-            modifier = Modifier.width(IntrinsicSize.Max),
-            value = colorState.value.toString(),
-            isError = validHex,
-            onValueChange = {
-                validHex = validHexColor(it)
-                if(validHex) {
-                    try {
-                        colorState.value = Color(it.removePrefix("#").toLong(16) or 0x00000000FF000000)
-                    } catch (_: Exception) { }
-                }
+
+        if(orientation == ScreenOrientation.LANDSCAPE) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                SatValPanel(s, v, h.asFloatState(), Modifier.height(maxDim.dp))
+                Spacer(Modifier.width(8.dp))
+                VerticalHueBar(h, modifier = Modifier.height(maxDim.dp))
             }
-        )
+
+            OutlinedTextField(
+                label = { Text(stringResource(MR.strings.dialog_color_hex)) },
+                modifier = Modifier.width(IntrinsicSize.Max),
+                value = colorState.value.toHexString(),
+                isError = validHex,
+                onValueChange = {
+                    validHex = it.isValidHexColor()
+                    if(validHex) {
+                        try {
+                            colorState.value = Color.fromHex(it)
+                        } catch (_: Exception) { }
+                    }
+                }
+            )
+        } else {
+            SatValPanel(s, v, h.asFloatState(), modifier.width(maxDim.dp))
+            HueBar(h, modifier = Modifier.width(maxDim.dp))
+            OutlinedTextField(
+                label = { Text(stringResource(MR.strings.dialog_color_hex)) },
+                modifier = Modifier.width(IntrinsicSize.Max),
+                value = colorState.value.toHexString(),
+                isError = validHex,
+                onValueChange = {
+                    validHex = it.isValidHexColor()
+                    if(validHex) {
+                        try {
+                            colorState.value = Color.fromHex(it)
+                        } catch (_: Exception) { }
+                    }
+                }
+            )
+        }
     }
 }
 
-private fun validHexColor(str: String): Boolean {
-    return Regex("#?([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})").matches(str)
+private fun Color.Companion.fromHex(str: String): Color {
+    return Color(str.removePrefix("#").toLong(16) or 0x00000000FF000000)
+}
+
+
+private fun String.isValidHexColor(): Boolean {
+    return Regex("#?([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})").matches(this)
 }
 
 private fun Color.hue(): Float {
@@ -164,6 +206,60 @@ private fun HueBar(
         )
     }
 }
+
+@Composable
+private fun VerticalHueBar(
+    hueState: MutableState<Float>,
+    modifier: Modifier = Modifier,
+) {
+    var offsetY by remember { mutableStateOf(-1f) }
+
+    Canvas(modifier = modifier.width(52.dp)
+        .height(IntrinsicSize.Max)
+        .clip(RoundedCornerShape(50))
+        .pointerInput(Unit) {
+            detectTapGestures {
+                offsetY = it.y.coerceIn(0f..size.height.toFloat())
+                if(size.height != 0)
+                    hueState.value = (offsetY * 360f / size.height).coerceIn(0f..360f)
+            }
+        }
+        .pointerInput(Unit) {
+            detectVerticalDragGestures { change, _ ->
+                change.consume()
+                offsetY = change.position.y.coerceIn(0.1f..size.height.toFloat())
+                if(size.height != 0)
+                    hueState.value = (offsetY * 360f / size.height).coerceIn(0f..360f)
+            }
+        }
+    ) {
+        if(offsetY < 0)
+            offsetY = (hueState.value * size.height / 360f).coerceIn(0f..360f)
+
+        var hue = 0f
+        for (i in 0 until size.height.toInt()) {
+            drawLine(
+                color = Color.hsv(hue = hue,
+                    saturation = 1f,
+                    value = 1f),
+                start = Offset(0f, i.toFloat()),
+                end = Offset(size.width, i.toFloat()),
+                strokeWidth = 1f
+            )
+
+            hue += if(size.height.toInt() == 0) 0f else 360f / size.height.toInt()
+        }
+
+        drawCircle(
+            color = Color.White,
+            radius = size.width / 2,
+            center = Offset(size.width / 2, offsetY),
+            style = Stroke(width = 2.dp.toPx())
+        )
+    }
+}
+
+
 
 @Composable
 private fun SatValPanel(
