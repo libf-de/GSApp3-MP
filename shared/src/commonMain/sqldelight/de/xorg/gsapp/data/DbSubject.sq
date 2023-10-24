@@ -31,3 +31,6 @@ WHERE shortName = :shortName;
 deleteSubject:
 DELETE FROM DbSubject
 WHERE shortName = :shortName;
+
+deleteAllSubjects:
+DELETE FROM DbSubject;

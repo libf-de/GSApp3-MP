@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 package de.xorg.gsapp.ui.screens.settings
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
@@ -39,13 +37,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.settings.ColorPicker
+import de.xorg.gsapp.ui.components.dialogs.SettingsRadioDialog
 import de.xorg.gsapp.ui.components.settings.SettingsItem
-import de.xorg.gsapp.ui.components.settings.SettingsRadioDialog
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.painterResource

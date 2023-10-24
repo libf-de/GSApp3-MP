@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
   ~ GSApp3 (https://github.com/libf-de/GSApp3)
-  ~ Copyright (C) 2023 Fabian Schillig
+  ~ Copyright (C) 2023. Fabian Schillig
   ~
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -91,7 +91,11 @@
     <string name="subject_manager_colorpicker_nullsubject">a subject</string>
     <string name="subject_manager_add_title">Add subject</string>
     <string name="subject_manager_add_desc">Enter the abbreviation of the subject as it appears in the substitution plan. Long name and color can be changed afterwards.</string>
-
+    <string name="subject_manager_restore_defaults">Restore default subjects</string>
+    <string name="subject_manager_reset_dialog_title">Restore default subjects?</string>
+    <string name="subject_manager_reset_dialog_text">Do you want to replace all subjects with the default ones or just add the default subjects?</string>
+    <string name="subject_manager_reset_dialog_replace">Replace all</string>
+    <string name="subject_manager_reset_dialog_adddefault">Only add</string>
 
     <!-- General dialog buttons -->
     <string name="dialog_save">Save</string>
@@ -101,10 +105,15 @@
     <string name="dialog_color_advanced">Advanced</string>
     <string name="dialog_color_advanced_desc">Choose using hue, saturation and brightness or using a hex string</string>
     <string name="dialog_color_hex">Hex:</string>
+    
+    <string name="dialog_delete_title">Delete subject?</string>
+    <string name="dialog_delete_text">Do you really want to delete the subject "%s" ("%s")?</string>
+    <string name="dialog_delete_confirm">Delete</string>
 
     <!-- Generic strings -->
     <string name="generic_loading">Loading, please wait…</string>
     <string name="generic_error_null">(null-error)</string>
+    <string name="back">Go back</string>
 
     <!-- Foodplan -->
     <string name="foodplan_menu_no">Menu #%d</string>

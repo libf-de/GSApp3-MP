@@ -16,13 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.xorg.gsapp.data.cache
+package de.xorg.gsapp.ui.tools
 
-import android.content.Context
-import java.io.File
+import androidx.compose.ui.unit.IntSize
 
-class AndroidCacheManager(private val context: Context) : CacheManager {
-    override fun getCacheDirectory(): File {
-        return context.cacheDir
-    }
+enum class ScreenOrientation {
+    PORTRAIT,
+    LANDSCAPE,
+    SQUARE
+}
+
+fun IntSize.getOrientation(): ScreenOrientation {
+    return if(this.width > this.height)
+        ScreenOrientation.LANDSCAPE
+    else if(this.width < this.height)
+        ScreenOrientation.PORTRAIT
+    else
+        ScreenOrientation.SQUARE
 }

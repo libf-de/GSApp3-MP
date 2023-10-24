@@ -16,13 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.xorg.gsapp.data.cache
+package de.xorg.gsapp.ui.components.dialogs
 
-import android.content.Context
-import java.io.File
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 
-class AndroidCacheManager(private val context: Context) : CacheManager {
-    override fun getCacheDirectory(): File {
-        return context.cacheDir
-    }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ConfirmDialog(
+    title: String,
+    text: String,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text(title) },
+        text = { Text(text) },
+        confirmButton = {
+
+        }
+    )
 }

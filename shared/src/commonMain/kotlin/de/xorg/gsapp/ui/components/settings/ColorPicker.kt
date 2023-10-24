@@ -1,3 +1,21 @@
+/*
+ * GSApp3 (https://github.com/libf-de/GSApp3)
+ * Copyright (C) 2023. Fabian Schillig
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.xorg.gsapp.ui.components.settings
 
 
@@ -26,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
@@ -36,15 +55,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import de.xorg.gsapp.res.MR
+import de.xorg.gsapp.ui.components.HexInputField
+import de.xorg.gsapp.ui.tools.ScreenOrientation
+import de.xorg.gsapp.ui.tools.toHexString
 import dev.icerock.moko.resources.compose.stringResource
 import kotlin.math.max
 import kotlin.math.min
-import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.tools.ScreenOrientation
-import de.xorg.gsapp.ui.tools.ScreenUtil
-import de.xorg.gsapp.ui.tools.toHexString
 
 
 @Composable
@@ -58,6 +79,10 @@ fun ColorPicker(
     val s = remember { mutableStateOf(colorState.value?.saturation() ?: 1f) }
     val v = remember { mutableStateOf(colorState.value?.value() ?: 1f) }
 
+    var hex by remember { mutableStateOf(colorState.value.toHexString()) }
+    val cursorPosition = remember { mutableStateOf(0) }
+
+
     var validHex by remember { mutableStateOf(false) }
 
     LaunchedEffect(colorState.value) {
@@ -68,66 +93,60 @@ fun ColorPicker(
 
     LaunchedEffect(h.value, s.value, v.value) {
         colorState.value = Color.hsv(h.value.coerceIn(0f..360f), s.value, v.value)
+        hex = colorState.value.toHexString()
         println(colorState.value.toString())
     }
 
 
     Column(modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally) {
 
         if(orientation == ScreenOrientation.LANDSCAPE) {
             Row(
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.width(maxDim.dp + 52.dp),
             ) {
                 SatValPanel(s, v, h.asFloatState(), Modifier.height(maxDim.dp))
                 Spacer(Modifier.width(8.dp))
                 VerticalHueBar(h, modifier = Modifier.height(maxDim.dp))
             }
 
-            OutlinedTextField(
+            HexInputField(
+                colorState
+            )
+
+            /*OutlinedTextField(
                 label = { Text(stringResource(MR.strings.dialog_color_hex)) },
-                modifier = Modifier.width(IntrinsicSize.Max),
-                value = colorState.value.toHexString(),
+                modifier = Modifier.width(maxDim.dp + 52.dp),
+                value = hex,
                 isError = validHex,
                 onValueChange = {
                     validHex = it.isValidHexColor()
+
+                    hex = it.substring(0, 7)
+
                     if(validHex) {
                         try {
                             colorState.value = Color.fromHex(it)
                         } catch (_: Exception) { }
                     }
                 }
-            )
+            )*/
         } else {
             SatValPanel(s, v, h.asFloatState(), modifier.width(maxDim.dp))
             HueBar(h, modifier = Modifier.width(maxDim.dp))
-            OutlinedTextField(
-                label = { Text(stringResource(MR.strings.dialog_color_hex)) },
-                modifier = Modifier.width(IntrinsicSize.Max),
-                value = colorState.value.toHexString(),
-                isError = validHex,
-                onValueChange = {
-                    validHex = it.isValidHexColor()
-                    if(validHex) {
-                        try {
-                            colorState.value = Color.fromHex(it)
-                        } catch (_: Exception) { }
-                    }
-                }
+            HexInputField(
+                colorState
             )
         }
     }
 }
 
-private fun Color.Companion.fromHex(str: String): Color {
-    return Color(str.removePrefix("#").toLong(16) or 0x00000000FF000000)
-}
 
 
-private fun String.isValidHexColor(): Boolean {
-    return Regex("#?([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})").matches(this)
-}
+
+
 
 private fun Color.hue(): Float {
     val maxV = max(this.red, max(this.green, this.blue))
@@ -211,10 +230,11 @@ private fun HueBar(
 private fun VerticalHueBar(
     hueState: MutableState<Float>,
     modifier: Modifier = Modifier,
+    width: Dp = 52.dp
 ) {
     var offsetY by remember { mutableStateOf(-1f) }
 
-    Canvas(modifier = modifier.width(52.dp)
+    Canvas(modifier = modifier.width(width)
         .height(IntrinsicSize.Max)
         .clip(RoundedCornerShape(50))
         .pointerInput(Unit) {

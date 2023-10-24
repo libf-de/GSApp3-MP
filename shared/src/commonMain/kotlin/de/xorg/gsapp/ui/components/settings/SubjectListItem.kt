@@ -1,3 +1,21 @@
+/*
+ * GSApp3 (https://github.com/libf-de/GSApp3)
+ * Copyright (C) 2023. Fabian Schillig
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.xorg.gsapp.ui.components.settings
 
 import androidx.compose.animation.AnimatedVisibility
@@ -46,14 +64,19 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.ui.materialtools.MaterialColors
 import de.xorg.gsapp.ui.tools.foregroundColorForBackground
+import de.xorg.gsapp.res.MR
+import dev.icerock.moko.resources.compose.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectListItem(
     modifier: Modifier = Modifier,
@@ -62,6 +85,8 @@ fun SubjectListItem(
     onNameEdited: (sub: Subject, newName: String) -> Unit,
     onDelete: (sub: Subject) -> Unit
 ) {
+    val deleteAction = stringResource(MR.strings.dialog_delete_confirm)
+
     var isEditing by rememberSaveable { mutableStateOf(false) }
     var editValue by rememberSaveable { mutableStateOf(subject.longName) }
     val focusRequester = remember { FocusRequester() }
@@ -107,9 +132,16 @@ fun SubjectListItem(
                         onNameEdited(subject, editValue)
                     isEditing = it.isFocused
                 }.focusRequester(focusRequester)
-                    .fillMaxWidth()
-                 /*.weight(1f)
-                    .padding(8.dp)*/,
+                    .semantics {
+                        customActions = listOf(
+                            CustomAccessibilityAction(
+                                label = deleteAction,
+                                action = { onDelete(subject); true }
+                            ),
+                            //TODO: Should I list confirm/cancel here?
+                        )
+                    }
+                    .fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -119,12 +151,13 @@ fun SubjectListItem(
                 leadingIcon = {
                     Box(contentAlignment = Alignment.CenterStart,
                         modifier = Modifier
+                            .clearAndSetSemantics { } // Subject color is probably not important for blind people
                             .padding(start = 5.dp, //TODO: guidelines?
                                 top = 5.dp,
                                 bottom = 5.dp,
                                 end = 10.dp)) {
 
-                        /* LessonNumber -> Circle Background */
+                        /* Subject Short+Color -> Circle Background */
                         Box(contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .size(40.dp)
@@ -156,7 +189,7 @@ fun SubjectListItem(
                             }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Done,
-                                    contentDescription = "",
+                                    contentDescription = stringResource(MR.strings.dialog_save),
                                     tint = Color(
                                         MaterialColors.harmonize(
                                             Color.Green.toArgb(),
@@ -178,12 +211,15 @@ fun SubjectListItem(
                                 focusManager.clearFocus()
                             }) {
                                 Icon(imageVector = Icons.Rounded.Clear,
-                                    contentDescription = "",
+                                    contentDescription = stringResource(MR.strings.dialog_cancel),
                                     tint = MaterialTheme.colorScheme.error)
                             }
                         }
 
-                        IconButton(onClick = { onDelete(subject) } ) {
+                        IconButton(
+                            onClick = { onDelete(subject) },
+                            modifier = Modifier.clearAndSetSemantics { }
+                        ) {
                             Icon(Icons.Rounded.Delete, null)
                         }
                     }

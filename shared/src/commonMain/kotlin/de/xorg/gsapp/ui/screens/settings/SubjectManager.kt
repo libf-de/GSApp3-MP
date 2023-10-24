@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -35,30 +37,24 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.settings.InputTextDialog
-import de.xorg.gsapp.ui.components.settings.SelectColorDialog
+import de.xorg.gsapp.ui.components.dialogs.InputTextDialog
+import de.xorg.gsapp.ui.components.dialogs.SelectColorDialog
 import de.xorg.gsapp.ui.components.settings.SubjectListItem
-import de.xorg.gsapp.ui.materialtools.MaterialColors
-import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import kotlinx.coroutines.flow.collect
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import moe.tlaster.precompose.lifecycle.LocalLifecycleOwner
 import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
 import org.kodein.di.instance
@@ -80,7 +76,11 @@ fun SubjectManager(
 
     var colorEditShow by remember { mutableStateOf(false) }
     var colorEditSubject by remember { mutableStateOf<Subject?>(null) }
+
     var showAddNewDialog by remember { mutableStateOf(false) }
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var subjectToDelete by remember { mutableStateOf(Subject.emptySubject) }
 
     Scaffold(modifier = modifier,
         topBar = {
@@ -90,7 +90,20 @@ fun SubjectManager(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.goBack() }) {
-                        Icon(Icons.Rounded.ArrowBack, "")
+                        Icon(imageVector = Icons.Rounded.ArrowBack,
+                             contentDescription = stringResource(MR.strings.back))
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            viewModel.updateSubjects(force = true)
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(MR.images.reset)
+
+                        )
                     }
                 }
             )
@@ -99,7 +112,8 @@ fun SubjectManager(
             FloatingActionButton(
                 onClick = { showAddNewDialog = true },
             ) {
-                Icon(Icons.Rounded.Add, "Add new subject")
+                Icon(imageVector = Icons.Rounded.Add,
+                     contentDescription = stringResource(MR.strings.subject_manager_add_title))
             }
         }
     ) {
@@ -130,7 +144,47 @@ fun SubjectManager(
                 },
                 onCancel = { showAddNewDialog = false },
                 title = stringResource(MR.strings.subject_manager_add_title),
-                message = stringResource(MR.strings.subject_manager_add_desc)
+                message = stringResource(MR.strings.subject_manager_add_desc),
+
+                modifier = Modifier.width(300.dp)
+            )
+        }
+
+        if(showDeleteDialog && subjectToDelete.isNotBlank()) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDeleteDialog = false
+                    subjectToDelete = Subject.emptySubject
+                },
+                title = { Text(stringResource(MR.strings.dialog_delete_title)) },
+                text = { Text(stringResource(MR.strings.dialog_delete_text, subjectToDelete.shortName, subjectToDelete.longName)) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.deleteSubject(subjectToDelete)
+                            showDeleteDialog = false
+                            subjectToDelete = Subject.emptySubject
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(MR.strings.dialog_delete_confirm),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            subjectToDelete = Subject.emptySubject
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(MR.strings.dialog_cancel)
+                        )
+                    }
+                },
+                modifier = modifier
             )
         }
 
@@ -143,7 +197,7 @@ fun SubjectManager(
                 SubjectListItem(
                     modifier = Modifier,
                     subject = subject,
-                    onDelete = { sub -> viewModel.deleteSubject(sub) },
+                    onDelete = { sub -> subjectToDelete = sub; showDeleteDialog = true },
                     onNameEdited = { sub, name ->
                         viewModel.updateSubject(
                             oldSubject = sub,

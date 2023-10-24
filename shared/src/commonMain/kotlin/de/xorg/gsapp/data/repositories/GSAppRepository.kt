@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ package de.xorg.gsapp.data.repositories
 
 import androidx.compose.ui.graphics.Color
 import com.russhwolf.settings.SettingsListener
-import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
@@ -63,9 +62,10 @@ interface GSAppRepository {
     suspend fun deleteTeacher(value: Teacher): Result<Boolean>
 
     fun getSubjects(): Flow<Result<List<Subject>>>
-    suspend fun updateSubjects(callback: (Result<Boolean>) -> Unit) //stub as currently subjects are not fetched from remote
+    suspend fun updateSubjects(force: Boolean = false, callback: (Result<Boolean>) -> Unit) //stub as currently subjects are not fetched from remote
     suspend fun addSubject(value: Subject): Result<Boolean>
     suspend fun deleteSubject(value: Subject): Result<Boolean>
+    suspend fun deleteAllSubjects(): Result<Boolean>
     suspend fun editSubject(subject: Subject, newLongName: String? = null, newColor: Color? = null): Result<Subject>
 
 

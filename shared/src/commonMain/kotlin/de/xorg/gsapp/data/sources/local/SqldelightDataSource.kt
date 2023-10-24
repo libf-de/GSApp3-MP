@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -321,6 +321,9 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
             Result.failure(ex)
         }
     }
+
+    override suspend fun deleteAllSubjects() = database.dbSubjectQueries.deleteAllSubjects()
+
 
     override fun getTeachersFlow(): Flow<Result<List<Teacher>>>
     = tryFlow(

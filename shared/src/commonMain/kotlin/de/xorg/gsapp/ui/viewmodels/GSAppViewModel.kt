@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,14 +22,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.russhwolf.settings.SettingsListener
-import de.xorg.gsapp.data.enums.ExamCourse
-import de.xorg.gsapp.data.model.Exam
 //import com.hoc081098.kmp.viewmodel.ViewModel
-import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.ui.state.AppState
-import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.UiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,15 +32,8 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.kodein.di.DI
@@ -195,7 +183,7 @@ class GSAppViewModel(di: DI) : ViewModel() {
         }
     }
 
-    private fun updateSubjects() {
+    private fun updateSubjects(force: Boolean = false) {
         repoScope.launch {
             appRepo.updateSubjects { }
         }

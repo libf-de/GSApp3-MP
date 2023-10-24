@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,10 @@ data class Subject(
     val longName: String,
     val color: Color
 ) {
+    companion object {
+        val emptySubject = Subject("")
+    }
+
     /**
      * Constructor for "unknown" placeholder subject, will be marked in magenta.
      * Also has no long name, so the shortName will be displayed
@@ -52,12 +56,8 @@ data class Subject(
     }*/
 
     /**
-     * Checks if shortName, longName and color of two subjects are the same
+     * Checks if a given Subject is not the empty Subject (=blank shortName)
      */
-    fun totallyEqual(other: Any?): Boolean {
-        if(other !is Subject) return false
-        return other.longName == this.longName &&
-                other.shortName == this.shortName &&
-                other.color == this.color
-    }
+    fun isBlank(): Boolean = this.shortName.isBlank()
+    fun isNotBlank(): Boolean = this.shortName.isNotBlank()
 }

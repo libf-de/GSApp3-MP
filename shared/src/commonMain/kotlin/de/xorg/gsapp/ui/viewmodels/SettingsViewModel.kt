@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -212,6 +212,18 @@ class SettingsViewModel(
     fun updateSubject(oldSubject: Subject, longName: String? = null, color: Color? = null) {
         viewModelScope.launch {
             appRepo.editSubject(oldSubject, longName, color)
+        }
+    }
+
+    fun updateSubjects(force: Boolean = false) {
+        viewModelScope.launch {
+            appRepo.updateSubjects(force) { }
+        }
+    }
+
+    fun clearSubjects() {
+        viewModelScope.launch {
+            appRepo.deleteAllSubjects()
         }
     }
 

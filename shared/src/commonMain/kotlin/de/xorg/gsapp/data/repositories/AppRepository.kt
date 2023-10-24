@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ package de.xorg.gsapp.data.repositories
 import androidx.compose.ui.graphics.Color
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ObservableSettings
-import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SettingsListener
 import com.russhwolf.settings.coroutines.FlowSettings
 import de.xorg.gsapp.data.exceptions.NoEntriesException
@@ -33,7 +32,6 @@ import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sources.defaults.DefaultsDataSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
-import de.xorg.gsapp.data.sql.GsAppDatabase
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
@@ -349,7 +347,7 @@ class AppRepository(di: DI) : GSAppRepository {
 
     override fun getSubjects(): Flow<Result<List<Subject>>> = localDataSource.getSubjectsFlow()
 
-    override suspend fun updateSubjects(callback: (Result<Boolean>) -> Unit) {
+    override suspend fun updateSubjects(force: Boolean, callback: (Result<Boolean>) -> Unit) {
         try {
             with(localDataSource.countSubjects()) {
                 if(this.isFailure) {
@@ -361,7 +359,7 @@ class AppRepository(di: DI) : GSAppRepository {
                     return
                 }
 
-                if((this.getOrNull() ?: 0) < 1L) {
+                if((this.getOrNull() ?: 0) < 1L || force) {
                     localDataSource.addAllSubjects(
                         defaultsDataSource.getDefaultSubjects()
                     )
@@ -389,6 +387,16 @@ class AppRepository(di: DI) : GSAppRepository {
             localDataSource.deleteSubject(value)
             Result.success(true)
         } catch(ex: Exception) {
+            Result.failure(ex)
+        }
+    }
+
+    override suspend fun deleteAllSubjects(): Result<Boolean> {
+        return try {
+            localDataSource.deleteAllSubjects()
+            Result.success(true)
+        } catch(ex: Exception) {
+            log.w { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }

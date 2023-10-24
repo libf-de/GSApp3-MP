@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,8 +65,10 @@ interface LocalDataSource {
     suspend fun addSubject(value: Subject)
     suspend fun updateSubject(value: Subject)
     suspend fun deleteSubject(value: Subject)
+    suspend fun deleteAllSubjects()
     suspend fun subjectExists(shortName: String): Boolean
     suspend fun countSubjects(): Result<Long>
+
 
     fun getTeachersFlow(): Flow<Result<List<Teacher>>>
     suspend fun addAllTeachers(value: List<Teacher>)
