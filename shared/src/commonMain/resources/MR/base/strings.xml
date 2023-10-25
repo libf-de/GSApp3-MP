@@ -87,6 +87,10 @@
     <string name="push_unavailable">(not available on %s)</string>
 
     <!-- Subject management -->
+    <string name="subject_manager_error_title">Error</string>
+    <string name="subject_manager_error_text">Failed to load subjects, caused by:</string>
+    <string name="subject_manager_empty_title">No subjects</string>
+    <string name="subject_manager_empty_text">Click the + button at the bottom to add one.</string>
     <string name="subject_manager_colorpicker_title">Choose color for %s</string>
     <string name="subject_manager_colorpicker_nullsubject">a subject</string>
     <string name="subject_manager_add_title">Add subject</string>

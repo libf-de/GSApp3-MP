@@ -65,7 +65,7 @@ interface GSAppRepository {
     suspend fun updateSubjects(force: Boolean = false, callback: (Result<Boolean>) -> Unit) //stub as currently subjects are not fetched from remote
     suspend fun addSubject(value: Subject): Result<Boolean>
     suspend fun deleteSubject(value: Subject): Result<Boolean>
-    suspend fun deleteAllSubjects(): Result<Boolean>
+    suspend fun resetSubjects(): Result<Boolean>
     suspend fun editSubject(subject: Subject, newLongName: String? = null, newColor: Color? = null): Result<Subject>
 
 

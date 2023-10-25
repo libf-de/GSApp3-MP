@@ -47,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,6 +93,11 @@ fun SubjectListItem(
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
+    LaunchedEffect(subject) {
+        editValue = subject.longName
+        isEditing = false
+    }
+
     /*Column {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -132,16 +138,16 @@ fun SubjectListItem(
                         onNameEdited(subject, editValue)
                     isEditing = it.isFocused
                 }.focusRequester(focusRequester)
-                    .semantics {
-                        customActions = listOf(
-                            CustomAccessibilityAction(
-                                label = deleteAction,
-                                action = { onDelete(subject); true }
-                            ),
-                            //TODO: Should I list confirm/cancel here?
-                        )
-                    }
-                    .fillMaxWidth(),
+                 .semantics {
+                    customActions = listOf(
+                        CustomAccessibilityAction(
+                            label = deleteAction,
+                            action = { onDelete(subject); true }
+                        ),
+                        //TODO: Should I list confirm/cancel here?
+                    )
+                 }
+                 .fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,

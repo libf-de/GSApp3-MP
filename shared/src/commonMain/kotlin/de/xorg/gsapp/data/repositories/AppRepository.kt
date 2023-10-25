@@ -391,11 +391,13 @@ class AppRepository(di: DI) : GSAppRepository {
         }
     }
 
-    override suspend fun deleteAllSubjects(): Result<Boolean> {
+    override suspend fun resetSubjects(): Result<Boolean> {
         return try {
-            localDataSource.deleteAllSubjects()
+            localDataSource.resetSubjects(
+                defaultsDataSource.getDefaultSubjects()
+            )
             Result.success(true)
-        } catch(ex: Exception) {
+        } catch (ex: Exception) {
             log.w { ex.stackTraceToString() }
             Result.failure(ex)
         }

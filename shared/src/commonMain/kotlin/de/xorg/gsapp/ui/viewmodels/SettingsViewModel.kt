@@ -221,9 +221,9 @@ class SettingsViewModel(
         }
     }
 
-    fun clearSubjects() {
+    fun resetSubjects() {
         viewModelScope.launch {
-            appRepo.deleteAllSubjects()
+            appRepo.resetSubjects()
         }
     }
 

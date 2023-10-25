@@ -322,8 +322,18 @@ class SqldelightDataSource(di: DI) : LocalDataSource {
         }
     }
 
-    override suspend fun deleteAllSubjects() = database.dbSubjectQueries.deleteAllSubjects()
-
+    override suspend fun resetSubjects(value: List<Subject>) {
+        database.dbSubjectQueries.transaction {
+            database.dbSubjectQueries.deleteAllSubjects()
+            value.forEach { subject ->
+                database.dbSubjectQueries.insertSubject(
+                    shortName = subject.shortName,
+                    longName = subject.longName,
+                    color = subject.color
+                )
+            }
+        }
+    }
 
     override fun getTeachersFlow(): Flow<Result<List<Teacher>>>
     = tryFlow(

@@ -18,24 +18,40 @@
 
 package de.xorg.gsapp.ui.screens.settings
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -43,17 +59,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.res.MR
+import de.xorg.gsapp.ui.components.LoadingComponent
 import de.xorg.gsapp.ui.components.dialogs.InputTextDialog
 import de.xorg.gsapp.ui.components.dialogs.SelectColorDialog
 import de.xorg.gsapp.ui.components.settings.SubjectListItem
+import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import kotlinx.coroutines.flow.map
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
 import org.kodein.di.compose.localDI
@@ -62,7 +83,7 @@ import org.kodein.di.instance
 /**
  * The app settings composable
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun SubjectManager(
     navController: Navigator,
@@ -82,6 +103,8 @@ fun SubjectManager(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var subjectToDelete by remember { mutableStateOf(Subject.emptySubject) }
 
+    var showResetDialog by remember { mutableStateOf(false) }
+
     Scaffold(modifier = modifier,
         topBar = {
             TopAppBar(
@@ -95,15 +118,18 @@ fun SubjectManager(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = {
-                            viewModel.updateSubjects(force = true)
+                    if(viewModel.subjectsState == UiState.NORMAL_LOADING ||
+                        viewModel.subjectsState == UiState.LOADING) {
+                        IconButton(onClick = {}) {
+                            CircularProgressIndicator()
                         }
-                    ) {
-                        Icon(
-                            painter = painterResource(MR.images.reset)
+                    }
 
-                        )
+                    IconButton(onClick = {
+                            showResetDialog = true
+                    }) {
+                        Icon(painter = painterResource(MR.images.reset),
+                             contentDescription = stringResource(MR.strings.subject_manager_reset_dialog_title))
                     }
                 }
             )
@@ -188,31 +214,151 @@ fun SubjectManager(
             )
         }
 
-        // TODO: Handle subjectsState properly!
-        LazyColumn(
-            modifier = modifier.padding(it).fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            items(subjects.getOrNull() ?: emptyList()) { subject ->
-                SubjectListItem(
-                    modifier = Modifier,
-                    subject = subject,
-                    onDelete = { sub -> subjectToDelete = sub; showDeleteDialog = true },
-                    onNameEdited = { sub, name ->
-                        viewModel.updateSubject(
-                            oldSubject = sub,
-                            longName = name
+        if(showResetDialog) {
+            AlertDialog(onDismissRequest = {
+                showResetDialog = false
+            }) {
+                Surface(
+                    color = AlertDialogDefaults.containerColor,
+                    shape = RoundedCornerShape(28.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(all = 24.dp)
+                    ) {
+                        Text(
+                            text = stringResource(MR.strings.subject_manager_reset_dialog_title),
+                            style = MaterialTheme.typography.headlineMedium,
+                            modifier = Modifier.padding(bottom = 16.dp)
                         )
-                    },
-                    onColorClick = { sub ->
-                        colorEditSubject = sub
-                        colorEditShow = true
+
+                        Text(
+                            text = stringResource(MR.strings.subject_manager_reset_dialog_text),
+                            modifier = Modifier.padding(bottom = 24.dp)
+                        )
+
+                        Button(
+                            onClick = { viewModel.resetSubjects(); showResetDialog = false },
+                            shape = RoundedCornerShape(bottomStart = 4.dp,
+                                                       bottomEnd = 4.dp,
+                                                       topStart = 12.dp,
+                                                       topEnd = 12.dp),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(MR.strings.subject_manager_reset_dialog_replace),
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+
+                        Button(
+                            onClick = { viewModel.updateSubjects(true); showResetDialog = false },
+                            shape = RoundedCornerShape(4.dp),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(MR.strings.subject_manager_reset_dialog_adddefault),
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+
+                        ButtonDefaults
+
+                        Button(
+                            onClick = { showResetDialog = false },
+                            shape = RoundedCornerShape(topStart = 4.dp,
+                                                       topEnd = 4.dp,
+                                                       bottomStart = 12.dp,
+                                                       bottomEnd = 12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(MR.strings.dialog_cancel),
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
                     }
-                )
+                }
+
+            }
+        }
+
+        when(viewModel.subjectsState) {
+            UiState.LOADING -> {
+                LoadingComponent(modifier = Modifier.fillMaxSize())
             }
 
-            item {
-                Spacer(modifier.height(72.dp))
+            UiState.FAILED, UiState.NO_DATASOURCE -> {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(stringResource(MR.strings.subject_manager_error_title), style = MaterialTheme.typography.displayMedium)
+                    Text(stringResource(MR.strings.subject_manager_error_text))
+                    Text(viewModel.subjectsError.value.stackTraceToString())
+                }
+            }
+
+            UiState.EMPTY -> {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(stringResource(MR.strings.subject_manager_empty_title), style = MaterialTheme.typography.displayMedium)
+                    Text(stringResource(MR.strings.subject_manager_empty_text))
+                }
+            }
+
+            UiState.NORMAL, UiState.NORMAL_LOADING, UiState.NORMAL_FAILED -> {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                    modifier = modifier
+                        .padding(it)
+                        .fillMaxSize(),
+                ) {
+                    if(viewModel.subjectsState == UiState.NORMAL_FAILED) {
+                        item {
+                            Column {
+                                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Text(stringResource(MR.strings.subject_manager_error_title))
+                                    Text(stringResource(MR.strings.subject_manager_error_text))
+                                }
+                                Text(viewModel.subjectsError.value.message.toString())
+                                Divider(Modifier.height(1.dp).fillMaxWidth())
+                            }
+                        }
+                    }
+
+                    items(
+                        (subjects.getOrNull() ?: emptyList()).filter {
+                                sub -> sub.shortName.startsWith("&")
+                        }.sortedBy { sub -> sub.shortName }
+                    ){ subject ->
+                        SubjectListItem(
+                            modifier = Modifier.animateItemPlacement(
+                                animationSpec = tween(500)
+                            ),
+                            subject = subject,
+                            onDelete = { sub -> subjectToDelete = sub; showDeleteDialog = true },
+                            onNameEdited = { sub, name ->
+                                viewModel.updateSubject(
+                                    oldSubject = sub,
+                                    longName = name
+                                )
+                            },
+                            onColorClick = { sub ->
+                                colorEditSubject = sub
+                                colorEditShow = true
+                            }
+                        )
+                    }
+
+                    item {
+                        Spacer(modifier.height(72.dp))
+                    }
+                }
             }
         }
     }

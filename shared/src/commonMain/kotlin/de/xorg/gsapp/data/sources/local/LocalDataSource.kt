@@ -65,7 +65,7 @@ interface LocalDataSource {
     suspend fun addSubject(value: Subject)
     suspend fun updateSubject(value: Subject)
     suspend fun deleteSubject(value: Subject)
-    suspend fun deleteAllSubjects()
+    suspend fun resetSubjects(value: List<Subject>)
     suspend fun subjectExists(shortName: String): Boolean
     suspend fun countSubjects(): Result<Long>
 
