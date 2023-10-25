@@ -38,11 +38,14 @@ import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.state.FilterRole
 import dev.icerock.moko.resources.desc.desc
+import org.kodein.di.android.closestDI
 
 class GSAppFirebaseMessagingService : FirebaseMessagingService() {
     private val TAG = "GSAppFMS"
     private val CHANNEL_ID = "GsappSubstitutions"
     private val NTF_ID = 69420
+
+    private val prefRepo by closestDI()
 
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -75,6 +78,7 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         //TODO: Improve notification!
+
 
         val pushState = PushState.fromInt(
             getSharedPreferences("GSApp", MODE_PRIVATE).getInt("push", PushState.default.value)

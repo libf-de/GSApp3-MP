@@ -18,28 +18,22 @@
 
 package de.xorg.gsapp.ui.viewmodels
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.exceptions.NoException
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.GSAppRepository
+import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.ColorPickerMode
 import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.state.UiState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -51,21 +45,43 @@ import org.kodein.di.instance
 class SettingsViewModel(
     di: DI
 ) : ViewModel() {
-    private val appRepo: GSAppRepository by di.instance()
+    private val dataRepo: GSAppRepository by di.instance()
+    private val prefRepo: PreferencesRepository by di.instance()
 
-    private val _rolePreference: MutableStateFlow<FilterRole> = MutableStateFlow(FilterRole.ALL)
+    private val pushUtil: PushNotificationUtil by di.instance()
+
+    //TODO: Should I use stateIn here?
+    val roleFlow = prefRepo.getRoleFlow().shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
+
+    val filterFlow = prefRepo.getRoleFlow().shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
+
+    val pushFlow = prefRepo.getPushFlow().shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
+
+    /*private val _rolePreference: MutableStateFlow<FilterRole> = MutableStateFlow(FilterRole.ALL)
     var rolePreference = _rolePreference.asStateFlow()
 
     private val _filterPreference: MutableStateFlow<String> = MutableStateFlow("")
     var filterPreference = _filterPreference.asStateFlow()
 
     private val _pushPreference: MutableStateFlow<PushState> = MutableStateFlow(PushState.DISABLED)
-    var pushPreference = _pushPreference.asStateFlow()
-    private val pushUtil: PushNotificationUtil by di.instance()
+    var pushPreference = _pushPreference.asStateFlow()*/
+
 
     /*private val _teachers: MutableStateFlow<List<Teacher>> = MutableStateFlow(emptyList())
     var teachers = _teachers.asStateFlow()*/
-    val teachers = appRepo.getTeachers().shareIn(
+    val teachers = dataRepo.getTeachers().shareIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         replay = 1
@@ -75,7 +91,7 @@ class SettingsViewModel(
     var teacherState by mutableStateOf(UiState.EMPTY)
         private set
 
-    var subjects = appRepo.getSubjects().shareIn(
+    var subjects = dataRepo.getSubjects().shareIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         replay = 1
@@ -96,7 +112,7 @@ class SettingsViewModel(
         /*viewModelScope.launch {
             appRepo.updateSubjects {  }
         }*/
-        loadSettings() //TODO: Have settings loading state!
+        //loadSettings() //TODO: Have settings loading state!
         initStateFromFlows()
 
     }
@@ -145,13 +161,13 @@ class SettingsViewModel(
         }
     }
 
-    private fun loadSettings() {
+    /*private fun loadSettings() {
         viewModelScope.launch {
-            _rolePreference.value = appRepo.getRole()
-            _filterPreference.value = appRepo.getFilterValue()
-            _pushPreference.value = appRepo.getPush()
+            _rolePreference.value = dataRepo.getRole()
+            _filterPreference.value = dataRepo.getFilterValue()
+            _pushPreference.value = dataRepo.getPush()
         }
-    }
+    }*/
 
     /*private fun loadSubjects() {
         subjectsState = UiState.LOADING
@@ -205,57 +221,60 @@ class SettingsViewModel(
 
     fun addSubject(subject: Subject) {
         viewModelScope.launch {
-            appRepo.addSubject(subject)
+            dataRepo.addSubject(subject)
         }
     }
 
     fun updateSubject(oldSubject: Subject, longName: String? = null, color: Color? = null) {
         viewModelScope.launch {
-            appRepo.editSubject(oldSubject, longName, color)
+            dataRepo.editSubject(oldSubject, longName, color)
         }
     }
 
     fun updateSubjects(force: Boolean = false) {
         viewModelScope.launch {
-            appRepo.updateSubjects(force) { }
+            dataRepo.updateSubjects(force) { }
         }
     }
 
     fun resetSubjects() {
         viewModelScope.launch {
-            appRepo.resetSubjects()
+            dataRepo.resetSubjects()
         }
     }
 
     fun deleteSubject(toDelete: Subject) {
         viewModelScope.launch {
-            appRepo.deleteSubject(toDelete)
+            dataRepo.deleteSubject(toDelete)
         }
-
     }
-    
+
+    // TODO: Handle failure properly (somehow)
     fun setPush(state: PushState) {
         if(state == PushState.ENABLED || state == PushState.LIKE_FILTER) {
             pushUtil.ensurePushPermissions {  success ->
                 if(success) {
-                    pushUtil.enablePushService { if(it) _pushPreference.value = state }
-                    viewModelScope.launch {
-                        appRepo.setPush(state)
+                    pushUtil.enablePushService {
+                        viewModelScope.launch {
+                            prefRepo.setPush(state)
+                        }
                     }
                 }
                 //TODO: Notify user of missing permissions!
             }
         } else {
-            pushUtil.disablePushService { if(it) _pushPreference.value = state }
+            pushUtil.disablePushService {
+                viewModelScope.launch {
+                    prefRepo.setPush(state)
+                }
+            }
         }
     }
 
     fun setRoleAndFilter(role: FilterRole, filter: String) {
-        _rolePreference.value = role
-        _filterPreference.value = filter
         viewModelScope.launch {
-            appRepo.setRole(role)
-            appRepo.setFilterValue(filter)
+            prefRepo.setRole(role)
+            prefRepo.setFilterValue(filter)
         }
     }
 

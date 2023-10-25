@@ -20,13 +20,24 @@ package de.xorg.gsapp
 
 import android.app.Application
 import android.content.Context
-import de.xorg.gsapp.data.cache.AndroidCacheManager
-import de.xorg.gsapp.data.cache.CacheManager
-import de.xorg.gsapp.data.di.mainModule
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.SharedPreferencesMigration
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.preferencesDataStoreFile
+import com.russhwolf.settings.coroutines.FlowSettings
+import com.russhwolf.settings.datastore.DataStoreSettings
+import de.xorg.gsapp.data.di.preferencesRepositoryModule
+import de.xorg.gsapp.data.di.sqldelightLocalSourceModule
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.kodein.di.DI
 import org.kodein.di.DIAware
-import org.kodein.di.android.x.androidXModule
 import org.kodein.di.bind
+import org.kodein.di.instance
 import org.kodein.di.provider
 import org.kodein.di.singleton
 
@@ -41,18 +52,19 @@ class GSAppApplication : Application(), DIAware {
         instance = this
     }
 
-    override val di: DI = DI {
+    override val di: DI = DI.lazy {
         bind<Context>() with provider { applicationContext }
-        bind<CacheManager>() with singleton { AndroidCacheManager(applicationContext) }
-        import(mainModule)
-        import(androidXModule(this@GSAppApplication))
+        bind<DataStore<Preferences>>() with singleton {
+            PreferenceDataStoreFactory.create(
+                corruptionHandler = ReplaceFileCorruptionHandler(
+                    produceNewData = { emptyPreferences() }
+                ),
+                migrations = listOf(SharedPreferencesMigration(applicationContext, "GSApp")),
+                scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+                produceFile = { applicationContext.preferencesDataStoreFile("GSApp") }
+            )
+        }
+        bind<FlowSettings>() with singleton { DataStoreSettings(instance()) }
+        import(preferencesRepositoryModule)
     }
-
-    /*override val di: DI by DI.lazy {
-        bind<SettingsSource>() with provider { SettingsSource(this@GSAppApplication) }
-        bind<Context>() with provider { applicationContext }
-        bind<CacheManager>() with singleton { AndroidCacheManager(applicationContext) }
-        import(mainModule)
-        import(androidXModule(this@GSAppApplication))
-    }*/
 }

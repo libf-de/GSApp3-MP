@@ -24,7 +24,9 @@ import androidx.compose.runtime.setValue
 import com.russhwolf.settings.SettingsListener
 //import com.hoc081098.kmp.viewmodel.ViewModel
 import de.xorg.gsapp.data.repositories.GSAppRepository
+import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.AppState
+import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.UiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +34,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
@@ -50,16 +53,51 @@ class GSAppViewModel(di: DI) : ViewModel() {
     }
 
     private val appRepo: GSAppRepository by di.instance()
+    private val prefsRepo: PreferencesRepository by di.instance()
     private val repoScope = CoroutineScope(Dispatchers.IO)
 
     var uiState by mutableStateOf(AppState())
         private set
 
-    val subFlow = appRepo.getSubstitutions().shareIn(
+
+    val subFlow = combine(appRepo.getSubstitutions(),
+                          prefsRepo.getRoleFlow(),
+                          prefsRepo.getFilterValueFlow()) { subs, role, filter ->
+        if(role == FilterRole.ALL) return@combine subs
+
+        subs.mapCatching {
+            it.copy(
+                substitutions = when(role) {
+                    FilterRole.STUDENT -> {
+                        it.substitutions.filterKeys { entry ->
+                            entry.lowercase().contains(filter.lowercase())
+                        }
+                    }
+
+                    FilterRole.TEACHER -> {
+                        it.substitutions.mapValues { subsPerKlass ->
+                            subsPerKlass.value.filter { aSub ->
+                                aSub.substTeacher.shortName.lowercase() == filter.lowercase()
+                            }
+                        }.filter { subsPerKlass ->
+                            subsPerKlass.value.isNotEmpty()
+                        }
+                    }
+
+                    else -> { //TODO: Is returning instantly much faster than this?
+                        it.substitutions
+                    }
+                }
+            )
+        }
+    }.shareIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         replay = 1
     )
+
+
+    //val subsFlow = appRepo.getSubstitutions()
     //private val _subStateFlow = MutableStateFlow(SubstitutionSet())
     //val subStateFlow = _subStateFlow.asStateFlow()
 

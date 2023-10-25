@@ -68,33 +68,5 @@ interface GSAppRepository {
     suspend fun resetSubjects(): Result<Boolean>
     suspend fun editSubject(subject: Subject, newLongName: String? = null, newColor: Color? = null): Result<Subject>
 
-
-
-    /**
-     * These shall return the value stored in settings, store the given value in settings or
-     * setup an observer that triggers when the setting was changed. See implementation
-     * for further documentation
-     */
-    fun getRoleFlow(): Flow<FilterRole>
-
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getRoleFlow()"))
-    suspend fun getRole(): FilterRole
-    suspend fun setRole(value: FilterRole)
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getRoleFlow()"))
-    suspend fun observeRole(callback: (FilterRole) -> Unit): SettingsListener?
-
-    fun getFilterValueFlow(): Flow<String>
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getFilterValueFlow()"))
-    suspend fun getFilterValue(): String
-    suspend fun setFilterValue(value: String)
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getFilterValueFlow()"))
-    suspend fun observeFilterValue(callback: (String) -> Unit): SettingsListener?
-
-    fun getPushFlow(): Flow<PushState>
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))
-    suspend fun getPush(): PushState
-    suspend fun setPush(value: PushState)
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))
-    suspend fun observePush(callback: (PushState) -> Unit): SettingsListener?
-    fun getFilteredSubstitutions(): Flow<Result<SubstitutionSet>>
+    //fun getFilteredSubstitutions(): Flow<Result<SubstitutionSet>>
 }

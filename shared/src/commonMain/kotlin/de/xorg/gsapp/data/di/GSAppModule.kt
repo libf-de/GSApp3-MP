@@ -26,6 +26,8 @@ import de.xorg.gsapp.data.DbSubstitutionSet
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.AppRepository
 import de.xorg.gsapp.data.repositories.GSAppRepository
+import de.xorg.gsapp.data.repositories.MPSettingsRepository
+import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.data.sources.defaults.DefaultsDataSource
 import de.xorg.gsapp.data.sources.defaults.GsDefaultsSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
@@ -44,6 +46,21 @@ import org.kodein.di.instance
 import org.kodein.di.singleton
 
 val mainModule = DI.Module("mainModule") {
+    //bind<RemoteDataSource>() with singleton { DebugWebDataSource() }
+
+
+    // Repository
+    import(dataRepositoryModule)
+
+    // ViewModel
+    bind<GSAppViewModel>() with singleton { GSAppViewModel(di) }
+    bind<SettingsViewModel>() with singleton { SettingsViewModel(di) }
+
+    // PushNotificationUtil
+    bind<PushNotificationUtil>() with singleton { PushNotificationUtil(di) }
+}
+
+val dataRepositoryModule = DI.Module {
     bind<GsAppDatabase>() with singleton {
         GsAppDatabase(
             driver = instance(),
@@ -63,12 +80,17 @@ val mainModule = DI.Module("mainModule") {
             )
         )
     }
-    //bind<RemoteDataSource>() with singleton { DebugWebDataSource() }
-    bind<RemoteDataSource>() with singleton { WebsiteDataSource(di) }
     bind<LocalDataSource>() with singleton { SqldelightDataSource(di) }
+    bind<RemoteDataSource>() with singleton { WebsiteDataSource(di) }
     bind<DefaultsDataSource>() with singleton { GsDefaultsSource(di) }
+
     bind<GSAppRepository>() with singleton { AppRepository(di) }
-    bind<PushNotificationUtil>() with singleton { PushNotificationUtil(di) }
-    bind<GSAppViewModel>() with singleton { GSAppViewModel(di) }
-    bind<SettingsViewModel>() with singleton { SettingsViewModel(di) }
+}
+
+val preferencesRepositoryModule = DI.Module {
+    bind<PreferencesRepository>() with singleton { MPSettingsRepository(di) }
+}
+
+val sqldelightLocalSourceModule = DI.Module {
+
 }
