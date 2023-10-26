@@ -18,22 +18,38 @@
 
 package de.xorg.gsapp.data.push
 
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
+import androidx.core.content.ContextCompat
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
-import org.kodein.di.DI
-import org.kodein.di.instance
+import de.xorg.gsapp.data.repositories.PreferencesRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-actual class PushNotificationUtil actual constructor(di: DI) {
+class AndroidPushUtil : PushNotificationUtil, KoinComponent {
 
-    private val activity: Activity by di.instance()
+    //private val activity: Activity by inject()
+    private val context: Context by inject()
+    private val prefRepo: PreferencesRepository by inject()
 
-    actual val isSupported: Boolean = true
+    override val isSupported: Boolean = true
 
-    actual fun enablePushService(callback: (success: Boolean) -> Unit) {
-
+    override fun enablePushService(callback: (success: Boolean) -> Unit) {
+        // Enable FCM auto-init
+        Firebase.messaging.isAutoInitEnabled = true
 
         Firebase.messaging.subscribeToTopic("substitutions")
             .addOnCompleteListener { task ->
@@ -43,11 +59,14 @@ actual class PushNotificationUtil actual constructor(di: DI) {
                     msg = "Failed to enable push :("
                 }
                 Log.d("AndroidPushUtil", msg)
-                Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             }
     }
 
-    actual fun disablePushService(callback: (success: Boolean) -> Unit) {
+    override fun disablePushService(callback: (success: Boolean) -> Unit) {
+        // Disable FCM auto-init
+        Firebase.messaging.isAutoInitEnabled = false
+
         Firebase.messaging.unsubscribeFromTopic("substitutions")
             .addOnCompleteListener { task ->
                 callback(task.isSuccessful)
@@ -56,43 +75,24 @@ actual class PushNotificationUtil actual constructor(di: DI) {
                     msg = "Failed to disable push :("
                 }
                 Log.d("AndroidPushUtil", msg)
-                Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             }
     }
 
-    actual fun ensurePushPermissions(callback: (success: Boolean) -> Unit) {
-        // This is only necessary for API level >= 33 (TIRAMISU)
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(activity, android.Manifest.permission.POST_NOTIFICATIONS) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
+    override fun ensurePushPermissions(callback: (success: Boolean) -> Unit) {
+        var granted = false;
 
-                // FCM SDK (and your app) can post notifications.
-            } else if (shouldShowRequestPermissionRationale(activity, android.Manifest.permission.POST_NOTIFICATIONS)) {
-                // display an educational UI explaining to the user the features that will be enabled
-                //       by them granting the POST_NOTIFICATION permission. This UI should provide the user
-                //       "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
-                //       If the user selects "No thanks," allow the user to continue without notifications.
-            } else {
-                // Directly ask for the
-                rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-                    if(!isGranted) callback(true)
-                }
-                registerForActivityResult(
-                    ActivityResultContracts.RequestPermission(),
-                ) { isGranted: Boolean ->
-                    if(!isGranted && PushState.fromInt(
-                            sharedPrefs.getInt("push", PushState.default.value)
-                        ) != PushState.DISABLED) {
-                        val editor = sharedPrefs.edit()
-                        editor.putInt("push", PushState.DISABLED.value)
-                        editor.apply()
-                        Toast.makeText(this, "No notification permission -> Push disabled!", Toast.LENGTH_SHORT).show()
-                    }
-                }.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+
+            CoroutineScope(Dispatchers.IO).launch {
+                prefRepo.setAskUserForNotificationPermission(
+                    ContextCompat
+                        .checkSelfPermission(context, POST_NOTIFICATIONS) != PERMISSION_GRANTED
+                )
             }
-        }*/
-        //TODO: Implement!
+        }
+
         callback(true)
     }
 }

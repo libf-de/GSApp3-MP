@@ -18,20 +18,20 @@
 
 package de.xorg.gsapp.data.push
 
-import org.kodein.di.DI
+import org.koin.core.component.KoinComponent
 
-actual class PushNotificationUtil actual constructor(di: DI) {
-    actual fun enablePushService(callback: (success: Boolean) -> Unit) {
+class DesktopPushUtilStub : PushNotificationUtil, KoinComponent  {
+    override fun enablePushService(callback: (success: Boolean) -> Unit) {
         callback(false)
     }
 
-    actual fun disablePushService(callback: (success: Boolean) -> Unit) {
+    override fun disablePushService(callback: (success: Boolean) -> Unit) {
         callback(false)
     }
 
-    actual fun ensurePushPermissions(callback: (success: Boolean) -> Unit) {
+    override fun ensurePushPermissions(callback: (success: Boolean) -> Unit) {
         callback(false)
     }
 
-    actual val isSupported: Boolean = false
+    override val isSupported: Boolean = false
 }

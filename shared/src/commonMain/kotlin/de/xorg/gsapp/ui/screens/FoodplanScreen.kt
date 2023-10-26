@@ -51,7 +51,6 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,11 +61,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
-import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.FancyIndicator
 import de.xorg.gsapp.ui.components.FoodplanCard
-import de.xorg.gsapp.ui.components.LoadingComponent
+import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.DateUtil
 import de.xorg.gsapp.ui.tools.getErrorAsString
@@ -74,17 +72,14 @@ import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
-import org.kodein.di.compose.localDI
-import org.kodein.di.instance
+import org.koin.compose.koinInject
 import org.lighthousegames.logging.logging
 
 /**
@@ -97,9 +92,8 @@ fun FoodplanScreen(
 ) {
     val log = logging()
 
-    val di = localDI()
-
-    val viewModel by di.instance<GSAppViewModel>()
+    //val viewModel: GSAppViewModel = koinViewModel(vmClass = GSAppViewModel::class)
+    val viewModel: GSAppViewModel = koinInject()
 
     val foodplan by viewModel.foodFlow
         .mapLatest { it.getOrDefault(emptyMap()) }

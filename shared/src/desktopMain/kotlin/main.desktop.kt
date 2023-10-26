@@ -17,37 +17,10 @@
  */
 
 import androidx.compose.runtime.Composable
-import app.cash.sqldelight.db.SqlDriver
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import com.russhwolf.settings.ExperimentalSettingsApi
-import com.russhwolf.settings.PreferencesSettings
-import com.russhwolf.settings.coroutines.FlowSettings
-import com.russhwolf.settings.coroutines.toFlowSettings
 import de.xorg.gsapp.GSApp
-import de.xorg.gsapp.data.di.mainModule
-import de.xorg.gsapp.data.sql.GsAppDatabase
-import org.kodein.di.bind
-import org.kodein.di.compose.withDI
-import org.kodein.di.singleton
-import java.io.File
-import java.util.prefs.Preferences
 
 actual fun getPlatformName(): String = "Desktop"
 
-@OptIn(ExperimentalSettingsApi::class)
-@Composable fun MainView() = withDI({
-    bind<FlowSettings>() with singleton { PreferencesSettings(
-        Preferences.userRoot()
-    ).toFlowSettings() }
-    bind<SqlDriver>() with singleton {
-        val dbPath = "gsapp.db"
-
-        val driver = JdbcSqliteDriver("jdbc:sqlite:${dbPath}")
-        if(!File(dbPath).exists())
-            GsAppDatabase.Schema.create(driver)
-        driver
-    }
-    import(mainModule)
-}) {
+@Composable fun MainView() {
     GSApp()
 }

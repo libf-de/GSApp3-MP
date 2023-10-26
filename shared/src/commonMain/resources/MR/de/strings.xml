@@ -110,6 +110,8 @@
     <!-- Generic strings -->
     <string name="generic_loading">Wird geladen…</string>
     <string name="back">Zurück gehen</string>
+    <string name="failed_to_load">%s konnte nicht geladen werden</string>
+    <string name="failed_send_dev">Bitte sende diesen Fehler an den Entwickler:</string>
 
     <!-- Foodplan -->
     <string name="foodplan_menu_no">%d. Menü</string>
@@ -120,4 +122,8 @@
     <string name="push_channel_desc">Benachrichtigt dich sobald ein neuer Vertretungsplan verfügbar ist</string>
     <string name="push_notification_title">Neuer Vertretungsplan!</string>
     <string name="push_notification_body">Es ist ein neuer Vertretungsplan verfügbar!</string>
+    <string name="push_no_permission_title">Fehlende Berechtigung</string>
+    <string name="push_no_permission_body">Du hast Push-Benachrichtigungen aktiviert, aber die Berechtigung für Benachrichtigungen verweigert.\nBitte gehe zu den Einstellungen und aktiviere Benachrichtigungen, um keinen neuen Vertretungsplan zu verpassen.\nFalls du dies nicht möchtest, kannst du Push-Benachrichtigungen auch in den App-Einstellungen deaktivieren.</string>
+    <string name="push_no_permission_fix">Zu den Einstellungen</string>
+    <string name="push_no_permission_later">Nicht jetzt</string>
 </resources>

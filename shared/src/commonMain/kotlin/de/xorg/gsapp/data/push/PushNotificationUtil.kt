@@ -18,14 +18,14 @@
 
 package de.xorg.gsapp.data.push
 
-import org.kodein.di.DI
+import org.koin.core.component.KoinComponent
 
 /**
  * Used to interact with the platform-specific push notification services.
  * Also denotes whether a platform even supports them, to disable the setting if unsupported.
  */
 
-expect class PushNotificationUtil(di: DI) {
+interface PushNotificationUtil : KoinComponent {
 
     val isSupported: Boolean
 

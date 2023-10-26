@@ -18,22 +18,21 @@
 
 package de.xorg.gsapp.data.sources.remote
 
-import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.UnexpectedStatusCodeException
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
-import kotlinx.collections.immutable.immutableListOf
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.datetime.LocalDate
-import org.kodein.di.DI
+import org.koin.core.component.KoinComponent
 import org.lighthousegames.logging.logging
 
 
@@ -48,13 +47,30 @@ import org.lighthousegames.logging.logging
  * could be used to properly test the parser.
  */
 
-open class WebsiteDataSource(di: DI) : RemoteDataSource {
+open class WebsiteDataSource : RemoteDataSource, KoinComponent {
     companion object {
         val log = logging()
     }
 
     private val parser = GsWebsiteParser()
-    private val client = HttpClient()
+    private val client = HttpClient(CIO) {
+        install(HttpRequestRetry) {
+            retryOnException(
+                maxRetries = 10,
+                retryOnTimeout = true
+            )
+
+            retryOnServerErrors(
+                maxRetries = 10
+            )
+        }
+
+        install(HttpTimeout) {
+            this.connectTimeoutMillis = 8000
+            this.requestTimeoutMillis = 8000
+            this.socketTimeoutMillis = 8000
+        }
+    }
 
     private var foodplanHtmlCache: String? = null
 

@@ -19,10 +19,6 @@
 package de.xorg.gsapp.data.repositories
 
 import androidx.compose.ui.graphics.Color
-import com.russhwolf.settings.ExperimentalSettingsApi
-import com.russhwolf.settings.ObservableSettings
-import com.russhwolf.settings.SettingsListener
-import com.russhwolf.settings.coroutines.FlowSettings
 import de.xorg.gsapp.data.exceptions.NoEntriesException
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
@@ -32,14 +28,11 @@ import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sources.defaults.DefaultsDataSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
-import de.xorg.gsapp.ui.state.FilterRole
-import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
-import org.kodein.di.DI
-import org.kodein.di.instance
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.lighthousegames.logging.logging
 
 /**
@@ -92,17 +85,16 @@ import org.lighthousegames.logging.logging
  *  └────────┘     └────────┘
  */
 
-@OptIn(ExperimentalSettingsApi::class)
-class AppRepository(di: DI) : GSAppRepository {
+class AppRepository : GSAppRepository, KoinComponent {
 
     companion object {
         val log = logging()
     }
 
     //Get data sources from DI
-    private val apiDataSource: RemoteDataSource by di.instance()
-    private val localDataSource: LocalDataSource by di.instance()
-    private val defaultsDataSource: DefaultsDataSource by di.instance()
+    private val apiDataSource: RemoteDataSource by inject()
+    private val localDataSource: LocalDataSource by inject()
+    private val defaultsDataSource: DefaultsDataSource by inject()
 
     override fun getSubstitutions(): Flow<Result<SubstitutionSet>>
         = localDataSource.getSubstitutionPlanFlow()

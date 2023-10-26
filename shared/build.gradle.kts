@@ -92,12 +92,9 @@ kotlin {
                 // Support for immutable Collections (should improve recomposing performance) TODO: Does it?
                 implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 
-                // Kodein Dependency Injection +Compose Support
-                implementation("org.kodein.di:kodein-di-framework-compose:7.19.0")
-
-                // KStore (kv-storage using json files) -> used in JsonDataSource TODO: Remove
-                implementation("io.github.xxfast:kstore:0.6.0")
-                implementation("io.github.xxfast:kstore-file:0.6.0")
+                // Koin Dependency Injection
+                api("io.insert-koin:koin-core:3.5.0")
+                implementation("io.insert-koin:koin-compose:1.1.0")
 
                 // Kotlinx Datetime -> Crossplatform DateTime implementation
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
@@ -119,6 +116,8 @@ kotlin {
                 // Precompose -> Multiplatform Navigation
                 api("moe.tlaster:precompose:$precomposeVersion")
                 api("moe.tlaster:precompose-viewmodel:$precomposeVersion")
+                api("moe.tlaster:precompose-koin:$precomposeVersion")
+
             }
         }
         val androidMain by getting {

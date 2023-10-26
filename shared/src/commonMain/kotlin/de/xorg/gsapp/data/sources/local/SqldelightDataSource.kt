@@ -43,8 +43,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.todayIn
-import org.kodein.di.DI
-import org.kodein.di.instance
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.lighthousegames.logging.logging
 
 
@@ -58,13 +58,13 @@ import org.lighthousegames.logging.logging
  *   disk space (if supported by platform)
  */
 
-class SqldelightDataSource(di: DI) : LocalDataSource {
+class SqldelightDataSource : LocalDataSource, KoinComponent {
 
     companion object {
         val log = logging()
     }
 
-    private val database: GsAppDatabase by di.instance()
+    private val database: GsAppDatabase by inject()
 
     private fun <T> tryFlow(flowToTry: Flow<Result<T>>): Flow<Result<T>> = try {
         flowToTry

@@ -20,9 +20,9 @@ package de.xorg.gsapp.data.sources.defaults
 
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.model.Subject
-import org.kodein.di.DI
+import org.koin.core.component.KoinComponent
 
-class GsDefaultsSource(di: DI) : DefaultsDataSource {
+class GsDefaultsSource : DefaultsDataSource, KoinComponent {
 
 
 override fun getDefaultSubjects(): List<Subject> {

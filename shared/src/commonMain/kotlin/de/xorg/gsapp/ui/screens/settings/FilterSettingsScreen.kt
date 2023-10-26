@@ -49,6 +49,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -75,12 +76,13 @@ import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.LETTERS
 import de.xorg.gsapp.ui.tools.classList
+import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.stringResource
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
-import org.kodein.di.compose.localDI
-import org.kodein.di.instance
+import org.koin.compose.koinInject
 
 /**
  * This composable is the "substitution plan filter" settings dialog.
@@ -91,17 +93,29 @@ fun FilterSettingsScreen(
     navController: Navigator,
     modifier: Modifier = Modifier,
 ) {
-    val di = localDI()
-    val viewModel: SettingsViewModel by di.instance()
+    //val viewModel: SettingsViewModel = koinViewModel(vmClass = SettingsViewModel::class)
+    val viewModel: SettingsViewModel = koinInject()
     val teachers by viewModel.teachers.collectAsStateWithLifecycle(Result.success(emptyList()))
+
+    val filterState by viewModel.filterFlow.collectAsStateWithLifecycle("")
+    val roleState by viewModel.roleFlow.collectAsStateWithLifecycle(FilterRole.default)
+    //val filterVal by remember { viewModel.filterFlow.collectAsStateWithLifecycle("")
 
     // FilterValue to store in settings
     // (Teacher shortName / Student class)
-    var filterVal by remember { mutableStateOf(viewModel.filterPreference.value) }
+    var filterVal by remember { mutableStateOf(filterState) }
     var isValid by remember { mutableStateOf(filterVal.length > 2) }
 
     // Selected user role (Any/Student/Teacher)
-    var roleVal by remember { mutableStateOf(viewModel.rolePreference.value) }
+    var roleVal by remember { mutableStateOf(roleState) }
+
+    LaunchedEffect(filterState) {
+        filterVal = filterState
+    }
+
+    LaunchedEffect(roleState) {
+        roleVal = roleState
+    }
 
     /** Specific for Teacher **/
     //To focus both TextFields (long/short) at the same time

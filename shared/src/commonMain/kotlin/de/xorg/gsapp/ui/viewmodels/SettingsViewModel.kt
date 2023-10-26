@@ -35,20 +35,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
-import org.kodein.di.DI
-import org.kodein.di.instance
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class SettingsViewModel(
-    di: DI
-) : ViewModel() {
-    private val dataRepo: GSAppRepository by di.instance()
-    private val prefRepo: PreferencesRepository by di.instance()
+class SettingsViewModel : ViewModel(), KoinComponent {
+    private val dataRepo: GSAppRepository by inject()
+    private val prefRepo: PreferencesRepository by inject()
 
-    private val pushUtil: PushNotificationUtil by di.instance()
+    private val pushUtil: PushNotificationUtil by inject()
 
     //TODO: Should I use stateIn here?
     val roleFlow = prefRepo.getRoleFlow().shareIn(
@@ -57,7 +54,7 @@ class SettingsViewModel(
         replay = 1
     )
 
-    val filterFlow = prefRepo.getRoleFlow().shareIn(
+    val filterFlow = prefRepo.getFilterValueFlow().shareIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         replay = 1

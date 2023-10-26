@@ -16,39 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import app.cash.sqldelight.db.SqlDriver
-import app.cash.sqldelight.driver.native.NativeSqliteDriver
-import com.russhwolf.settings.ExperimentalSettingsApi
-//import com.moriatsushi.insetsyx.WindowInsetsUIViewController
-import com.russhwolf.settings.NSUserDefaultsSettings
-import com.russhwolf.settings.Settings
-import com.russhwolf.settings.coroutines.FlowSettings
-import com.russhwolf.settings.coroutines.toFlowSettings
 import de.xorg.gsapp.GSApp
-import de.xorg.gsapp.data.di.mainModule
-import de.xorg.gsapp.data.sql.GsAppDatabase
 import moe.tlaster.precompose.PreComposeApplication
-import org.kodein.di.bind
-import org.kodein.di.compose.withDI
-import org.kodein.di.singleton
-import platform.Foundation.NSUserDefaults.Companion.standardUserDefaults
 
 actual fun getPlatformName(): String = "iOS"
 
-@OptIn(ExperimentalSettingsApi::class)
-fun MainViewController() = /*WindowInsetsUIViewController {*/ PreComposeApplication {
-    withDI({
-        bind<FlowSettings>() with singleton {
-            NSUserDefaultsSettings(standardUserDefaults()).toFlowSettings()
-        }
-        bind<SqlDriver>() with singleton {
-            NativeSqliteDriver(GsAppDatabase.Schema, "gsapp.db")
-        }
-
-        //bind<SettingsSource>() with singleton { SettingsSource(NSObject()) }
-        import(mainModule)
-    }) {
-
-        GSApp()
-    }
-} /*}*/
+fun MainViewController() = PreComposeApplication {
+    GSApp()
+}

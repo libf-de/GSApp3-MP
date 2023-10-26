@@ -19,29 +19,14 @@
 package de.xorg.gsapp
 
 import android.app.Application
-import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
-import androidx.datastore.preferences.SharedPreferencesMigration
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.preferencesDataStoreFile
-import com.russhwolf.settings.coroutines.FlowSettings
-import com.russhwolf.settings.datastore.DataStoreSettings
-import de.xorg.gsapp.data.di.preferencesRepositoryModule
-import de.xorg.gsapp.data.di.sqldelightLocalSourceModule
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import org.kodein.di.DI
-import org.kodein.di.DIAware
-import org.kodein.di.bind
-import org.kodein.di.instance
-import org.kodein.di.provider
-import org.kodein.di.singleton
+import de.xorg.gsapp.data.di.appModule
+import de.xorg.gsapp.di.androidModule
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
 
-class GSAppApplication : Application(), DIAware {
+
+class GSAppApplication : Application() {
     companion object {
         lateinit var instance: GSAppApplication
             private set
@@ -49,22 +34,13 @@ class GSAppApplication : Application(), DIAware {
 
     override fun onCreate() {
         super.onCreate()
-        instance = this
-    }
 
-    override val di: DI = DI.lazy {
-        bind<Context>() with provider { applicationContext }
-        bind<DataStore<Preferences>>() with singleton {
-            PreferenceDataStoreFactory.create(
-                corruptionHandler = ReplaceFileCorruptionHandler(
-                    produceNewData = { emptyPreferences() }
-                ),
-                migrations = listOf(SharedPreferencesMigration(applicationContext, "GSApp")),
-                scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-                produceFile = { applicationContext.preferencesDataStoreFile("GSApp") }
-            )
+        startKoin {
+            androidContext(this@GSAppApplication)
+            androidLogger()
+            modules(appModule() + androidModule)
         }
-        bind<FlowSettings>() with singleton { DataStoreSettings(instance()) }
-        import(preferencesRepositoryModule)
+
+        instance = this
     }
 }

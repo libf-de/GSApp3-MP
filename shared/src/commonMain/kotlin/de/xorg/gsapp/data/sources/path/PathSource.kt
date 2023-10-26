@@ -18,10 +18,9 @@
 
 package de.xorg.gsapp.data.sources.path
 
-import org.kodein.di.DI
-import org.kodein.di.DIAware
+import org.koin.core.component.KoinComponent
 
-expect class PathSource(di: DI) : DIAware {
+expect class PathSource : KoinComponent {
     fun getSubstitutionPath(): String
     fun getSubjectsPath(): String
     fun getTeachersPath(): String

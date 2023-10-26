@@ -21,10 +21,8 @@ package de.xorg.gsapp.data.sources.remote
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
-import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
 import kotlinx.datetime.LocalDate
-import org.kodein.di.DI
 
 interface RemoteDataSource {
     suspend fun getSubstitutionPlan(): Result<SubstitutionApiModelSet>

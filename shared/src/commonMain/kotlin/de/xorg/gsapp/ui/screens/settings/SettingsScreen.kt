@@ -31,6 +31,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,15 +43,17 @@ import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.dialogs.SettingsRadioDialog
 import de.xorg.gsapp.ui.components.settings.SettingsItem
+import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
 import kotlinx.collections.immutable.toImmutableList
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
-import org.kodein.di.compose.localDI
-import org.kodein.di.instance
+import org.koin.compose.koinInject
 
 /**
  * The app settings composable
@@ -61,9 +64,13 @@ fun SettingsScreen(
     navController: Navigator,
     modifier: Modifier = Modifier,
 ) {
-    val di = localDI()
-    val viewModel: SettingsViewModel by di.instance()
-    val pushUtil: PushNotificationUtil by di.instance()
+    //val viewModel: SettingsViewModel = koinViewModel(vmClass = SettingsViewModel::class)
+    val viewModel: SettingsViewModel = koinInject()
+    val pushUtil: PushNotificationUtil = koinInject()
+
+    val pushState by viewModel.pushFlow.collectAsStateWithLifecycle(PushState.default)
+    val roleState by viewModel.roleFlow.collectAsStateWithLifecycle(FilterRole.default)
+    val filterState by viewModel.filterFlow.collectAsStateWithLifecycle("")
 
     var colorState = remember { mutableStateOf(Color.Green)}
 
@@ -90,7 +97,7 @@ fun SettingsScreen(
                 dismissText = stringResource(MR.strings.dialog_cancel),
                 confirmText = stringResource(MR.strings.dialog_save),
                 items = PushState.entries.toImmutableList(),
-                selectedValue = viewModel.pushPreference.value,
+                selectedValue = pushState,
                 onDismiss = { showPushDialog = false },
                 onConfirm = { selectedStringRes ->
                     showPushDialog = false
@@ -108,8 +115,7 @@ fun SettingsScreen(
                         contentDescription = "",
                         modifier = mod, tint = tint) },
                     title = stringResource(MR.strings.pref_filter),
-                    subtitle = stringResource(viewModel.rolePreference.value.descriptiveResource,
-                                              viewModel.filterPreference.value),
+                    subtitle = stringResource(roleState.descriptiveResource, filterState),
                     onClick = { navController.navigate(GSAppRoutes.SETTINGS_FILTER) }
                 )
             }
@@ -121,7 +127,7 @@ fun SettingsScreen(
                                                contentDescription = "",
                                                modifier = mod, tint = tint) },
                     title = stringResource(MR.strings.pref_push),
-                    subtitle = if(pushUtil.isSupported) stringResource(viewModel.pushPreference.value.labelResource)
+                    subtitle = if(pushUtil.isSupported) stringResource(pushState.labelResource)
                                else stringResource(MR.strings.push_unavailable, getPlatformName()),
                     onClick = { if(pushUtil.isSupported) showPushDialog = true }
                 )

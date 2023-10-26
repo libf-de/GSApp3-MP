@@ -19,14 +19,13 @@
 package de.xorg.gsapp.data.sources.path
 
 import de.xorg.gsapp.data.cache.CacheManager
-import org.kodein.di.DI
-import org.kodein.di.DIAware
-import org.kodein.di.instance
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.io.File
 
-actual class PathSource actual constructor(override val di: DI) : DIAware {
+actual class PathSource : KoinComponent {
 
-    private val cacheManager by di.instance<CacheManager>()
+    private val cacheManager: CacheManager by inject()
 
     actual fun getSubstitutionPath(): String {
         return File(cacheManager.getCacheDirectory(), "substitutions.json").absolutePath

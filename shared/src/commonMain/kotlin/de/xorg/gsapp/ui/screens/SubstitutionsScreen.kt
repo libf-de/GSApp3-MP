@@ -18,6 +18,8 @@
 
 package de.xorg.gsapp.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,8 +36,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
@@ -44,16 +46,16 @@ import androidx.compose.ui.unit.sp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.LoadingComponent
+import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.components.SubstitutionCard
+import de.xorg.gsapp.ui.components.state.ErrorComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
-import org.kodein.di.compose.localDI
-import org.kodein.di.instance
+import org.koin.compose.koinInject
 
 /**
  * This is the substitution plan-tab composable
@@ -63,11 +65,9 @@ import org.kodein.di.instance
 fun SubstitutionsScreen(
     navController: Navigator
 ) {
-    val di = localDI()
+    //val viewModel: GSAppViewModel = koinViewModel(vmClass = GSAppViewModel::class)
+    val viewModel: GSAppViewModel = koinInject()
 
-    val viewModel by di.instance<GSAppViewModel>()
-
-    //val sds = viewModel.subStateFlow.collectAsState().value
     val sds by viewModel.subFlow.collectAsStateWithLifecycle(Result.success(SubstitutionSet()))
     var isFirst = false
 
@@ -129,13 +129,25 @@ fun SubstitutionsScreen(
                 LoadingComponent(modifier = Modifier.fillMaxSize())
             }
             UiState.EMPTY -> {
-                Text("keine Vertretungen")
+                Column(modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("keine Vertretungen")
+                }
             }
             UiState.NO_DATASOURCE -> {
-                Text("keine Vertretungen")
+                Column(modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("keine Vertretungen")
+                }
             }
             else -> {
-                Text("Fehler: ${viewModel.uiState.substitutionError.message}")
+                ErrorComponent(
+                    exception = viewModel.uiState.substitutionError,
+                    where = "Vertretungsplan",
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
 

@@ -39,21 +39,21 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
-import org.kodein.di.DI
-import org.kodein.di.instance
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.lighthousegames.logging.logging
 
 /**
  * View model for the main app tabs
  */
-class GSAppViewModel(di: DI) : ViewModel() {
+class GSAppViewModel : ViewModel(), KoinComponent {
 
     companion object {
         val log = logging()
     }
 
-    private val appRepo: GSAppRepository by di.instance()
-    private val prefsRepo: PreferencesRepository by di.instance()
+    private val appRepo: GSAppRepository by inject()
+    private val prefsRepo: PreferencesRepository by inject()
     private val repoScope = CoroutineScope(Dispatchers.IO)
 
     var uiState by mutableStateOf(AppState())

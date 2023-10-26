@@ -23,7 +23,6 @@ import de.xorg.gsapp.data.DbExam
 import de.xorg.gsapp.data.DbFood
 import de.xorg.gsapp.data.DbSubject
 import de.xorg.gsapp.data.DbSubstitutionSet
-import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.AppRepository
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.MPSettingsRepository
@@ -40,30 +39,18 @@ import de.xorg.gsapp.data.sql_adapters.CommaSeparatedListAdapter
 import de.xorg.gsapp.data.sql_adapters.DateAdapter
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
-import org.kodein.di.DI
-import org.kodein.di.bind
-import org.kodein.di.instance
-import org.kodein.di.singleton
+import org.koin.core.module.Module
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
 
-val mainModule = DI.Module("mainModule") {
-    //bind<RemoteDataSource>() with singleton { DebugWebDataSource() }
+fun appModule() = listOf(platformModule, dataRepositoryModule, preferencesRepositoryModule, commonModule)
 
+expect val platformModule: Module
 
-    // Repository
-    import(dataRepositoryModule)
-
-    // ViewModel
-    bind<GSAppViewModel>() with singleton { GSAppViewModel(di) }
-    bind<SettingsViewModel>() with singleton { SettingsViewModel(di) }
-
-    // PushNotificationUtil
-    bind<PushNotificationUtil>() with singleton { PushNotificationUtil(di) }
-}
-
-val dataRepositoryModule = DI.Module {
-    bind<GsAppDatabase>() with singleton {
+val dataRepositoryModule = module {
+    single {
         GsAppDatabase(
-            driver = instance(),
+            driver = get(),
             DbFoodAdapter = DbFood.Adapter(
                 dateAdapter = DateAdapter,
                 additivesAdapter = CommaSeparatedListAdapter
@@ -80,17 +67,18 @@ val dataRepositoryModule = DI.Module {
             )
         )
     }
-    bind<LocalDataSource>() with singleton { SqldelightDataSource(di) }
-    bind<RemoteDataSource>() with singleton { WebsiteDataSource(di) }
-    bind<DefaultsDataSource>() with singleton { GsDefaultsSource(di) }
 
-    bind<GSAppRepository>() with singleton { AppRepository(di) }
+    single<LocalDataSource> { SqldelightDataSource() }
+    single<RemoteDataSource> { WebsiteDataSource() }
+    single<DefaultsDataSource> { GsDefaultsSource() }
+    single<GSAppRepository> { AppRepository() }
 }
 
-val preferencesRepositoryModule = DI.Module {
-    bind<PreferencesRepository>() with singleton { MPSettingsRepository(di) }
+val preferencesRepositoryModule = module {
+    single<PreferencesRepository> { MPSettingsRepository() }
 }
 
-val sqldelightLocalSourceModule = DI.Module {
-
+val commonModule = module {
+    singleOf(::GSAppViewModel)
+    singleOf(::SettingsViewModel)
 }

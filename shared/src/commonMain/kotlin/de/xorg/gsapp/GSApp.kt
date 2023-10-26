@@ -49,6 +49,7 @@ import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.PopUpTo
 import moe.tlaster.precompose.navigation.rememberNavigator
 import moe.tlaster.precompose.navigation.transition.NavTransition
+import org.koin.compose.KoinContext
 
 /**
  * This is the app main-common-entry composable, that applies the theme and mainly consists
@@ -58,119 +59,121 @@ import moe.tlaster.precompose.navigation.transition.NavTransition
 
 @Composable
 fun GSApp() {
-    GSAppTheme {
-        val navigator = rememberNavigator()
-        var hideNavBar by rememberSaveable { mutableStateOf(false) }
-        val hideNavBarState = remember { MutableTransitionState(!hideNavBar) }
+    KoinContext {
+        GSAppTheme {
+            val navigator = rememberNavigator()
+            var hideNavBar by rememberSaveable { mutableStateOf(false) }
+            val hideNavBarState = remember { MutableTransitionState(!hideNavBar) }
 
-        Scaffold(
-            bottomBar = {
-                AnimatedVisibility(
-                    visibleState = hideNavBarState,
-                    exit = fadeOut(),
-                    enter = fadeIn(),
-                ) {
-                    NavigationBar {
-                        val navBackStackEntry by navigator.currentEntry.collectAsState(null)
-                        screens.forEach { screen ->
-                            val title = stringResource(screen.title)
-                            NavigationBarItem(
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(screen.icon),
-                                        contentDescription = title
-                                    )
-                                },
-                                label = { Text(title) },
-                                selected = (navBackStackEntry?.route?.route ?: "") == screen.route,
-                                onClick = {
-                                    if( (navBackStackEntry?.route?.route ?: "") != screen.route )
-                                        navigator.navigate(
-                                            screen.route, NavOptions(
-                                                popUpTo = PopUpTo.First(true)
-                                            )
+            Scaffold(
+                bottomBar = {
+                    AnimatedVisibility(
+                        visibleState = hideNavBarState,
+                        exit = fadeOut(),
+                        enter = fadeIn(),
+                    ) {
+                        NavigationBar {
+                            val navBackStackEntry by navigator.currentEntry.collectAsState(null)
+                            screens.forEach { screen ->
+                                val title = stringResource(screen.title)
+                                NavigationBarItem(
+                                    icon = {
+                                        Icon(
+                                            painter = painterResource(screen.icon),
+                                            contentDescription = title
                                         )
-                                    hideNavBar = !screen.showNavbar
-                                    hideNavBarState.targetState = screen.showNavbar
-                                }
-                            )
+                                    },
+                                    label = { Text(title) },
+                                    selected = (navBackStackEntry?.route?.route ?: "") == screen.route,
+                                    onClick = {
+                                        if( (navBackStackEntry?.route?.route ?: "") != screen.route )
+                                            navigator.navigate(
+                                                screen.route, NavOptions(
+                                                    popUpTo = PopUpTo.First(true)
+                                                )
+                                            )
+                                        hideNavBar = !screen.showNavbar
+                                        hideNavBarState.targetState = screen.showNavbar
+                                    }
+                                )
+                            }
                         }
                     }
-                }
-            },
-        ) {
-            NavHost(
-                navigator = navigator,
-                navTransition = NavTransition(),
-                initialRoute = GSAppRoutes.SUBSTITUTIONS, //TODO: Revert back to SUBSTITUTIONS
+                },
             ) {
-                scene(
-                    route = GSAppRoutes.SUBSTITUTIONS,
-                    navTransition = NavTransition(
-                        createTransition = fadeIn(),
-                        resumeTransition = fadeIn(),
-                        destroyTransition = fadeOut(),
-                        pauseTransition = fadeOut(),
-                    ),
-                ) {
-                    hideNavBar = false
-                    hideNavBarState.targetState = true
-                    SubstitutionsScreen(navigator)
-                }
-
-                scene(
-                    route = GSAppRoutes.FOODPLAN,
-                    navTransition = NavTransition(
-                        createTransition = fadeIn(),
-                        resumeTransition = fadeIn(),
-                        destroyTransition = fadeOut(),
-                        pauseTransition = fadeOut(),
-                    ),
-                ) {
-                    hideNavBar = false
-                    hideNavBarState.targetState = true
-                    FoodplanScreen(navigator)
-                }
-
-                scene(
-                    route = GSAppRoutes.EXAMS,
-                    navTransition = NavTransition(
-                        createTransition = fadeIn(),
-                        resumeTransition = fadeIn(),
-                        destroyTransition = fadeOut(),
-                        pauseTransition = fadeOut(),
-                    ),
-                ) {
-                    hideNavBar = false
-                    hideNavBarState.targetState = true
-                    ExamsScreen(navigator)
-                }
-
-                scene(
-                    route = GSAppRoutes.SETTINGS,
+                NavHost(
+                    navigator = navigator,
                     navTransition = NavTransition(),
+                    initialRoute = GSAppRoutes.SUBSTITUTIONS, //TODO: Revert back to SUBSTITUTIONS
                 ) {
-                    hideNavBar = true
-                    hideNavBarState.targetState = false
-                    SettingsScreen(navigator)
-                }
+                    scene(
+                        route = GSAppRoutes.SUBSTITUTIONS,
+                        navTransition = NavTransition(
+                            createTransition = fadeIn(),
+                            resumeTransition = fadeIn(),
+                            destroyTransition = fadeOut(),
+                            pauseTransition = fadeOut(),
+                        ),
+                    ) {
+                        hideNavBar = false
+                        hideNavBarState.targetState = true
+                        SubstitutionsScreen(navigator)
+                    }
 
-                scene(
-                    route = GSAppRoutes.SETTINGS_FILTER,
-                    navTransition = NavTransition(),
-                ) {
-                    hideNavBar = true
-                    hideNavBarState.targetState = false
-                    FilterSettingsScreen(navigator)
-                }
+                    scene(
+                        route = GSAppRoutes.FOODPLAN,
+                        navTransition = NavTransition(
+                            createTransition = fadeIn(),
+                            resumeTransition = fadeIn(),
+                            destroyTransition = fadeOut(),
+                            pauseTransition = fadeOut(),
+                        ),
+                    ) {
+                        hideNavBar = false
+                        hideNavBarState.targetState = true
+                        FoodplanScreen(navigator)
+                    }
 
-                scene(
-                    route = GSAppRoutes.SETTINGS_SUBJECTS,
-                    navTransition = NavTransition(),
-                ) {
-                    hideNavBar = true
-                    hideNavBarState.targetState = false
-                    SubjectManager(navigator)
+                    scene(
+                        route = GSAppRoutes.EXAMS,
+                        navTransition = NavTransition(
+                            createTransition = fadeIn(),
+                            resumeTransition = fadeIn(),
+                            destroyTransition = fadeOut(),
+                            pauseTransition = fadeOut(),
+                        ),
+                    ) {
+                        hideNavBar = false
+                        hideNavBarState.targetState = true
+                        ExamsScreen(navigator)
+                    }
+
+                    scene(
+                        route = GSAppRoutes.SETTINGS,
+                        navTransition = NavTransition(),
+                    ) {
+                        hideNavBar = true
+                        hideNavBarState.targetState = false
+                        SettingsScreen(navigator)
+                    }
+
+                    scene(
+                        route = GSAppRoutes.SETTINGS_FILTER,
+                        navTransition = NavTransition(),
+                    ) {
+                        hideNavBar = true
+                        hideNavBarState.targetState = false
+                        FilterSettingsScreen(navigator)
+                    }
+
+                    scene(
+                        route = GSAppRoutes.SETTINGS_SUBJECTS,
+                        navTransition = NavTransition(),
+                    ) {
+                        hideNavBar = true
+                        hideNavBarState.targetState = false
+                        SubjectManager(navigator)
+                    }
                 }
             }
         }

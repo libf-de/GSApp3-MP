@@ -26,14 +26,21 @@ import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.kodein.di.DI
-import org.kodein.di.instance
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 @OptIn(ExperimentalSettingsApi::class)
-class MPSettingsRepository(di: DI) : PreferencesRepository {
+class MPSettingsRepository : PreferencesRepository, KoinComponent {
+
+    private object PrefKeys {
+        const val FilterRole = "role"
+        const val FilterValue = "filter"
+        const val PushState = "push"
+        const val AskNotifyPermission = "askNotifyPermission"
+    }
 
     //private val appSettings: Settings by di.instance()
-    private val appSettings: FlowSettings by di.instance()
+    private val appSettings: FlowSettings by inject()
 
     /**
      * Returns the Filter Role (Student/Teacher/All) from settings
@@ -42,7 +49,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
     @Deprecated("use flow instead", replaceWith = ReplaceWith("getRoleFlow()"))
     override suspend fun getRole(): FilterRole {
         return FilterRole.fromInt(
-            appSettings.getInt("role", FilterRole.default.value)
+            appSettings.getInt(PrefKeys.FilterRole, FilterRole.default.value)
         )
     }
 
@@ -51,7 +58,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
      * @return Flow<FilterRole>
      */
     override fun getRoleFlow(): Flow<FilterRole>
-            = appSettings.getIntFlow("role", FilterRole.default.value)
+            = appSettings.getIntFlow(PrefKeys.FilterRole, FilterRole.default.value)
         .map { FilterRole.fromInt(it) }
 
     /**
@@ -59,7 +66,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
      * @param value role to store
      */
     override suspend fun setRole(value: FilterRole) {
-        appSettings.putInt("role", value.value)
+        appSettings.putInt(PrefKeys.FilterRole, value.value)
     }
 
     /**
@@ -75,7 +82,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
     @Deprecated("use flow instead", replaceWith = ReplaceWith("getRoleFlow()"))
     override suspend fun observeRole(callback: (FilterRole) -> Unit): SettingsListener? {
         val settings = appSettings as? ObservableSettings ?: return null
-        return settings.addIntListener("role", FilterRole.default.value) {
+        return settings.addIntListener(PrefKeys.FilterRole, FilterRole.default.value) {
             callback(FilterRole.fromInt(it))
         }
     }
@@ -85,7 +92,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
      * @return flow<String>
      */
     override fun getFilterValueFlow(): Flow<String>
-            = appSettings.getStringFlow("filter", "")
+            = appSettings.getStringFlow(PrefKeys.FilterValue, "")
 
     /**
      * Returns the Filter Value from settings
@@ -93,7 +100,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
      */
     @Deprecated("use flow instead", replaceWith = ReplaceWith("getFilterValueFlow()"))
     override suspend fun getFilterValue(): String {
-        return appSettings.getString("filter", "")
+        return appSettings.getString(PrefKeys.FilterValue, "")
     }
 
     /**
@@ -101,7 +108,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
      * @param value value to store
      */
     override suspend fun setFilterValue(value: String) {
-        appSettings.putString("filter", value)
+        appSettings.putString(PrefKeys.FilterValue, value)
     }
 
     /**
@@ -117,7 +124,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
     @Deprecated("use flow instead", replaceWith = ReplaceWith("getFilterValueFlow()"))
     override suspend fun observeFilterValue(callback: (String) -> Unit): SettingsListener? {
         val settings = appSettings as? ObservableSettings ?: return null
-        return settings.addStringListener("filter", "") { callback(it) }
+        return settings.addStringListener(PrefKeys.FilterValue, "") { callback(it) }
     }
 
     /**
@@ -125,7 +132,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
      * @return Flow<PushState>
      */
     override fun getPushFlow(): Flow<PushState>
-            = appSettings.getIntFlow("push", PushState.default.value).map { PushState.fromInt(it) }
+            = appSettings.getIntFlow(PrefKeys.PushState, PushState.default.value).map { PushState.fromInt(it) }
 
     /**
      * Returns the push notification enablement from settings
@@ -134,7 +141,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
     @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))
     override suspend fun getPush(): PushState {
         return PushState.fromInt(
-            appSettings.getInt("push", PushState.DISABLED.value)
+            appSettings.getInt(PrefKeys.PushState, PushState.DISABLED.value)
         )
     }
 
@@ -143,7 +150,7 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
      * @param value PushState
      */
     override suspend fun setPush(value: PushState) {
-        appSettings.putInt("push", value.value)
+        appSettings.putInt(PrefKeys.PushState, value.value)
     }
 
     /**
@@ -159,8 +166,26 @@ class MPSettingsRepository(di: DI) : PreferencesRepository {
     @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))
     override suspend fun observePush(callback: (PushState) -> Unit): SettingsListener? {
         val settings = appSettings as? ObservableSettings ?: return null
-        return settings.addIntListener("push", PushState.default.value) {
+        return settings.addIntListener(PrefKeys.PushState, PushState.default.value) {
             callback(PushState.fromInt(it))
+        }
+    }
+
+    override fun getAskUserForNotificationPermissionFlow(): Flow<Boolean>
+        = appSettings.getBooleanFlow(PrefKeys.AskNotifyPermission, false)
+
+    override suspend fun getAskUserForNotificationPermission(): Boolean {
+        return appSettings.getBoolean(PrefKeys.AskNotifyPermission, false)
+    }
+
+    override suspend fun setAskUserForNotificationPermission(value: Boolean) {
+        appSettings.putBoolean(PrefKeys.AskNotifyPermission, value)
+    }
+
+    override suspend fun observeAskUserForNotificationPermission(callback: (Boolean) -> Unit): SettingsListener? {
+        val settings = appSettings as? ObservableSettings ?: return null
+        return settings.addBooleanListener(PrefKeys.AskNotifyPermission, false) {
+            callback(it)
         }
     }
 }

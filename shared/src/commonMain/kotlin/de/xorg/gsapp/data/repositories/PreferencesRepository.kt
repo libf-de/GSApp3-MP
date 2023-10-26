@@ -50,4 +50,9 @@ interface PreferencesRepository {
     suspend fun setPush(value: PushState)
     @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))
     suspend fun observePush(callback: (PushState) -> Unit): SettingsListener?
+
+    fun getAskUserForNotificationPermissionFlow(): Flow<Boolean>
+    suspend fun getAskUserForNotificationPermission(): Boolean
+    suspend fun setAskUserForNotificationPermission(value: Boolean)
+    suspend fun observeAskUserForNotificationPermission(callback: (Boolean) -> Unit): SettingsListener?
 }

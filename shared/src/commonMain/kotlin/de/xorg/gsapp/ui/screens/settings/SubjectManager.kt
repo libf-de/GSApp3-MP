@@ -18,9 +18,6 @@
 
 package de.xorg.gsapp.ui.screens.settings
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -59,14 +56,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.LoadingComponent
+import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.components.dialogs.InputTextDialog
 import de.xorg.gsapp.ui.components.dialogs.SelectColorDialog
 import de.xorg.gsapp.ui.components.settings.SubjectListItem
@@ -74,11 +70,9 @@ import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import kotlinx.coroutines.flow.map
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
-import org.kodein.di.compose.localDI
-import org.kodein.di.instance
+import org.koin.compose.koinInject
 
 /**
  * The app settings composable
@@ -89,8 +83,8 @@ fun SubjectManager(
     navController: Navigator,
     modifier: Modifier = Modifier,
 ) {
-    val di = localDI()
-    val viewModel: SettingsViewModel by di.instance()
+    //val viewModel: SettingsViewModel = koinViewModel(vmClass = SettingsViewModel::class)
+    val viewModel: SettingsViewModel = koinInject()
 
     val subjects by viewModel.subjects.collectAsStateWithLifecycle(
         initial = Result.success(emptyList()))
@@ -333,7 +327,7 @@ fun SubjectManager(
 
                     items(
                         (subjects.getOrNull() ?: emptyList()).filter {
-                                sub -> sub.shortName.startsWith("&")
+                                sub -> !sub.shortName.startsWith("&")
                         }.sortedBy { sub -> sub.shortName }
                     ){ subject ->
                         SubjectListItem(

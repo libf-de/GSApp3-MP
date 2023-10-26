@@ -118,6 +118,8 @@
     <string name="generic_loading">Loading, please wait…</string>
     <string name="generic_error_null">(null-error)</string>
     <string name="back">Go back</string>
+    <string name="failed_to_load">Failed to load %s</string>
+    <string name="failed_send_dev">Please send a report with this error to the developer:</string>
 
     <!-- Foodplan -->
     <string name="foodplan_menu_no">Menu #%d</string>
@@ -128,4 +130,9 @@
     <string name="push_channel_desc">Notifies you when a new substitution plan is available</string>
     <string name="push_notification_title">New substitution plan!</string>
     <string name="push_notification_body">There is a new substitution plan available!</string>
+    <string name="push_no_permission_title">Missing permission</string>
+    <string name="push_no_permission_body">You have enabled push notifications, but denied permission for notifications.\nPlease go to settings and enable notifications to not miss new substitution plans.\nIf you don\'t want this, you can also disable push notifications in the app settings.</string>
+    <string name="push_no_permission_fix">Go to settings</string>
+    <string name="push_no_permission_later">Not now</string>
+
 </resources>

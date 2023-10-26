@@ -16,57 +16,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import android.app.Activity
-import android.content.Context.MODE_PRIVATE
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
-import androidx.datastore.preferences.SharedPreferencesMigration
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.emptyPreferences
-import androidx.datastore.preferences.preferencesDataStore
-import androidx.datastore.preferences.preferencesDataStoreFile
-import app.cash.sqldelight.db.SqlDriver
-import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.russhwolf.settings.Settings
-import com.russhwolf.settings.SharedPreferencesSettings
-import com.russhwolf.settings.coroutines.FlowSettings
-import com.russhwolf.settings.datastore.DataStoreSettings
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat.startActivity
+import com.russhwolf.settings.SettingsListener
 import de.xorg.gsapp.GSApp
-import de.xorg.gsapp.data.cache.AndroidCacheManager
-import de.xorg.gsapp.data.cache.CacheManager
-import de.xorg.gsapp.data.di.mainModule
-import de.xorg.gsapp.data.sql.GsAppDatabase
+import de.xorg.gsapp.data.repositories.PreferencesRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import org.kodein.di.bind
-import org.kodein.di.compose.withDI
-import org.kodein.di.instance
-import org.kodein.di.provider
-import org.kodein.di.singleton
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import org.koin.compose.koinInject
+import de.xorg.gsapp.res.MR
+import de.xorg.gsapp.ui.components.NotificationPermissionAlertDialog
+import de.xorg.gsapp.ui.theme.GSAppTheme
+import dev.icerock.moko.resources.compose.stringResource
 
 actual fun getPlatformName(): String = "Android"
 
-@Composable fun MainView(ctx: Activity) = withDI({
-    bind<SqlDriver>() with singleton {
-        AndroidSqliteDriver(GsAppDatabase.Schema, ctx, "gsapp.db")
-    }
-    bind<Activity>() with provider { ctx }
-    bind<CacheManager>() with singleton { AndroidCacheManager(ctx) }
-    bind<DataStore<Preferences>>() with singleton {
-        PreferenceDataStoreFactory.create(
-            corruptionHandler = ReplaceFileCorruptionHandler(
-                produceNewData = { emptyPreferences() }
-            ),
-            migrations = listOf(SharedPreferencesMigration(ctx, "GSApp")),
-            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-            produceFile = { ctx.preferencesDataStoreFile("GSApp") }
-        )
-    }
-    bind<FlowSettings>() with singleton { DataStoreSettings(instance()) }
-    import(mainModule)
-}) {
+@Composable fun MainView() {
+    NotificationPermissionAlertDialog()
+
     GSApp()
 }
