@@ -127,8 +127,11 @@ class GSAppViewModel : ViewModel(), KoinComponent {
     val filterObserver = _filterObserver.asStateFlow()
 
     init {
+        log.d { "GSAppViewModel init" }
+
         initStateFromFlows()
 
+        log.d { "updating data..." }
         updateExams()
         updateFoodplan()
         updateSubstitutions()
@@ -234,11 +237,12 @@ class GSAppViewModel : ViewModel(), KoinComponent {
     }
 
     private fun updateSubstitutions() {
+        log.d { "updating substitutions started" }
         uiState = if(uiState.substitutionState == UiState.NORMAL)
             uiState.copy(substitutionState = UiState.NORMAL_LOADING)
         else uiState.copy(substitutionState = UiState.LOADING)
 
-        viewModelScope.launch {
+        repoScope.launch {
             appRepo.updateSubstitutions {
                 if(it.isFailure) {
                     log.w { "failed to update substitution plan: ${it.exceptionOrNull()}"}
@@ -264,9 +268,6 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                     }
                 }
             }
-        }
-        repoScope.launch {
-
         }
     }
 

@@ -333,7 +333,29 @@ actual class GsWebsiteParser {
                                     )
                                 } else {
                                     //This is an exam(s) cell, add them/it to the list!
-                                    cell.textContent.trim().split(" ").forEach { examLbl ->
+                                    log.d { "got an exam: \"${cell.textContent}\""}
+
+                                    cell.innerHTML
+                                        .trim()
+                                        .split(" ", "<br>", "<br/>", "<br >", "<br />")
+                                        .map {
+                                            it.trim()
+                                              .replace(Regex("\\<[^>]*>"), "")
+                                              .trim()
+                                        }
+                                        .forEach { examLbl ->
+                                            if (examLbl.length < 6) //TODO: Are there any "else" cases??
+                                                exams.add(
+                                                    Exam(
+                                                        label = examLbl,
+                                                        date = examDay,
+                                                        course = course
+                                                    )
+                                                )
+                                        }
+
+
+                                    /*cell.textContent.trim().split(" ").forEach { examLbl ->
                                         if (examLbl.length < 6) //TODO: Are there any "else" cases??
                                             exams.add(
                                                 Exam(
@@ -342,7 +364,7 @@ actual class GsWebsiteParser {
                                                     course = course
                                                 )
                                             )
-                                    }
+                                    }*/
                                 }
                             }
                             currentColumn++

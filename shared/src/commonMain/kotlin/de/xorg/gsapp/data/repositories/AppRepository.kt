@@ -133,9 +133,13 @@ class AppRepository : GSAppRepository, KoinComponent {
     }*/
 
     override suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit) {
+        log.d { "updateSubstitutions in AppRepository" }
         try {
+            log.d { "updateSubstitutions in try" }
             with(apiDataSource.getSubstitutionPlan()) {
+                log.d { "updateSubstitutions in with" }
                 if(this.isFailure) {
+                    log.w { "getSubstitutionPlan failed :/" }
                     callback(
                         Result.failure(
                             this.exceptionOrNull() ?: Exception("unknown cause (api) :(")
@@ -144,9 +148,23 @@ class AppRepository : GSAppRepository, KoinComponent {
                     return
                 }
 
+                /*val apiSds = this.getOrNull()!!
+
+                val dbCandidateId = localDataSource.findIdByDateString(apiSds.dateStr)
+                if(dbCandidateId.isFailure) {
+                    callback(
+                        Result.failure(
+                            dbCandidateId.exceptionOrNull() ?: Exception("unknown cause (candidate) :(")
+                        )
+                    )
+                }*/
+
+
+
                 //TODO: Compare remote vs. local by hash AND DATE? (https://github.com/libf-de/GSApp3-MP/issues/8)
                 val localLatestHash = localDataSource.getLatestSubstitutionHash()
                 if(localLatestHash.isFailure) {
+                    log.w { "getLocalHash failed :/" }
                     callback(
                         Result.failure(
                             this.exceptionOrNull() ?: Exception("unknown cause (dbLatest) :(")
@@ -155,30 +173,20 @@ class AppRepository : GSAppRepository, KoinComponent {
                     return
                 }
 
-                // If remote plan is older than or the same as the latest local -> don't store it
-                // Always clean the database (afterwards).
-                /*if(localLatest.getOrNull()!!.first == this.getOrNull()!!.hashCode() ||
-                   localLatest.getOrNull()!!.second < this.getOrNull()!!.date) {
-                    localDataSource.cleanupSubstitutionPlan()
-                    callback(Result.success(false))
-                } else {
-                    localDataSource.addSubstitutionPlan(this.getOrNull()!!)
-                    localDataSource.cleanupSubstitutionPlan()
-                    callback(Result.success(true))
-                }*/
-
-
                 //If remote plan is different from latest local -> store it!
                 if(localLatestHash.getOrNull()!! != this.getOrNull()!!.hashCode()) {
+                    log.d { "got new plan!" }
                     localDataSource.addSubstitutionPlan(this.getOrNull()!!)
                     localDataSource.cleanupSubstitutionPlan()
                     callback(Result.success(true))
                 } else {
+                    log.d { "no new plan!" }
                     localDataSource.cleanupSubstitutionPlan()
                     callback(Result.success(false))
                 }
             }
         } catch (ex: Exception) {
+            log.w { ex.stackTraceToString() }
             callback(Result.failure(ex))
         }
     }

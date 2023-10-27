@@ -53,24 +53,27 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
     }
 
     private val parser = GsWebsiteParser()
-    private val client = HttpClient(CIO) {
+    private val client = HttpClient {
         install(HttpRequestRetry) {
             retryOnException(
-                maxRetries = 10,
+                maxRetries = 3,
                 retryOnTimeout = true
             )
 
             retryOnServerErrors(
-                maxRetries = 10
+                maxRetries = 3
             )
         }
+    }
+    /*private val client = HttpClient(CIO) {
+
 
         install(HttpTimeout) {
             this.connectTimeoutMillis = 8000
             this.requestTimeoutMillis = 8000
             this.socketTimeoutMillis = 8000
         }
-    }
+    }*/
 
     private var foodplanHtmlCache: String? = null
 
@@ -82,6 +85,8 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
                 log.e { "loadSubstitutionPlan(): Unexpected code: $response" }
                 return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
             }
+
+            log.d { "got substitution plan" }
 
             return try {
                 parser.parseSubstitutionTable(response.body())

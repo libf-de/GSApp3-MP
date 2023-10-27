@@ -17,6 +17,11 @@ FROM DbSubstitutionSet
 ORDER BY id DESC
 LIMIT 1;
 
+getIdByDateString:
+SELECT id
+FROM DbSubstitutionSet
+WHERE dateStr = :dateStr;
+
 insertSubstitutionSet:
 INSERT INTO DbSubstitutionSet(dateStr, date, notes, hashCode)
 VALUES (?, ?, ?, ?);

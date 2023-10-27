@@ -40,6 +40,7 @@ interface LocalDataSource {
     fun getSubstitutionPlanFlow(): Flow<Result<SubstitutionSet>>
     fun getLatestSubstitutionHashAndDate(): Result<Pair<Int, LocalDate>>
     fun getLatestSubstitutionHash(): Result<Int>
+    fun findIdByDateString(dateStr: String): Result<Long?>
     suspend fun addSubstitutionPlan(value: SubstitutionApiModelSet)
     suspend fun cleanupSubstitutionPlan()
 

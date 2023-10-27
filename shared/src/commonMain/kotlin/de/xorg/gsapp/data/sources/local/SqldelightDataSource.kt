@@ -148,8 +148,8 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                 .executeAsOneOrNull()
 
             Result.success(
-                //Pair(latestSet?.hashCode?.toInt() ?: -1, latestSet?.date ?: LocalDate.fromEpochDays(0))
-                Pair(-1, latestSet?.date ?: LocalDate.fromEpochDays(0))
+                Pair(latestSet?.hashCode?.toInt() ?: -1, latestSet?.date ?: LocalDate.fromEpochDays(0))
+                //Pair(-1, latestSet?.date ?: LocalDate.fromEpochDays(0))
             )
         } catch(ex: Exception) {
             Result.failure(ex)
@@ -158,15 +158,27 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
 
     override fun getLatestSubstitutionHash(): Result<Int> {
         return try {
-            /*Result.success(
+            Result.success(
                 database
                     .dbSubstitutionSetQueries
                     .selectLatest()
                     .executeAsOneOrNull()
                     ?.hashCode
                     ?.toInt() ?: -1
-            )*/
-            Result.success(1)
+            )
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
+    }
+
+    override fun findIdByDateString(dateStr: String): Result<Long?> {
+        return try {
+            Result.success(
+                database
+                    .dbSubstitutionSetQueries
+                    .getIdByDateString(dateStr)
+                    .executeAsOneOrNull()
+            )
         } catch(ex: Exception) {
             Result.failure(ex)
         }
