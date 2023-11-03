@@ -89,4 +89,7 @@ dependencies {
     implementation("com.russhwolf:multiplatform-settings-coroutines:1.1.0")
     implementation("com.russhwolf:multiplatform-settings-datastore:1.1.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Kotlinx datetime
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
 }

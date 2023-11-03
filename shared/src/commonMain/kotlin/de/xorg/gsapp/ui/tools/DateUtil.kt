@@ -20,8 +20,15 @@ package de.xorg.gsapp.ui.tools
 
 import androidx.compose.runtime.Composable
 import de.xorg.gsapp.res.MR
+import dev.icerock.moko.resources.StringResource
 import dev.icerock.moko.resources.compose.stringResource
+import dev.icerock.moko.resources.desc.desc
+import dev.icerock.moko.resources.format
+import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.todayIn
 
 /**
  * Helper functions to work with localized dates.
@@ -31,6 +38,13 @@ class DateUtil {
         @Composable
         fun getDateAsString(inp: LocalDate): String {
             return stringResource(MR.strings.date_format)
+                .replace("d", inp.dayOfMonth.toString())
+                .replace("m", inp.monthNumber.toString())
+                .replace("y", inp.year.toString())
+        }
+
+        fun getDateAsString(inp: LocalDate, converter: (StringResource) -> String) {
+            converter(MR.strings.date_format)
                 .replace("d", inp.dayOfMonth.toString())
                 .replace("m", inp.monthNumber.toString())
                 .replace("y", inp.year.toString())
@@ -51,7 +65,11 @@ class DateUtil {
 
         @Composable
         fun getWeekdayLong(inp: LocalDate): String {
-            return stringResource(when(inp.dayOfWeek.ordinal) {
+            return stringResource(getWeekdayLongRes(inp))
+        }
+
+        fun getWeekdayLongRes(inp: LocalDate): StringResource {
+            return when(inp.dayOfWeek.ordinal) {
                 0 -> MR.strings.wd_mo_lo
                 1 -> MR.strings.wd_tu_lo
                 2 -> MR.strings.wd_we_lo
@@ -59,7 +77,8 @@ class DateUtil {
                 4 -> MR.strings.wd_fr_lo
                 5 -> MR.strings.wd_sa_lo
                 else -> MR.strings.wd_su_lo
-            })
+            }
         }
+
     }
 }

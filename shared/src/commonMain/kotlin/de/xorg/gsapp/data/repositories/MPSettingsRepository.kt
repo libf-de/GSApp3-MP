@@ -22,9 +22,10 @@ import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.SettingsListener
 import com.russhwolf.settings.coroutines.FlowSettings
-import de.xorg.gsapp.ui.state.FilterRole
+import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -46,10 +47,10 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
      * Returns the Filter Role (Student/Teacher/All) from settings
      * @return FilterRole
      */
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getRoleFlow()"))
-    override suspend fun getRole(): FilterRole {
-        return FilterRole.fromInt(
-            appSettings.getInt(PrefKeys.FilterRole, FilterRole.default.value)
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
+    override suspend fun getRole(): Filter.Role {
+        return Filter.Role.fromInt(
+            appSettings.getInt(PrefKeys.FilterRole, Filter.Role.default.value)
         )
     }
 
@@ -57,15 +58,17 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
      * Returns a flow for Filter Role (Student/Teacher/All) from settings
      * @return Flow<FilterRole>
      */
-    override fun getRoleFlow(): Flow<FilterRole>
-            = appSettings.getIntFlow(PrefKeys.FilterRole, FilterRole.default.value)
-        .map { FilterRole.fromInt(it) }
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
+    override fun getRoleFlow(): Flow<Filter.Role>
+            = appSettings.getIntFlow(PrefKeys.FilterRole, Filter.Role.default.value)
+        .map { Filter.Role.fromInt(it) }
 
     /**
      * Stores the Filter Role (Student/Teacher/All) in settings
      * @param value role to store
      */
-    override suspend fun setRole(value: FilterRole) {
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("setFilter()"))
+    override suspend fun setRole(value: Filter.Role) {
         appSettings.putInt(PrefKeys.FilterRole, value.value)
     }
 
@@ -79,11 +82,11 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
      * @param callback function to run when role was changed.
      * @return reference to the SettingsListener
      */
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getRoleFlow()"))
-    override suspend fun observeRole(callback: (FilterRole) -> Unit): SettingsListener? {
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
+    override suspend fun observeRole(callback: (Filter.Role) -> Unit): SettingsListener? {
         val settings = appSettings as? ObservableSettings ?: return null
-        return settings.addIntListener(PrefKeys.FilterRole, FilterRole.default.value) {
-            callback(FilterRole.fromInt(it))
+        return settings.addIntListener(PrefKeys.FilterRole, Filter.Role.default.value) {
+            callback(Filter.Role.fromInt(it))
         }
     }
 
@@ -91,6 +94,7 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
      * Returns a flow of Filter Value from settings
      * @return flow<String>
      */
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
     override fun getFilterValueFlow(): Flow<String>
             = appSettings.getStringFlow(PrefKeys.FilterValue, "")
 
@@ -98,7 +102,7 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
      * Returns the Filter Value from settings
      * @return string
      */
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getFilterValueFlow()"))
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
     override suspend fun getFilterValue(): String {
         return appSettings.getString(PrefKeys.FilterValue, "")
     }
@@ -107,6 +111,7 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
      * Stores the Filter value in settings
      * @param value value to store
      */
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("setFilter()"))
     override suspend fun setFilterValue(value: String) {
         appSettings.putString(PrefKeys.FilterValue, value)
     }
@@ -121,10 +126,22 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
      * @param callback function to run when value was changed.
      * @return reference to the SettingsListener
      */
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getFilterValueFlow()"))
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
     override suspend fun observeFilterValue(callback: (String) -> Unit): SettingsListener? {
         val settings = appSettings as? ObservableSettings ?: return null
         return settings.addStringListener(PrefKeys.FilterValue, "") { callback(it) }
+    }
+
+    override fun getFilterFlow(): Flow<Filter> = combine(
+        appSettings.getIntFlow(PrefKeys.FilterRole, Filter.Role.default.value).map { Filter.Role.fromInt(it) },
+        appSettings.getStringFlow(PrefKeys.FilterValue, "")
+    ) { role, value ->
+        Filter(role ,value)
+    }
+
+    override suspend fun setFilter(value: Filter) {
+        appSettings.putInt(PrefKeys.FilterRole, value.role.value)
+        appSettings.putString(PrefKeys.FilterValue, value.value)
     }
 
     /**

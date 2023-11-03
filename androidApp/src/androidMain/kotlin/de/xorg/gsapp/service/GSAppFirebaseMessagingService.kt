@@ -34,18 +34,31 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import de.xorg.gsapp.MainActivity
 import de.xorg.gsapp.R
+import de.xorg.gsapp.data.model.Filter
+import de.xorg.gsapp.data.model.Substitution
+import de.xorg.gsapp.data.model.SubstitutionSet
+import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.state.FilterRole
+import de.xorg.gsapp.ui.tools.DateUtil
+import dev.icerock.moko.resources.StringResource
+import dev.icerock.moko.resources.compose.stringResource
 import dev.icerock.moko.resources.desc.desc
+import dev.icerock.moko.resources.format
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.core.component.KoinComponent
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.todayIn
 
 class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
     private val TAG = "GSAppFMS"
@@ -101,53 +114,125 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
 
         scope.launch {
             val pushState = prefRepo.getPushFlow().lastOrNull() ?: PushState.default
+            val filter = prefRepo.getFilterFlow().lastOrNull() ?: Filter.NONE
 
             if(pushState == PushState.DISABLED) return@launch
 
             if(pushState == PushState.LIKE_FILTER && remoteMessage.data.isNotEmpty()) {
-                val role = FilterRole.fromInt(
-                    getSharedPreferences("GSApp", MODE_PRIVATE).getInt("role", FilterRole.default.value)
-                )
-                val filter = getSharedPreferences("GSApp", MODE_PRIVATE)
-                    .getString("filter", "") ?: ""
-                if(role == FilterRole.TEACHER && remoteMessage.data["teachers"]?.contains(filter) != true) return@launch
-                if(role == FilterRole.STUDENT && remoteMessage.data["classes"]?.contains(filter) != true) return@launch
+                // Don't notify if Filter does not match
+                if(filter.role == Filter.Role.TEACHER &&
+                    remoteMessage.data["teachers"]?.contains(filter.value) != true) return@launch
+
+                if(filter.role == Filter.Role.STUDENT &&
+                    remoteMessage.data["classes"]?.contains(filter.value) != true) return@launch
             }
 
-            createNotificationChannel()
+            val appRepository: GSAppRepository by inject()
+            appRepository.updateSubstitutions {
+                if(it.getOrDefault(false)) {
+                    // Update was successful -> show preview in notification
+                    scope.launch {
+                        appRepository.getSubstitutions().collectLatest { subSet ->
+                            postSubstitutionNotification(
+                                context = serviceInstance,
+                                substitutionSet = subSet.getOrNull(),
+                                filter = filter)
+                        }
+                    }
 
-            val intent = Intent(serviceInstance, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                } else {
+                    postSubstitutionNotification(context = serviceInstance)
+                }
+
+
+                Log.d(TAG, "Updated substitution plan " +
+                        (if(it.getOrDefault(false)) "successfully" else ""))
             }
-            val pendingIntent: PendingIntent = PendingIntent.getActivity(
-                serviceInstance,
-                0,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE)
+        }
+    }
+
+    private fun postSubstitutionNotification(context: Context,
+                                             substitutionSet: SubstitutionSet? = null,
+                                             filter: Filter? = null) {
+        createNotificationChannel()
+
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Remind user to give notification permission
+            scope.launch { prefRepo.setAskUserForNotificationPermission(true) }
+            Log.w(TAG, "WARN: No notification permission on receivedNotification!")
+
+            // We can't post a notification :/
+            return
+        }
+
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE)
 
 
-            val builder = NotificationCompat.Builder(serviceInstance, CHANNEL_ID)
-                .setSmallIcon(R.drawable.notification_icon)
-                .setContentTitle(MR.strings.push_notification_title.desc().toString(serviceInstance))
-                .setContentText(MR.strings.push_notification_body.desc().toString(serviceInstance))
-                .setContentIntent(pendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        var builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.notification_icon)
+            .setContentTitle(MR.strings.push_notification_title.desc().toString(context))
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-            if (ActivityCompat.checkSelfPermission(
-                    serviceInstance,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // Remind user to give notification permission
-                prefRepo.setAskUserForNotificationPermission(true)
-                Log.w(TAG, "WARN: No notification permission on receivedNotification!")
-                return@launch
+        if(substitutionSet != null && filter != null && filter.role != Filter.Role.ALL) {
+            val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+            val dayDelta = today.daysUntil(substitutionSet.date)
+
+            val relLabel: String
+            if(dayDelta == 0) {
+                relLabel = MR.strings.rel_today.desc().toString(context)
+            } else if(dayDelta == 1) {
+                relLabel = MR.strings.rel_tomorrow.desc().toString(context)
+            } else if(dayDelta == 2) {
+                relLabel = MR.strings.rel_after_tomorrow.desc().toString(context)
+            } else if(dayDelta <= 7) {
+                val localizedDay = DateUtil
+                    .getWeekdayLongRes(substitutionSet.date)
+                    .desc()
+                    .toString(context)
+                relLabel = MR.strings.rel_next_weekday.format(localizedDay).toString(context)
+            } else {
+                relLabel = MR.strings.rel_absolute.format(
+                    DateUtil.getDateAsString(
+                        substitutionSet.date
+                    ) { it.desc().toString(context) }
+                ).toString(context)
             }
 
-            with(NotificationManagerCompat.from(serviceInstance)) {
-                // notificationId is a unique int for each notification that you must define
-                notify(NTF_ID, builder.build())
+            val subList = if(filter.role == Filter.Role.STUDENT) {
+                substitutionSet.substitutions[filter.value] ?: emptyList()
+            } else {
+                substitutionSet.substitutions.flatMap {
+                    it.value.filter { sub ->
+                        sub.substTeacher.shortName.lowercase() == filter.value.lowercase()
+                    }
+                }
             }
+
+            MR.strings.push_notification_detail_amount.format(
+                subList.size,
+                relLabel
+            ).toString(context).also {
+                builder = builder.setContentText(it)
+            }
+        } else {
+            builder = builder.setContentText(MR.strings.push_notification_body.desc().toString(context))
+        }
+
+        with(NotificationManagerCompat.from(context)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(NTF_ID, builder.build())
         }
     }
 

@@ -50,7 +50,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,21 +65,17 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-/*import com.moriatsushi.insetsx.ExperimentalSoftwareKeyboardApi
-import com.moriatsushi.insetsx.imePadding*/
+import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.settings.ClassListItem
 import de.xorg.gsapp.ui.components.settings.SkeletonClassListItem
-import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.LETTERS
 import de.xorg.gsapp.ui.tools.classList
-import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.stringResource
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.compose.koinInject
 
@@ -97,24 +92,21 @@ fun FilterSettingsScreen(
     val viewModel: SettingsViewModel = koinInject()
     val teachers by viewModel.teachers.collectAsStateWithLifecycle(Result.success(emptyList()))
 
-    val filterState by viewModel.filterFlow.collectAsStateWithLifecycle("")
-    val roleState by viewModel.roleFlow.collectAsStateWithLifecycle(FilterRole.default)
+    val filterState by viewModel.filterFlow.collectAsStateWithLifecycle(Filter.NONE)
+    //val roleState by viewModel.roleFlow.collectAsStateWithLifecycle(Filter.Role.default)
     //val filterVal by remember { viewModel.filterFlow.collectAsStateWithLifecycle("")
 
     // FilterValue to store in settings
     // (Teacher shortName / Student class)
-    var filterVal by remember { mutableStateOf(filterState) }
+    var filterVal by remember { mutableStateOf(filterState.value) }
     var isValid by remember { mutableStateOf(filterVal.length > 2) }
 
     // Selected user role (Any/Student/Teacher)
-    var roleVal by remember { mutableStateOf(roleState) }
+    var roleVal by remember { mutableStateOf(filterState.role) }
 
     LaunchedEffect(filterState) {
-        filterVal = filterState
-    }
-
-    LaunchedEffect(roleState) {
-        roleVal = roleState
+        filterVal = filterState.value
+        roleVal = filterState.role
     }
 
     /** Specific for Teacher **/
@@ -162,7 +154,7 @@ fun FilterSettingsScreen(
                 modifier = Modifier.padding(bottom = 8.dp))
             Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly) {
-                FilterRole.entries.forEach {
+                Filter.Role.entries.forEach {
                     Row(modifier = Modifier.selectable(
                         selected = roleVal == it,
                         onClick = {
@@ -171,8 +163,8 @@ fun FilterSettingsScreen(
                                 teacherLong = ""
                                 teacherCandidate = null
                             }
-                            if(FilterRole.shouldStore(it)) //Store if requested
-                                viewModel.setRoleAndFilter(it, filterVal)
+                            if(Filter.Role.shouldStore(it)) //Store if requested
+                                viewModel.setFilter(Filter(it, filterVal))
 
                             roleVal = it //Set new role
 
@@ -189,7 +181,7 @@ fun FilterSettingsScreen(
             }
 
 
-            AnimatedVisibility(roleVal == FilterRole.TEACHER) {
+            AnimatedVisibility(roleVal == Filter.Role.TEACHER) {
                 Box(modifier = Modifier.padding(bottom = 8.dp)) {
                     OutlinedTextField(
                         value = teacherLong,
@@ -201,7 +193,7 @@ fun FilterSettingsScreen(
                         interactionSource = inputInteractionSource,
                         trailingIcon = {
                             IconButton(onClick = {
-                                viewModel.setRoleAndFilter(FilterRole.ALL, "")
+                                viewModel.setFilter(Filter.NONE)
                                 teacherLong = ""
                                 filterVal = ""
                                 teacherCandidate = null
@@ -236,7 +228,7 @@ fun FilterSettingsScreen(
                                     return@firstOrNull teacher.shortName == filterVal
                                 }
                             teacherLong = teacherCandidate?.longName ?: ""
-                            if(isValid) viewModel.setRoleAndFilter(roleVal, filterVal)
+                            if(isValid) viewModel.setFilter(Filter(roleVal, filterVal))
                         },
                         label = { Text(text = stringResource(MR.strings.filter_dialog_teacher_short)) },
                         interactionSource = inputInteractionSource,
@@ -244,7 +236,7 @@ fun FilterSettingsScreen(
                         maxLines = 1,
                         trailingIcon = {
                             IconButton(onClick = {
-                                viewModel.setRoleAndFilter(FilterRole.ALL, "")
+                                viewModel.setFilter(Filter.NONE)
                                 teacherLong = ""
                                 filterVal = ""
                                 teacherCandidate = null
@@ -281,7 +273,7 @@ fun FilterSettingsScreen(
 
 
             LazyColumn(modifier = Modifier) {
-                if(roleVal == FilterRole.TEACHER)
+                if(roleVal == Filter.Role.TEACHER)
                     when (viewModel.teacherState) {
                         UiState.EMPTY -> item { Text("Es wurden keine Lehrer gefunden, bitte geben Sie ihr Kürzel von Hand ein.") }
                         UiState.FAILED -> item { Text("Lehrer konnten nicht geladen werden, bitte geben Sie ihr Kürzel von Hand ein.") }
@@ -292,7 +284,7 @@ fun FilterSettingsScreen(
                     Divider(modifier = Modifier.fillMaxWidth().height(1.dp))
                 }
 
-                if(roleVal == FilterRole.TEACHER) {
+                if(roleVal == Filter.Role.TEACHER) {
                     if(viewModel.teacherState == UiState.NORMAL &&
                         teacherCandidate == null) {
                         items(teachers.getOrDefault(emptyList()).filter { teacher ->
@@ -310,8 +302,12 @@ fun FilterSettingsScreen(
                                             filterVal = it.shortName.uppercase()
                                             teacherLong = it.longName
                                             isValid = true
-                                            viewModel.setRoleAndFilter(FilterRole.TEACHER,
-                                                                       it.shortName.uppercase())
+                                            viewModel.setFilter(
+                                                Filter(
+                                                    role = Filter.Role.TEACHER,
+                                                    value = it.shortName.uppercase()
+                                                )
+                                            )
                                         },
                                         indication = rememberRipple(bounded = true)
                                     )
@@ -337,7 +333,7 @@ fun FilterSettingsScreen(
                             }
                         }
                     }
-                } else if(roleVal == FilterRole.STUDENT) {
+                } else if(roleVal == Filter.Role.STUDENT) {
                     items(classList) { className ->
                         ClassListItem(
                             label = className,
@@ -345,7 +341,12 @@ fun FilterSettingsScreen(
                             modifier = Modifier.animateItemPlacement())
                         {
                             filterVal = className
-                            viewModel.setRoleAndFilter(FilterRole.STUDENT, className)
+                            viewModel.setFilter(
+                                Filter(
+                                    role = Filter.Role.STUDENT,
+                                    value = className
+                                )
+                            )
                         }
                     }
                 }

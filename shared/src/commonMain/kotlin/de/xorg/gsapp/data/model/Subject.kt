@@ -58,6 +58,5 @@ data class Subject(
     /**
      * Checks if a given Subject is not the empty Subject (=blank shortName)
      */
-    fun isBlank(): Boolean = this.shortName.isBlank()
     fun isNotBlank(): Boolean = this.shortName.isNotBlank()
 }

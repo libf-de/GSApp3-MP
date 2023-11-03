@@ -39,11 +39,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.GSAppRoutes
+import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.dialogs.SettingsRadioDialog
 import de.xorg.gsapp.ui.components.settings.SettingsItem
-import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.painterResource
@@ -69,10 +69,7 @@ fun SettingsScreen(
     val pushUtil: PushNotificationUtil = koinInject()
 
     val pushState by viewModel.pushFlow.collectAsStateWithLifecycle(PushState.default)
-    val roleState by viewModel.roleFlow.collectAsStateWithLifecycle(FilterRole.default)
-    val filterState by viewModel.filterFlow.collectAsStateWithLifecycle("")
-
-    var colorState = remember { mutableStateOf(Color.Green)}
+    val filterState by viewModel.filterFlow.collectAsStateWithLifecycle(Filter.NONE)
 
     var showPushDialog by remember { mutableStateOf(false) }
 
@@ -115,7 +112,7 @@ fun SettingsScreen(
                         contentDescription = "",
                         modifier = mod, tint = tint) },
                     title = stringResource(MR.strings.pref_filter),
-                    subtitle = stringResource(roleState.descriptiveResource, filterState),
+                    subtitle = stringResource(filterState.role.descriptiveResource, filterState.value),
                     onClick = { navController.navigate(GSAppRoutes.SETTINGS_FILTER) }
                 )
             }

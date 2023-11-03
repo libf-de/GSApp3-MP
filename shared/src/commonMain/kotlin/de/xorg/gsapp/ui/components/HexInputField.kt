@@ -76,16 +76,3 @@ private fun Color.Companion.fromHex(str: String): Color {
     return Color(str.removePrefix("#").toLong(16) or 0x00000000FF000000)
 }
 
-private fun findFirstDifferencePosition(str1: String, str2: String): Int {
-    val minLength = minOf(str1.length, str2.length)
-
-    for (i in 0 until minLength) {
-        if (str1[i] != str2[i]) {
-            return i
-        }
-    }
-
-    // Wenn die Schleife bis hierhin durchläuft, bedeutet das, dass die kürzere Zeichenkette am Anfang der längeren Zeichenkette entspricht.
-    // Die Position des ersten Unterschieds ist die Länge der kürzeren Zeichenkette.
-    return minLength
-}

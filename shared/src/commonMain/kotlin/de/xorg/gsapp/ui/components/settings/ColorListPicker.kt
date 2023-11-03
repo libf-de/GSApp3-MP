@@ -90,7 +90,7 @@ fun ColorListPicker(
         items(colors) {
             ColorItem(
                 color = it,
-                onClick = { selectedColor = it },
+                onClick = { col -> selectedColor = col },
                 isSelected = selectedColor == it,
                 modifier = itemModifier
             )

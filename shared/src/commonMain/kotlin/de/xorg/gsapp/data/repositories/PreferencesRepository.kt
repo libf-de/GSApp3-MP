@@ -19,7 +19,7 @@
 package de.xorg.gsapp.data.repositories
 
 import com.russhwolf.settings.SettingsListener
-import de.xorg.gsapp.ui.state.FilterRole
+import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
 
@@ -29,20 +29,30 @@ interface PreferencesRepository {
      * setup an observer that triggers when the setting was changed. See implementation
      * for further documentation
      */
-    fun getRoleFlow(): Flow<FilterRole>
 
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getRoleFlow()"))
-    suspend fun getRole(): FilterRole
-    suspend fun setRole(value: FilterRole)
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getRoleFlow()"))
-    suspend fun observeRole(callback: (FilterRole) -> Unit): SettingsListener?
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
+    fun getRoleFlow(): Flow<Filter.Role>
 
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
+    suspend fun getRole(): Filter.Role
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("setFilter()"))
+    suspend fun setRole(value: Filter.Role)
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
+    suspend fun observeRole(callback: (Filter.Role) -> Unit): SettingsListener?
+
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
     fun getFilterValueFlow(): Flow<String>
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getFilterValueFlow()"))
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
     suspend fun getFilterValue(): String
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("setFilter()"))
     suspend fun setFilterValue(value: String)
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getFilterValueFlow()"))
+    @Deprecated("use filter instead", replaceWith = ReplaceWith("getFilterFlow()"))
     suspend fun observeFilterValue(callback: (String) -> Unit): SettingsListener?
+
+
+    fun getFilterFlow(): Flow<Filter>
+    suspend fun setFilter(value: Filter)
+
 
     fun getPushFlow(): Flow<PushState>
     @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))

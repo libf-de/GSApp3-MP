@@ -19,14 +19,11 @@
 package de.xorg.gsapp.data.repositories
 
 import androidx.compose.ui.graphics.Color
-import com.russhwolf.settings.SettingsListener
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
-import de.xorg.gsapp.ui.state.FilterRole
-import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 

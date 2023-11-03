@@ -41,6 +41,13 @@
     <string name="wd_sa_sh">Sa</string>
     <string name="wd_su_sh">Su</string>
 
+    <!-- relative date strings -->
+    <string name="rel_today">today</string>
+    <string name="rel_tomorrow">tomorrow</string>
+    <string name="rel_after_tomorrow">the day after tomorrow</string>
+    <string name="rel_next_weekday">next %s</string>
+    <string name="rel_absolute">on %s</string>
+
     <!-- Date format (d=day, m=month, y=year) -->
     <string name="date_format">m.d.y</string>
 
@@ -130,6 +137,7 @@
     <string name="push_channel_desc">Notifies you when a new substitution plan is available</string>
     <string name="push_notification_title">New substitution plan!</string>
     <string name="push_notification_body">There is a new substitution plan available!</string>
+    <string name="push_notification_detail_amount">You have %d substitutions %s.</string>
     <string name="push_no_permission_title">Missing permission</string>
     <string name="push_no_permission_body">You have enabled push notifications, but denied permission for notifications.\nPlease go to settings and enable notifications to not miss new substitution plans.\nIf you don\'t want this, you can also disable push notifications in the app settings.</string>
     <string name="push_no_permission_fix">Go to settings</string>

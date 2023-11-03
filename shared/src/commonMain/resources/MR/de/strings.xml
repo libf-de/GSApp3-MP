@@ -41,6 +41,13 @@
     <string name="wd_sa_sh">Sa</string>
     <string name="wd_su_sh">So</string>
 
+    <!-- relative date strings -->
+    <string name="rel_today">heute</string>
+    <string name="rel_tomorrow">morgen</string>
+    <string name="rel_after_tomorrow">übermorgen</string>
+    <string name="rel_next_weekday">nächsten %s</string>
+    <string name="rel_absolute">am %s</string>
+
     <!-- Date format (d=day, m=month, y=year) -->
     <string name="date_format">d.m.y</string>
 
@@ -122,6 +129,7 @@
     <string name="push_channel_desc">Benachrichtigt dich sobald ein neuer Vertretungsplan verfügbar ist</string>
     <string name="push_notification_title">Neuer Vertretungsplan!</string>
     <string name="push_notification_body">Es ist ein neuer Vertretungsplan verfügbar!</string>
+    <string name="push_notification_detail_amount">Du hast %s %d Vertretungen.</string>
     <string name="push_no_permission_title">Fehlende Berechtigung</string>
     <string name="push_no_permission_body">Du hast Push-Benachrichtigungen aktiviert, aber die Berechtigung für Benachrichtigungen verweigert.\nBitte gehe zu den Einstellungen und aktiviere Benachrichtigungen, um keinen neuen Vertretungsplan zu verpassen.\nFalls du dies nicht möchtest, kannst du Push-Benachrichtigungen auch in den App-Einstellungen deaktivieren.</string>
     <string name="push_no_permission_fix">Zu den Einstellungen</string>

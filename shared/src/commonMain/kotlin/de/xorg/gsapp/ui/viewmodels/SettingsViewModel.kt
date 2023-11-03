@@ -23,12 +23,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import de.xorg.gsapp.data.exceptions.NoException
+import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.ColorPickerMode
-import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.state.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,13 +48,18 @@ class SettingsViewModel : ViewModel(), KoinComponent {
     private val pushUtil: PushNotificationUtil by inject()
 
     //TODO: Should I use stateIn here?
-    val roleFlow = prefRepo.getRoleFlow().shareIn(
+    /*val roleFlow = prefRepo.getRoleFlow().shareIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         replay = 1
     )
 
     val filterFlow = prefRepo.getFilterValueFlow().shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )*/
+    val filterFlow = prefRepo.getFilterFlow().shareIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         replay = 1
@@ -268,12 +273,18 @@ class SettingsViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    fun setRoleAndFilter(role: FilterRole, filter: String) {
+    fun setFilter(filter: Filter) {
+        viewModelScope.launch {
+            prefRepo.setFilter(filter)
+        }
+    }
+
+    /*fun setRoleAndFilter(role: Filter.Role, filter: String) {
         viewModelScope.launch {
             prefRepo.setRole(role)
             prefRepo.setFilterValue(filter)
         }
-    }
+    }*/
 
     fun setColorpickerMode(pickerMode: ColorPickerMode) {
         _colorpickerMode.value = pickerMode

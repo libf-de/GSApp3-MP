@@ -20,25 +20,17 @@ package de.xorg.gsapp
 
 import MainView
 import android.app.Activity
-import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import de.xorg.gsapp.data.repositories.PreferencesRepository
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.state.PushState
-import dev.icerock.moko.resources.desc.desc
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.lifecycle.PreComposeActivity
 import moe.tlaster.precompose.lifecycle.setContent
@@ -65,8 +57,6 @@ class MainActivity : PreComposeActivity() {
         // This is only necessary for API level >= 33 (TIRAMISU)
 
         //val pushState = prefRepo.getPushFlow().lastOrNull() ?: PushState.default
-        val pushState = prefRepo.getPush()
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) ==
                 PackageManager.PERMISSION_GRANTED

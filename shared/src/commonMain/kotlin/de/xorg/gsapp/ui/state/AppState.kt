@@ -19,6 +19,7 @@
 package de.xorg.gsapp.ui.state
 
 import de.xorg.gsapp.data.exceptions.NoException
+import de.xorg.gsapp.data.model.Filter
 
 /**
  * This data class represents the main-app ui-states for all tabs.
@@ -29,7 +30,7 @@ data class AppState(
     val substitutionState: UiState = UiState.LOADING,
     val substitutionReloading: Boolean = false,
     val substitutionError: Throwable = NoException(),
-    val filterRole: FilterRole = FilterRole.ALL,
+    val filterRole: Filter.Role = Filter.Role.ALL,
     val filter: String = "",
 
     val foodplanState: UiState = UiState.LOADING,

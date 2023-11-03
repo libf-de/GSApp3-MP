@@ -22,11 +22,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.russhwolf.settings.SettingsListener
+import de.xorg.gsapp.data.model.Filter
 //import com.hoc081098.kmp.viewmodel.ViewModel
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.AppState
-import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.UiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -61,23 +61,22 @@ class GSAppViewModel : ViewModel(), KoinComponent {
 
 
     val subFlow = combine(appRepo.getSubstitutions(),
-                          prefsRepo.getRoleFlow(),
-                          prefsRepo.getFilterValueFlow()) { subs, role, filter ->
-        if(role == FilterRole.ALL) return@combine subs
+                          prefsRepo.getFilterFlow()) { subs, filter ->
+        if(filter.role == Filter.Role.ALL) return@combine subs
 
         subs.mapCatching {
             it.copy(
-                substitutions = when(role) {
-                    FilterRole.STUDENT -> {
+                substitutions = when(filter.role) {
+                    Filter.Role.STUDENT -> {
                         it.substitutions.filterKeys { entry ->
-                            entry.lowercase().contains(filter.lowercase())
+                            entry.lowercase().contains(filter.value.lowercase())
                         }
                     }
 
-                    FilterRole.TEACHER -> {
+                    Filter.Role.TEACHER -> {
                         it.substitutions.mapValues { subsPerKlass ->
                             subsPerKlass.value.filter { aSub ->
-                                aSub.substTeacher.shortName.lowercase() == filter.lowercase()
+                                aSub.substTeacher.shortName.lowercase() == filter.value.lowercase()
                             }
                         }.filter { subsPerKlass ->
                             subsPerKlass.value.isNotEmpty()
@@ -96,35 +95,17 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         replay = 1
     )
 
-
-    //val subsFlow = appRepo.getSubstitutions()
-    //private val _subStateFlow = MutableStateFlow(SubstitutionSet())
-    //val subStateFlow = _subStateFlow.asStateFlow()
-
     val foodFlow = appRepo.getFoodplan().shareIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         replay = 1
     )
-    //private val _foodStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Food>>())
-    //val foodStateFlow = _foodStateFlow.asStateFlow()
 
     val examFlow = appRepo.getExams().shareIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         replay = 1
     )
-    //private val _examStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Exam>>())
-    //val examStateFlow = _examStateFlow.asStateFlow()
-
-    // Strong references for settings observers. Android Studio marks these as unused,
-    // but it's necessary for the Listeners to work.
-    // See last paragraph: https://github.com/russhwolf/multiplatform-settings#listeners
-    private val _roleObserver = MutableStateFlow<SettingsListener?>(null)
-    val roleObserver = _roleObserver.asStateFlow()
-
-    private val _filterObserver = MutableStateFlow<SettingsListener?>(null)
-    val filterObserver = _filterObserver.asStateFlow()
 
     init {
         log.d { "GSAppViewModel init" }
