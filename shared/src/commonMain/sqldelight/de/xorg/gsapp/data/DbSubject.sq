@@ -10,6 +10,15 @@ selectAll:
 SELECT *
 FROM DbSubject;
 
+countAll:
+SELECT COUNT()
+FROM DbSubject;
+
+countByShort:
+SELECT COUNT()
+FROM DbSubject
+WHERE shortName = :shortName;
+
 insertSubject:
 INSERT OR IGNORE INTO DbSubject(shortName, longName, color)
 VALUES (?, ?, ?);
@@ -22,3 +31,6 @@ WHERE shortName = :shortName;
 deleteSubject:
 DELETE FROM DbSubject
 WHERE shortName = :shortName;
+
+deleteAllSubjects:
+DELETE FROM DbSubject;

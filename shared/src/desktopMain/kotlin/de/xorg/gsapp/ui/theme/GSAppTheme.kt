@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 package de.xorg.gsapp.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 
@@ -29,7 +28,7 @@ actual fun GSAppTheme(
     dynamicColor: Boolean,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if(isSystemInDarkTheme()) DarkColors else DarkColors
+    val colorScheme = if(darkTheme) DarkColors else DarkColors
 
     MaterialTheme(
         colorScheme = colorScheme,

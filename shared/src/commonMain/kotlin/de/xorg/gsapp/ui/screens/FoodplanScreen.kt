@@ -1,3 +1,21 @@
+/*
+ * GSApp3 (https://github.com/libf-de/GSApp3)
+ * Copyright (C) 2023. Fabian Schillig
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.xorg.gsapp.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -33,7 +51,6 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,54 +59,50 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.FancyIndicator
 import de.xorg.gsapp.ui.components.FoodplanCard
-import de.xorg.gsapp.ui.components.LoadingComponent
+import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.DateUtil
+import de.xorg.gsapp.ui.tools.getErrorAsString
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
-import org.kodein.di.compose.localDI
-import org.kodein.di.instance
+import org.koin.compose.koinInject
+import org.lighthousegames.logging.logging
 
+/**
+ * The foodplan-tab composable
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FoodplanScreen(
     navController: Navigator
 ) {
-    val di = localDI()
+    val log = logging()
 
-    val viewModel by di.instance<GSAppViewModel>()
+    //val viewModel: GSAppViewModel = koinViewModel(vmClass = GSAppViewModel::class)
+    val viewModel: GSAppViewModel = koinInject()
 
-    val foodplan = viewModel.foodStateFlow.collectAsState().value
+    val foodplan by viewModel.foodFlow
+        .mapLatest { it.getOrDefault(emptyMap()) }
+        .collectAsStateWithLifecycle(emptyMap())
 
-    val fpDates = foodplan.keys.toList()
-    val fpFoods = foodplan.values.toList()
-
-    /******************************************************/
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-
-    val listState = rememberLazyListState()
-
-    // TODO: Merge this
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-    val todayIndex = if(fpDates.contains(today)) fpDates.indexOf(today) else 0
-    val pages = (fpDates.indices).toList()
-    val pagerState = rememberPagerState(initialPage = todayIndex) { fpDates.size }
-    var currentPageIndex by remember {
-        mutableStateOf(todayIndex)
-    }
+    val todayIndex = if(foodplan.keys.contains(today)) foodplan.keys.indexOf(today) else 0
+    val pagerState = rememberPagerState(initialPage = todayIndex) { foodplan.size }
+    var currentPageIndex by remember { mutableStateOf(todayIndex) }
 
     with(pagerState) {
         LaunchedEffect(key1 = currentPageIndex) {
@@ -101,6 +114,10 @@ fun FoodplanScreen(
         }
     }
 
+    //TODO: Have loading/error/... states!!
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    val listState = rememberLazyListState()
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -109,33 +126,34 @@ fun FoodplanScreen(
             MediumTopAppBar(
                 title = {
                     Text(text = stringResource(MR.strings.tab_foodplan),
-                        fontFamily = fontFamilyResource(MR.fonts.LondrinaSolid.black),
+                        fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
                         style = MaterialTheme.typography.headlineMedium
                     )
                 },
                 scrollBehavior = scrollBehavior,
-                colors = if(getPlatformName() == "Desktop")
-                    TopAppBarDefaults.mediumTopAppBarColors(
-                        containerColor = if (listState.firstVisibleItemIndex == 0)
-                            MaterialTheme.colorScheme.background
-                        else
-                            MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
-                else TopAppBarDefaults.mediumTopAppBarColors(),
+                colors = if(getPlatformName() != "Android") //TopAppBar currently does not color correctly on desktop/ios TODO: Remove when fixed
+                            TopAppBarDefaults.mediumTopAppBarColors(
+                                containerColor = if (listState.firstVisibleItemIndex == 0)
+                                    MaterialTheme.colorScheme.background
+                                else
+                                    MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
+                         else TopAppBarDefaults.mediumTopAppBarColors(),
                 actions = {
-                    IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) },
-                        modifier = Modifier.onGloballyPositioned { coords ->
-                            //TODO: remove setSrc.transformOrigin = TransformOrigin(pivotFractionX = coords.positionInRoot().x, pivotFractionY = coords.positionInRoot().y)
-                        }) {
+                    /** Settings button **/
+                    IconButton(
+                        onClick = { navController.navigate(GSAppRoutes.SETTINGS) },
+                        modifier = Modifier
+                    ) {
                         Icon(imageVector = Icons.Filled.Settings,
-                            contentDescription = "Settings") //TODO: Localize!
+                             contentDescription = stringResource(MR.strings.settings_title))
                     }
                 }
             )
         }
     ) { innerPadding ->
 
-        when (viewModel.uiState.foodplanState) {
-            UiState.NORMAL -> {
+        when(viewModel.uiState.foodplanState) {
+            UiState.NORMAL, UiState.NORMAL_FAILED, UiState.NORMAL_LOADING -> {
                 LazyColumn(
                     modifier = Modifier.padding(innerPadding),
                     state = listState,
@@ -152,24 +170,24 @@ fun FoodplanScreen(
                                 contentColor = MaterialTheme.colorScheme.onBackground,
                                 selectedTabIndex = pagerState.currentPage,
                                 indicator = { tabPos ->
-                                    FancyIndicator(modifier = Modifier
-                                        .tabIndicatorOffset(tabPos[pagerState.currentPage])
+                                    FancyIndicator(modifier = if(tabPos.size > pagerState.currentPage)
+                                        Modifier.tabIndicatorOffset(tabPos[pagerState.currentPage])
+                                    else Modifier
                                     )
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                pages.forEach { dayOffset ->
-                                    val date = fpDates[dayOffset]
+                                foodplan.entries.forEachIndexed { index, entry ->
                                     Tab(
                                         modifier = Modifier.wrapContentWidth(),
                                         text = {
-                                            Text("${DateUtil.getWeekdayLong(date)}\n" +
-                                                    DateUtil.getDateAsString(date)
+                                            Text("${DateUtil.getWeekdayLong(entry.key)}\n" +
+                                                    DateUtil.getDateAsString(entry.key)
                                             )
                                         },
-                                        selected = pagerState.currentPage == dayOffset,
+                                        selected = pagerState.currentPage == index,
                                         onClick = {
-                                            currentPageIndex = dayOffset
+                                            currentPageIndex = index
                                         }
                                     )
                                 }
@@ -192,13 +210,21 @@ fun FoodplanScreen(
                                     ),
                                 verticalArrangement = Arrangement.Top
                             ) {
+                                if(page >= foodplan.size) {
+                                    Text("Fehler: aktuelle Seite ist nicht im Speiseplan enthalten :/")
+                                    return@Column
+                                }
+
                                 var foodNum = 0
-                                fpFoods[page].forEach {
+                                val todayFoods = foodplan.values.toList()[page]
+
+                                todayFoods.forEach {
                                     val color = Color.hsl(
-                                        (240 / fpFoods[page].size) * foodNum.toFloat(),
+                                        (240 / todayFoods.size) * foodNum.toFloat(),
                                         0.6f, 0.5f
                                     )
-                                    //println("on page $foodNum -> ${(240 / fpFoods[page].size) * foodNum.toFloat()}")
+                                    log.d { "on page $foodNum -> " +
+                                            (240 / todayFoods.size) * foodNum.toFloat() }
 
                                     FoodplanCard(
                                         food = it,
@@ -208,8 +234,6 @@ fun FoodplanScreen(
 
                                     foodNum++
                                 }
-
-
 
                                 Spacer(modifier = Modifier.height(80.dp))
                             }
@@ -223,7 +247,7 @@ fun FoodplanScreen(
                     modifier = Modifier.fillMaxHeight(),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text("(kein Speiseplan)")
+                    Text(stringResource(MR.strings.foodplan_error_empty))
                 }
             }
 
@@ -236,22 +260,9 @@ fun FoodplanScreen(
                     modifier = Modifier.fillMaxHeight(),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text("Fehler: ${viewModel.uiState.foodplanError.message}")
+                    Text(text = getErrorAsString(viewModel.uiState.foodplanError))
                 }
             }
         }
     }
-
-
-    /*BackHandler(enabled = onBackClicked != null) {
-        if (onBackClicked != null) {
-            onBackClicked()
-        }
-    }*/
-
-    /*ClockBroadcastReceiver(systemAction = Intent.ACTION_TIME_TICK) {
-        mensaViewModel.updateOpeningHourTexts(Category.ANY)
-    }*/
-
-
 }

@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,313 +19,407 @@
 package de.xorg.gsapp.data.repositories
 
 import androidx.compose.ui.graphics.Color
-import com.russhwolf.settings.ObservableSettings
-import com.russhwolf.settings.Settings
-import com.russhwolf.settings.SettingsListener
-import de.xorg.gsapp.data.enums.ExamCourse
+import de.xorg.gsapp.data.exceptions.NoEntriesException
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.data.model.Substitution
-import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
-import de.xorg.gsapp.data.sources.local.JsonDataSource
+import de.xorg.gsapp.data.sources.defaults.DefaultsDataSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
-import de.xorg.gsapp.ui.state.FilterRole
-import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDate
-import org.kodein.di.DI
-import org.kodein.di.instance
-import kotlin.time.measureTime
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.lighthousegames.logging.logging
 
-class AppRepository(di: DI) : GSAppRepository {
-    private val apiDataSource: RemoteDataSource by di.instance()
-    private val localDataSource: LocalDataSource by di.instance()
-    private val jsonDataSource: JsonDataSource by di.instance()
+/**
+ * This combines all data sources (local cache and remote apis), as well as app settings into a
+ * single interface to be used by the UI layer.
+ *
+ * All of the "get" flows (marked with |GET|) roughly follow this chart:
+ * (if flow does not support reload ==>  reloading = false)
+ * ┌──────────┐
+ * │Reloading?│
+ * └┬──────┬──┘
+ *  │Yes   │No
+ *  │    ┌─▼────────────────┐
+ *  │    │Load local cache. │
+ *  │    │Was it successful?│
+ *  │    └──┬────────┬──────┘
+ *  │       │No      │Yes
+ *  │       │      ┌─▼──────┐
+ *  │       │      │Emit it!│
+ *  │       │      └─┬──────┘
+ *  │       │        │
+ * ┌▼───────▼────────▼────┐
+ * │Load from api/website.│
+ * │Was it successful?    │
+ * └┬──────────────┬──────┘
+ *  │No            │Yes
+ *  │     ┌────────┴────────┐
+ *  │     │Is it different  │
+ *  │     │from local cache?│
+ *  │     └───┬────────────┬┘
+ *  │         │Yes       No│
+ *  │  ┌──────▼─────────┐  │
+ *  │  │ Emit and write │  │
+ *  │  │ to local cache.│  │
+ *  │  └─────────────┬──┘  │
+ *  │                └─────┤
+ *  │                      │
+ * ┌▼────────────────────┐ │
+ * │Was loading frm local│ │
+ * │cache successful AND │ │
+ * │are we NOT reloading?│ │
+ * ├─ ── ── ── ── ── ── ─┤ │
+ * │(Is there any data to│ │
+ * │ be displayed?)      │ │
+ * └─┬───────────────┬───┘ │
+ *   │No          Yes│     │
+ *  ┌▼───────┐     ┌─▼─────▼┐
+ *  │Emit web│     │ !DONE! │
+ *  │error   ├─────► !DONE! │
+ *  └────────┘     └────────┘
+ */
 
-    private val appSettings: Settings by di.instance()
+class AppRepository : GSAppRepository, KoinComponent {
 
-    private val apiSubstitutionsFlow: Flow<Result<SubstitutionApiModelSet>> = flow {
-        emit(apiDataSource.loadSubstitutionPlan())
+    companion object {
+        val log = logging()
     }
 
-    private fun getWebSubstitutions(): Flow<Result<SubstitutionSet>> = combine(apiSubstitutionsFlow,
-        teachers, subjects) { subs, teachers, subjects ->
-        subs.map {
-            SubstitutionSet(
-                date = it.date,
-                notes = it.notes,
-                substitutions = it.substitutionApiModels.map { sub ->
-                    Substitution(
-                        primitive = sub,
-                        origSubject = findSubjectInResult(subjects, sub.origSubject),
-                        substTeacher = findTeacherInResult(teachers, sub.substTeacher),
-                        substSubject = findSubjectInResult(subjects, sub.substSubject)
-                    )
-                }.groupBy { subs -> subs.klass }
+    //Get data sources from DI
+    private val apiDataSource: RemoteDataSource by inject()
+    private val localDataSource: LocalDataSource by inject()
+    private val defaultsDataSource: DefaultsDataSource by inject()
+
+    override fun getSubstitutions(): Flow<Result<SubstitutionSet>>
+        = localDataSource.getSubstitutionPlanFlow()
+
+    /*override fun getFilteredSubstitutions(): Flow<Result<SubstitutionSet>> = combine(
+        getSubstitutions(), getRoleFlow(), getFilterValueFlow()
+    ) { subs, role, filter ->
+        if(role == FilterRole.ALL) return@combine subs
+
+        subs.mapCatching {
+            it.copy(
+                substitutions = when(role) {
+                    FilterRole.STUDENT -> {
+                        it.substitutions.filterKeys { entry ->
+                            entry.lowercase().contains(filter.lowercase())
+                        }
+                    }
+
+                    FilterRole.TEACHER -> {
+                        it.substitutions.mapValues { subsPerKlass ->
+                            subsPerKlass.value.filter { aSub ->
+                                aSub.substTeacher.shortName.lowercase() == filter.lowercase()
+                            }
+                        }.filter { subsPerKlass ->
+                            subsPerKlass.value.isNotEmpty()
+                        }
+                    }
+
+                    else -> { //TODO: Is returning instantly much faster than this?
+                        it.substitutions
+                    }
+                }
             )
         }
-    }
 
-    override suspend fun getSubstitutions(reload: Boolean): Flow<Result<SubstitutionSet>> = flow {
-        var cached: Result<SubstitutionSet>? = null
-        if(!reload) {
-            val dbTime = measureTime {
-                cached = localDataSource.loadSubstitutionPlan()
-            }
-            val jsonTime = measureTime {
-                jsonDataSource.loadSubstitutionPlan()
-            }
-            println("db => ${dbTime.inWholeMilliseconds}ms, json => ${jsonTime.inWholeMilliseconds}ms")
+    }*/
 
-            if(cached?.isSuccess == true) emit(cached!!)
+    override suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit) {
+        log.d { "updateSubstitutions in AppRepository" }
+        try {
+            log.d { "updateSubstitutions in try" }
+            with(apiDataSource.getSubstitutionPlan()) {
+                log.d { "updateSubstitutions in with" }
+                if(this.isFailure) {
+                    log.w { "getSubstitutionPlan failed :/" }
+                    callback(
+                        Result.failure(
+                            this.exceptionOrNull() ?: Exception("unknown cause (api) :(")
+                        )
+                    )
+                    return
+                }
+
+                /*val apiSds = this.getOrNull()!!
+
+                val dbCandidateId = localDataSource.findIdByDateString(apiSds.dateStr)
+                if(dbCandidateId.isFailure) {
+                    callback(
+                        Result.failure(
+                            dbCandidateId.exceptionOrNull() ?: Exception("unknown cause (candidate) :(")
+                        )
+                    )
+                }*/
+
+
+
+                //TODO: Compare remote vs. local by hash AND DATE? (https://github.com/libf-de/GSApp3-MP/issues/8)
+                val localLatestHash = localDataSource.getLatestSubstitutionHash()
+                if(localLatestHash.isFailure) {
+                    log.w { "getLocalHash failed :/" }
+                    callback(
+                        Result.failure(
+                            this.exceptionOrNull() ?: Exception("unknown cause (dbLatest) :(")
+                        )
+                    )
+                    return
+                }
+
+                //If remote plan is different from latest local -> store it!
+                if(localLatestHash.getOrNull()!! != this.getOrNull()!!.hashCode()) {
+                    log.d { "got new plan!" }
+                    localDataSource.addSubstitutionPlan(this.getOrNull()!!)
+                    localDataSource.cleanupSubstitutionPlan()
+                    callback(Result.success(true))
+                } else {
+                    log.d { "no new plan!" }
+                    localDataSource.cleanupSubstitutionPlan()
+                    callback(Result.success(false))
+                }
+            }
+        } catch (ex: Exception) {
+            log.w { ex.stackTraceToString() }
+            callback(Result.failure(ex))
         }
+    }
 
-        getWebSubstitutions().collect { web ->
-            if(web.isSuccess) {
-                if(!reload && cached != null) {
-                    if(cached!!.isSuccess && cached!!.getOrNull() == web.getOrNull())
-                        return@collect //Do nothing if web is same as cache
+    override fun getFoodplan(): Flow<Result<Map<LocalDate, List<Food>>>>
+    = combine(localDataSource.getFoodMapFlow(), localDataSource.getAdditivesFlow()) { food, ad ->
+        if(food.isFailure || ad.isFailure) return@combine food
+
+        val adMap = ad.getOrNull()!!
+        food.mapCatching { outerMap ->
+            outerMap.mapValues { foodMap ->
+                foodMap.value.map { foodEntry ->
+                    foodEntry.copy(
+                        additives = foodEntry.additives.map { adShort -> adMap[adShort] ?: adShort }
+                    )
                 }
-                val dbStoreTime = measureTime {
-                    localDataSource.storeSubstitutionPlan(web.getOrNull()!!)
-                }
-                val jsonStoreTime = measureTime {
-                    jsonDataSource.storeSubstitutionPlan(web.getOrNull()!!)
-                }
-                println("db => ${dbStoreTime.inWholeMilliseconds}ms, json => ${jsonStoreTime.inWholeMilliseconds}ms")
-                //sqlDataSource.storeSubstitutionPlan(web.getOrNull()!!) //Store web plan in cache
-                emit(web) // & emit web
-            } else if(!reload && cached != null) {
-                if (!cached!!.isSuccess) emit(web) //Emit web error if there's no cache
             }
         }
     }
 
-    override val subjects: Flow<Result<List<Subject>>> = flow {
-        val cached = localDataSource.loadSubjects()
-        if(cached.isSuccess) emit(cached)
+    override suspend fun updateFoodplan(callback: (Result<Boolean>) -> Unit) {
+        try {
+            with(apiDataSource.getFoodplanAndAdditives()) {
+                if(this.isFailure) {
+                    callback(
+                        Result.failure(
+                            this.exceptionOrNull() ?: Exception("unknown cause (api) :(")
+                        )
+                    )
+                    return
+                }
 
-        val web = apiDataSource.loadSubjects()
-        if(web.isSuccess) {
-            //TODO: Can I compare results directly?
-            if(cached.isSuccess)
-                if(cached.getOrNull() == web.getOrNull())
-                    return@flow
-            localDataSource.storeSubjects(web.getOrNull()!!)
-            emit(web)
-        } else if (cached.isSuccess) { return@flow }
+                if(this.getOrNull()!!.first.isEmpty()) {
+                    callback(
+                        Result.failure(
+                            NoEntriesException()
+                        )
+                    )
+                    return
+                }
 
-        emit(web)
+                val localLatestDate = localDataSource.getLatestFoodDate()
+                if(localLatestDate.isFailure) {
+                    callback(
+                        Result.failure(
+                            this.exceptionOrNull() ?: Exception("unknown cause (dbLatest) :(")
+                        )
+                    )
+                    return
+                }
+
+                val remoteLatestDate = this.getOrNull()!!.first.keys.maxOrNull() ?: LocalDate.fromEpochDays(0)
+
+                //If remote plan is newer than latest local -> store it!
+                if(localLatestDate.getOrNull()!! < remoteLatestDate) {
+                    localDataSource.addFoodMap(this.getOrNull()!!.first)
+                    localDataSource.addAllAdditives(this.getOrNull()!!.second)
+                    localDataSource.cleanupFoodPlan()
+                    callback(Result.success(true))
+                } else {
+                    localDataSource.cleanupFoodPlan()
+                    callback(Result.success(false))
+                }
+            }
+        } catch (ex: Exception) {
+            callback(Result.failure(ex))
+        }
     }
 
-    private fun findTeacherInResult(results: Result<List<Teacher>>, value: String): Teacher {
-        if(value.isBlank()) return Teacher("", "(kein)")
-        return results.getOrNull()?.firstOrNull {
-                s -> s.shortName.lowercase() == value.lowercase()
-        } ?: Teacher(value)
+    override fun getExams(): Flow<Result<List<Exam>>> = localDataSource.getExamsFlow()
+
+    override suspend fun updateExams(callback: (Result<Boolean>) -> Unit) {
+        try {
+            with(apiDataSource.getExams()) {
+                if(this.isFailure) {
+                    callback(
+                        Result.failure(
+                            this.exceptionOrNull() ?: Exception("unknown cause (api) :(")
+                        )
+                    )
+                    return
+                }
+
+                //TODO: Compare remote vs. local by hash AND DATE? (https://github.com/libf-de/GSApp3-MP/issues/8)
+                val localLatest = localDataSource.getAllExams()
+                if(localLatest.isFailure) {
+                    callback(
+                        Result.failure(
+                            this.exceptionOrNull() ?: Exception("unknown cause (dbLatest) :(")
+                        )
+                    )
+                    return
+                }
+
+                if(localLatest.getOrNull() != this.getOrNull()!!) {
+                    localDataSource.clearAndAddAllExams(this.getOrNull()!!)
+                    callback(Result.success(true))
+                } else {
+                    localDataSource.cleanupExams()
+                    callback(Result.success(false))
+                }
+            }
+        } catch (ex: Exception) {
+            callback(Result.failure(ex))
+        }
     }
 
-    private fun findSubjectInResult(results: Result<List<Subject>>, value: String): Subject {
-        if(value.isBlank()) return Subject("", "(kein)", Color.Black)
+    override fun getTeachers(): Flow<Result<List<Teacher>>> = localDataSource.getTeachersFlow()
 
-        return results.getOrNull()?.firstOrNull {
-                s -> s.shortName.lowercase() == value.lowercase()
-        } ?: Subject(value)
-    }
+    override suspend fun updateTeachers(callback: (Result<Boolean>) -> Unit) {
+        try {
+            with(apiDataSource.getTeachers()) {
+                if(this.isFailure) {
+                    callback(
+                        Result.failure(
+                            this.exceptionOrNull() ?: Exception("unknown cause (api) :(")
+                        )
+                    )
+                    return
+                }
 
-    override suspend fun addSubject(value: Subject): Result<Boolean> {
-        val local = localDataSource.loadSubjects()
-        if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
-
-        val newSubjects = local.getOrNull()!!.toMutableList()
-        val success = newSubjects.add(value)
-        localDataSource.storeSubjects(newSubjects)
-        return Result.success(success)
-    }
-
-    override suspend fun deleteSubject(value: Subject): Result<Boolean> {
-        val local = localDataSource.loadSubjects()
-        if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
-
-        val newSubjects = local.getOrNull()!!.toMutableList()
-        val success = newSubjects.remove(value)
-        return Result.success(success)
-    }
-
-    override suspend fun updateSubject(oldSub: Subject, newSub: Subject): Result<Subject> {
-        val local = localDataSource.loadSubjects()
-        if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
-
-        val newSubjects = local.getOrNull()!!.toMutableList()
-        val success = newSubjects.set(newSubjects.indexOf(oldSub), newSub)
-        return Result.success(success)
-    }
-
-    override val teachers: Flow<Result<List<Teacher>>> = flow {
-        val cached = localDataSource.loadTeachers()
-        if(cached.isSuccess) emit(cached)
-
-        val web = apiDataSource.loadTeachers()
-        if(web.isSuccess) {
-            //TODO: Can I compare results directly?
-            if(cached.isSuccess)
-                if(cached.getOrNull() == web.getOrNull())
-                    return@flow
-            val mergedTeacherList = (web.getOrNull() ?: emptyList()) +
-                    (cached.getOrNull() ?: emptyList())
-            localDataSource.storeTeachers(mergedTeacherList)
-            emit(Result.success(mergedTeacherList))
-        } else if (cached.isSuccess) { return@flow }
-
-        emit(web)
+                localDataSource.addAllTeachers(this.getOrNull()!!)
+            }
+        } catch (ex: Exception) {
+            callback(Result.failure(ex))
+        }
     }
 
     override suspend fun addTeacher(value: Teacher): Result<Boolean> {
-        val local = localDataSource.loadTeachers()
-        if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
+        return try {
+            localDataSource.addTeacher(value)
+            Result.success(true)
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
+    }
 
-        val newTeachers = local.getOrNull()!!.toMutableList()
-        val success = newTeachers.add(value)
-        localDataSource.storeTeachers(newTeachers)
-        return Result.success(success)
+    override suspend fun editTeacher(oldTea: Teacher, newLongName: String): Result<Teacher> {
+        return try {
+            localDataSource.updateTeacher(oldTea.copy(longName = newLongName))
+            Result.success(oldTea)
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
     }
 
     override suspend fun deleteTeacher(value: Teacher): Result<Boolean> {
-        val local = localDataSource.loadTeachers()
-        if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
-
-        val newTeachers = local.getOrNull()!!.toMutableList()
-        val success = newTeachers.remove(value)
-        localDataSource.storeTeachers(newTeachers)
-        return Result.success(success)
+        return try {
+            localDataSource.deleteTeacher(value)
+            Result.success(true)
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
     }
 
-    override suspend fun updateTeacher(oldTea: Teacher, newTea: Teacher): Result<Teacher> {
-        val local = localDataSource.loadTeachers()
-        if(local.isFailure) return Result.failure(local.exceptionOrNull()!!)
+    override fun getSubjects(): Flow<Result<List<Subject>>> = localDataSource.getSubjectsFlow()
 
-        val newSubjects = local.getOrNull()!!.toMutableList()
-        val success = newSubjects.set(newSubjects.indexOf(oldTea), newTea)
-        return Result.success(success)
-    }
+    override suspend fun updateSubjects(force: Boolean, callback: (Result<Boolean>) -> Unit) {
+        try {
+            with(localDataSource.countSubjects()) {
+                if(this.isFailure) {
+                    callback(
+                        Result.failure(
+                            this.exceptionOrNull() ?: Exception("unknown cause (countSubjects)")
+                            )
+                    )
+                    return
+                }
 
-    private val apiFoodPlan: Flow<Result<Map<LocalDate, List<Food>>>> = flow {
-        val cached: Result<Map<LocalDate, List<Food>>> = localDataSource.loadFoodPlan()
-        if(cached.isSuccess) emit(cached)
-
-        val web = apiDataSource.loadFoodPlan()
-        if(web.isSuccess) {
-            //TODO: Can I compare results directly?
-            if(cached.isSuccess)
-                if(cached.getOrNull()!! == web.getOrNull()!!)
-                    return@flow
-            localDataSource.storeFoodPlan(web.getOrNull()!!)
-            emit(web)
-        } else if (cached.isSuccess) { return@flow }
-
-        emit(web)
-    }
-
-    override val additives: Flow<Result<Map<String, String>>> = flow {
-        val cached = localDataSource.loadAdditives()
-        if(cached.isSuccess) emit(cached)
-
-        val web = apiDataSource.loadAdditives()
-        if(web.isSuccess) {
-            //TODO: Can I compare results directly?
-            if(cached.isSuccess)
-                if(cached.getOrNull()!! == web.getOrNull()!!)
-                    return@flow
-            localDataSource.storeAdditives(web.getOrNull()!!)
-            emit(web)
-        } else if (cached.isSuccess) { return@flow }
-
-        emit(web)
-    }
-
-    override val foodPlan: Flow<Result<Map<LocalDate, List<Food>>>> = combine(apiFoodPlan, additives)
-    { apiFoodPlan, additives ->
-        if(!additives.isSuccess)
-            apiFoodPlan
-        else {
-            val adMap = additives.getOrNull()!!
-            apiFoodPlan.mapCatching { outerMap ->
-                outerMap.mapValues { foodMap ->
-                    foodMap.value.map { foodEntry ->
-                        foodEntry.copy(
-                            additives = foodEntry.additives.map { adShort -> adMap[adShort] ?: adShort }
-                        )
-                    }
+                if((this.getOrNull() ?: 0) < 1L || force) {
+                    localDataSource.addAllSubjects(
+                        defaultsDataSource.getDefaultSubjects()
+                    )
+                    callback(Result.success(true))
+                } else {
+                    callback(Result.success(false))
                 }
             }
+        } catch (ex: Exception) {
+            callback(Result.failure(ex))
         }
     }
 
-    override suspend fun getExams(course: ExamCourse, reload: Boolean): Flow<Result<Map<LocalDate, List<Exam>>>> = flow {
-        val cached = localDataSource.loadExams(course)
-        if(cached.isSuccess) emit(cached)
-
-        val web = apiDataSource.loadExams(course)
-        if(web.isSuccess) {
-            //TODO: Can I compare results directly?
-            if(cached.isSuccess)
-                if(cached.getOrNull()!! == web.getOrNull()!!)
-                    return@flow
-            localDataSource.storeExams(web.getOrNull()!!)
-            emit(web)
-        } else if (cached.isSuccess) { return@flow }
-
-        emit(web)
-    }
-
-    /****/
-    override suspend fun getRole(): FilterRole {
-        return FilterRole.fromInt(
-            appSettings.getInt("role", FilterRole.ALL.value)
-        )
-    }
-    override suspend fun setRole(value: FilterRole) {
-        appSettings.putInt("role", value.value)
-    }
-
-    override suspend fun observeRole(callback: (FilterRole) -> Unit): SettingsListener? {
-        val settings = appSettings as? ObservableSettings ?: return null
-        return settings.addIntListener("role", FilterRole.default.value) {
-            callback(FilterRole.fromInt(it))
+    override suspend fun addSubject(value: Subject): Result<Boolean> {
+        return try {
+            localDataSource.addSubject(value)
+            Result.success(true)
+        } catch(ex: Exception) {
+            Result.failure(ex)
         }
     }
 
-    override suspend fun getFilterValue(): String {
-        return appSettings.getString("filter", "")
-    }
-    override suspend fun setFilterValue(value: String) {
-        appSettings.putString("filter", value)
-    }
-
-    override suspend fun observeFilterValue(callback: (String) -> Unit): SettingsListener? {
-        val settings = appSettings as? ObservableSettings ?: return null
-        return settings.addStringListener("filter", "") { callback(it) }
-    }
-
-    override suspend fun getPush(): PushState {
-        return PushState.fromInt(
-            appSettings.getInt("push", PushState.DISABLED.value)
-        )
-    }
-    override suspend fun setPush(value: PushState) {
-        appSettings.putInt("push", value.value)
-    }
-
-    override suspend fun observePush(callback: (PushState) -> Unit): SettingsListener? {
-        val settings = appSettings as? ObservableSettings ?: return null
-        return settings.addIntListener("push", PushState.default.value) {
-            callback(PushState.fromInt(it))
+    override suspend fun deleteSubject(value: Subject): Result<Boolean> {
+        return try {
+            localDataSource.deleteSubject(value)
+            Result.success(true)
+        } catch(ex: Exception) {
+            Result.failure(ex)
         }
     }
+
+    override suspend fun resetSubjects(): Result<Boolean> {
+        return try {
+            localDataSource.resetSubjects(
+                defaultsDataSource.getDefaultSubjects()
+            )
+            Result.success(true)
+        } catch (ex: Exception) {
+            log.w { ex.stackTraceToString() }
+            Result.failure(ex)
+        }
+    }
+
+    override suspend fun editSubject(
+        subject: Subject,
+        newLongName: String?,
+        newColor: Color?
+    ): Result<Subject> {
+        return try {
+            localDataSource.updateSubject(
+                Subject(
+                    shortName = subject.shortName,
+                    longName = newLongName ?: subject.longName,
+                    color = newColor ?: subject.color
+                )
+            )
+            Result.success(subject)
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
+    }
+
+
+    //****************** SETTINGS ******************
+
 }

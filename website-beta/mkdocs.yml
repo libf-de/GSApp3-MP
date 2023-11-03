@@ -1,0 +1,28 @@
+site_name: GSApp
+nav:
+  - Startseite: index.md
+  - Neue Version: multiplatform.md
+theme:
+  name: material
+  language: de
+  palette:
+    primary: amber
+    scheme: slate
+  logo: images/logoe.png
+plugins:
+   - glightbox:
+       touchNavigation: true
+       loop: false
+       effect: zoom
+       slide_effect: slide
+       width: 300px
+       height: auto
+       zoomable: true
+       draggable: true
+       skip_classes:
+         - custom-skip-class-name
+       auto_caption: false
+       caption_position: bottom
+markdown_extensions:
+  - attr_list
+  - md_in_html

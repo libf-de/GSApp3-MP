@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,33 @@
 
 package de.xorg.gsapp.data.model
 
-import kotlinx.serialization.Serializable
+import kotlinx.datetime.LocalDate
 
-@Serializable
+/**
+ * A complete representation of a substitution plan, consisting of "global" date and notes, and
+ * a mapping of Class -> List<Substitution>
+ *
+ * This uses a map for the substitutions, this makes it easier to generate the composables.
+ *
+ * @param date string representation of the date, as displayed on the website
+ * @param notes as displayed on website
+ * @param substitutions map of classes to List<Substitution>
+ */
 data class SubstitutionSet(
-    val date: String,
+    val dateStr: String,
+    val date: LocalDate,
     val notes: String,
-    val substitutions: Map<String, List<Substitution>>
+    val substitutions: Map<String, List<Substitution>>,
+    val haveUnknownSubs: Boolean = false,
+    val haveUnknownTeachers: Boolean = false
 ) {
+
+    /**
+     * Constructor for an empty SubstitutionSet, used to initialize the app state.
+     */
     constructor() : this(
-        date = "",
+        dateStr = "",
+        date = LocalDate.fromEpochDays(0),
         notes = "",
         substitutions = emptyMap())
 }

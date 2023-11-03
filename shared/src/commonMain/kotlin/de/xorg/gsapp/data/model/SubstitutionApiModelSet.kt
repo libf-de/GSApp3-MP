@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,18 @@
 
 package de.xorg.gsapp.data.model
 
-import kotlinx.serialization.Serializable
+import kotlinx.datetime.LocalDate
 
-@Serializable
+/**
+ * A complete representation of a substitution plan, consisting of "global" date and notes, and
+ * a list of entries
+ * @param date string representation of the date, as displayed on the website
+ * @param notes as displayed on website
+ * @param substitutionApiModels list of substitutions
+ */
 data class SubstitutionApiModelSet(
-    val date: String,
+    val dateStr: String,
+    val date: LocalDate,
     val notes: String,
     val substitutionApiModels: List<SubstitutionApiModel>
 )

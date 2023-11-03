@@ -2,8 +2,10 @@ import kotlinx.datetime.LocalDate;
 
 CREATE TABLE DbSubstitutionSet (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    date TEXT NOT NULL,
-    notes TEXT);
+    dateStr TEXT NOT NULL,
+    date INTEGER AS LocalDate NOT NULL,
+    notes TEXT,
+    hashCode INTEGER NOT NULL);
 
 selectAll:
 SELECT *
@@ -15,9 +17,21 @@ FROM DbSubstitutionSet
 ORDER BY id DESC
 LIMIT 1;
 
+getIdByDateString:
+SELECT id
+FROM DbSubstitutionSet
+WHERE dateStr = :dateStr;
+
 insertSubstitutionSet:
-INSERT INTO DbSubstitutionSet(date, notes)
-VALUES (?, ?);
+INSERT INTO DbSubstitutionSet(dateStr, date, notes, hashCode)
+VALUES (?, ?, ?, ?);
 
 lastInsertRowId:
 SELECT last_insert_rowid();
+
+deleteSubstitutionSet:
+DELETE FROM DbSubstitutionSet WHERE id = :id;
+
+getLegacyIds:
+SELECT id FROM DbSubstitutionSet
+WHERE date < :olderThan;

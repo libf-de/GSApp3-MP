@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,21 +18,17 @@
 
 package de.xorg.gsapp.data.sources.remote
 
-import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 import kotlinx.datetime.LocalDate
 
 interface RemoteDataSource {
-    suspend fun loadSubstitutionPlan(): Result<SubstitutionApiModelSet>
-    suspend fun loadSubjects(): Result<List<Subject>>
-    suspend fun loadTeachers(): Result<List<Teacher>>
-
-    suspend fun loadFoodPlan(): Result<Map<LocalDate, List<Food>>>
-    suspend fun loadAdditives(): Result<Map<String, String>>
-
-    suspend fun loadExams(course: ExamCourse): Result<Map<LocalDate, List<Exam>>>
+    suspend fun getSubstitutionPlan(): Result<SubstitutionApiModelSet>
+    suspend fun getTeachers(): Result<List<Teacher>>
+    suspend fun getFoodplan(): Result<Map<LocalDate, List<Food>>>
+    suspend fun getAdditives(): Result<Map<String, String>>
+    suspend fun getFoodplanAndAdditives(): Result<Pair<Map<LocalDate, List<Food>>, Map<String, String>>>
+    suspend fun getExams(): Result<List<Exam>>
 }

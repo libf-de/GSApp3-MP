@@ -15,6 +15,11 @@ insertTeacher:
 INSERT OR IGNORE INTO DbTeacher(shortName, longName)
 VALUES (?, ?);
 
+updateTeacher:
+UPDATE DbTeacher
+SET longName = :longName
+WHERE shortName = :shortName;
+
 deleteTeacher:
 DELETE FROM DbTeacher
 WHERE shortName = :shortName;

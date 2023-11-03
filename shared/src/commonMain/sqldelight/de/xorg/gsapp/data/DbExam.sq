@@ -29,9 +29,25 @@ FROM DbExam
 LEFT JOIN DbSubject dSub ON DbExam.subject = dSub.shortName
 WHERE DbExam.course = :course;
 
+clearAll:
+DELETE FROM DbExam;
+
+clearAllFromCouse:
+DELETE FROM DbExam
+WHERE course = :course;
+
 insert:
 INSERT OR IGNORE INTO DbExam(label, date, course, isCoursework, subject)
 VALUES (?, ?, ?, ?, ?);
+
+delete:
+DELETE FROM DbExam
+WHERE id = :id;
+
+deleteByValues:
+DELETE FROM DbExam
+WHERE label = :label
+AND date = :date;
 
 clearOlder:
 DELETE FROM DbExam

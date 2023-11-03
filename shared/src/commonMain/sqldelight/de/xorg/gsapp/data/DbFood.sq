@@ -13,6 +13,22 @@ selectAll:
 SELECT *
 FROM DbFood;
 
+selectByDate:
+SELECT *
+FROM DbFood
+WHERE date = :date;
+
+selectAllDates:
+SELECT DISTINCT date
+FROM DbFood;
+
+selectLatestFoods:
+SELECT *
+FROM DbFood
+WHERE date = (
+    SELECT date FROM DbFood ORDER BY date DESC LIMIT 1
+);
+
 insert:
 INSERT OR IGNORE INTO DbFood(date, foodId, name, additives)
 VALUES (?, ?, ?, ?);

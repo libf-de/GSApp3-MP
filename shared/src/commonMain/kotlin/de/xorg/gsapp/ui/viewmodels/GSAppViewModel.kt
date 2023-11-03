@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,187 +22,300 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.russhwolf.settings.SettingsListener
-import de.xorg.gsapp.data.enums.ExamCourse
-import de.xorg.gsapp.data.model.Exam
+import de.xorg.gsapp.data.model.Filter
 //import com.hoc081098.kmp.viewmodel.ViewModel
-import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
+import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.AppState
-import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.UiState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
-import org.kodein.di.DI
-import org.kodein.di.instance
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.lighthousegames.logging.logging
 
-//TODO: Wenn hier fehler, dann schau was mit dem Parameter ist.
-class GSAppViewModel(di: DI) : ViewModel() {
-    private val appRepo: GSAppRepository by di.instance()
+/**
+ * View model for the main app tabs
+ */
+class GSAppViewModel : ViewModel(), KoinComponent {
+
+    companion object {
+        val log = logging()
+    }
+
+    private val appRepo: GSAppRepository by inject()
+    private val prefsRepo: PreferencesRepository by inject()
+    private val repoScope = CoroutineScope(Dispatchers.IO)
 
     var uiState by mutableStateOf(AppState())
         private set
 
-    private val _subStateFlow = MutableStateFlow(SubstitutionSet())
-    val subStateFlow = _subStateFlow.asStateFlow()
 
-    private val _foodStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Food>>())
-    val foodStateFlow = _foodStateFlow.asStateFlow()
+    val subFlow = combine(appRepo.getSubstitutions(),
+                          prefsRepo.getFilterFlow()) { subs, filter ->
+        if(filter.role == Filter.Role.ALL) return@combine subs
 
-    private val _examStateFlow = MutableStateFlow(emptyMap<LocalDate, List<Exam>>())
-    val examStateFlow = _examStateFlow.asStateFlow()
+        subs.mapCatching {
+            it.copy(
+                substitutions = when(filter.role) {
+                    Filter.Role.STUDENT -> {
+                        it.substitutions.filterKeys { entry ->
+                            entry.lowercase().contains(filter.value.lowercase())
+                        }
+                    }
 
-    private val _roleObserver = MutableStateFlow<SettingsListener?>(null)
-    val roleObserver = _roleObserver.asStateFlow()
+                    Filter.Role.TEACHER -> {
+                        it.substitutions.mapValues { subsPerKlass ->
+                            subsPerKlass.value.filter { aSub ->
+                                aSub.substTeacher.shortName.lowercase() == filter.value.lowercase()
+                            }
+                        }.filter { subsPerKlass ->
+                            subsPerKlass.value.isNotEmpty()
+                        }
+                    }
 
-    private val _filterObserver = MutableStateFlow<SettingsListener?>(null)
-    val filterObserver = _filterObserver.asStateFlow()
+                    else -> { //TODO: Is returning instantly much faster than this?
+                        it.substitutions
+                    }
+                }
+            )
+        }
+    }.shareIn(
+        viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
+
+    val foodFlow = appRepo.getFoodplan().shareIn(
+        viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
+
+    val examFlow = appRepo.getExams().shareIn(
+        viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
 
     init {
-        loadSubstitutions()
-        loadFoodplan()
-        loadExams()
+        log.d { "GSAppViewModel init" }
+
+        initStateFromFlows()
+
+        log.d { "updating data..." }
+        updateExams()
+        updateFoodplan()
+        updateSubstitutions()
     }
 
-    private suspend fun loadSettings() {
-        uiState = uiState.copy(
-            filterRole = appRepo.getRole(),
-            filter = appRepo.getFilterValue()
-        )
+    private fun initStateFromFlows() {
+        viewModelScope.launch {
+            subFlow.collect {
+                uiState = if (it.isFailure) {
+                    if (uiState.substitutionState == UiState.NORMAL_LOADING ||
+                        uiState.substitutionState == UiState.NORMAL
+                    ) {
 
-        _roleObserver.value = appRepo.observeRole {
-            uiState = uiState.copy(filterRole = it)
-        } // Should basically not be necessary
+                        uiState.copy(
+                            substitutionState = UiState.NORMAL_FAILED,
+                            substitutionError = it.exceptionOrNull()!!
+                        )
 
-        _filterObserver.value = appRepo.observeFilterValue {
-            if(it == uiState.filter) return@observeFilterValue
-            uiState = uiState.copy(filter = it)
-            loadSubstitutions()
+                    } else {
+                        uiState.copy(
+                            substitutionState = UiState.FAILED,
+                            substitutionError = it.exceptionOrNull()!!
+                        )
+                    }
+                } else {
+                    if(it.getOrNull()!!.haveUnknownSubs)
+                        updateSubjects()
+
+                    if(it.getOrNull()!!.haveUnknownTeachers)
+                        updateTeachers()
+
+
+                    if (it.getOrNull()!!.substitutions.isEmpty()) {
+                        uiState.copy(substitutionState = UiState.EMPTY)
+                    } else {
+                        uiState.copy(substitutionState = UiState.NORMAL)
+                    }
+                }
+            }
+        }
+        viewModelScope.launch {
+            foodFlow.collect {
+                uiState = if (it.isFailure) {
+                    if (uiState.foodplanState == UiState.NORMAL_LOADING ||
+                        uiState.foodplanState == UiState.NORMAL
+                    ) {
+
+                        uiState.copy(
+                            foodplanState = UiState.NORMAL_FAILED,
+                            foodplanError = it.exceptionOrNull()!!
+                        )
+
+                    } else {
+                        uiState.copy(
+                            foodplanState = UiState.FAILED,
+                            foodplanError = it.exceptionOrNull()!!
+                        )
+                    }
+                } else {
+                    if (it.getOrNull()!!.isEmpty()) {
+                        uiState.copy(foodplanState = UiState.EMPTY)
+                    } else {
+                        uiState.copy(foodplanState = UiState.NORMAL)
+                    }
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            examFlow.collect {
+                uiState = if(it.isFailure) {
+                    if(uiState.examState == UiState.NORMAL_LOADING ||
+                        uiState.examState == UiState.NORMAL) {
+
+                        uiState.copy(examState = UiState.NORMAL_FAILED,
+                            examError = it.exceptionOrNull()!!)
+
+                    } else {
+                        uiState.copy(examState = UiState.FAILED,
+                            examError = it.exceptionOrNull()!!)
+                    }
+                } else {
+                    if(it.getOrNull()!!.isEmpty()) {
+                        uiState.copy(examState = UiState.EMPTY)
+                    } else {
+                        uiState.copy(examState = UiState.NORMAL)
+                    }
+                }
+            }
         }
     }
 
-    fun reloadSubstitutions() {
-        loadSubstitutions(true)
+    private fun updateSubjects(force: Boolean = false) {
+        repoScope.launch {
+            appRepo.updateSubjects { }
+        }
     }
 
-    private fun loadExams(reload: Boolean = false) {
-        uiState = if(reload) uiState.copy(examReloading = true)
+    private fun updateTeachers() {
+        repoScope.launch {
+            appRepo.updateTeachers { }
+        }
+    }
+
+    private fun updateSubstitutions() {
+        log.d { "updating substitutions started" }
+        uiState = if(uiState.substitutionState == UiState.NORMAL)
+            uiState.copy(substitutionState = UiState.NORMAL_LOADING)
+        else uiState.copy(substitutionState = UiState.LOADING)
+
+        repoScope.launch {
+            appRepo.updateSubstitutions {
+                if(it.isFailure) {
+                    log.w { "failed to update substitution plan: ${it.exceptionOrNull()}"}
+                    uiState = if (uiState.substitutionState == UiState.NORMAL_LOADING ||
+                        uiState.substitutionState == UiState.NORMAL
+                    ) {
+                        uiState.copy(
+                            substitutionState = UiState.NORMAL_FAILED,
+                            substitutionError = it.exceptionOrNull()!!
+                        )
+                    } else {
+                        uiState.copy(
+                            substitutionState = UiState.FAILED,
+                            substitutionError = it.exceptionOrNull()!!
+                        )
+                    }
+                } else {
+                    if(it.getOrNull() == false) {
+                        //TODO: Notify user of "no new data available"
+                        log.d { "No new data available (substitution plan)!" }
+                    } else {
+                        log.d { "New substitution data available!" }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateFoodplan() {
+        uiState = if(uiState.foodplanState == UiState.NORMAL)
+            uiState.copy(foodplanState = UiState.NORMAL_LOADING)
+        else uiState.copy(foodplanState = UiState.LOADING)
+
+        repoScope.launch {
+            appRepo.updateFoodplan {
+                if(it.isFailure) {
+                    log.w { "failed to update foodplan: ${it.exceptionOrNull()}"}
+                    uiState = if (uiState.foodplanState == UiState.NORMAL_LOADING ||
+                        uiState.foodplanState == UiState.NORMAL
+                    ) {
+                        uiState.copy(
+                            foodplanState = UiState.NORMAL_FAILED,
+                            foodplanError = it.exceptionOrNull()!!
+                        )
+                    } else {
+                        uiState.copy(
+                            foodplanState = UiState.FAILED,
+                            foodplanError = it.exceptionOrNull()!!
+                        )
+                    }
+                } else {
+                    if(it.getOrNull() == false) {
+                        //TODO: Notify user of "no new data available"
+                        log.d { "No new data available (foodplan)!" }
+                    } else {
+                        log.d { "New food data available!" }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateExams() {
+        uiState = if(uiState.examState == UiState.NORMAL)
+            uiState.copy(examState = UiState.NORMAL_LOADING)
         else uiState.copy(examState = UiState.LOADING)
 
-        viewModelScope.launch {
-            val twoDigitYear = Clock.System.todayIn(TimeZone.currentSystemDefault())
-                .year.toString().substring(2)
-            val defaultCourse = if(uiState.filterRole == FilterRole.STUDENT &&
-                uiState.filter == "A${twoDigitYear}") ExamCourse.COURSE_12
-            else ExamCourse.COURSE_11
-
-            appRepo.getExams(defaultCourse, reload).collect { examResult ->
-                if(examResult.isFailure) {
-                    uiState = if(reload) uiState.copy(examReloading = false,
-                        examError = examResult.exceptionOrNull()!!)
-                    else uiState.copy(examState = UiState.FAILED,
-                        examError = examResult.exceptionOrNull()!!)
-                    return@collect
-                }
-
-                _examStateFlow.value = examResult.getOrNull()!!
-
-                uiState = uiState.copy(
-                    examState = if(examResult.getOrNull()!!.isEmpty())
-                        UiState.EMPTY
-                    else
-                        UiState.NORMAL,
-                    examReloading = false
-                )
-            }
-        }
-    }
-
-    private fun loadSubstitutions(reload: Boolean = false) {
-        uiState = if(reload) uiState.copy(substitutionReloading = true)
-                  else uiState.copy(substitutionState = UiState.LOADING)
-
-        viewModelScope.launch {
-            loadSettings()
-
-            appRepo.getSubstitutions(reload).collect { sdsResult ->
-                if(sdsResult.isFailure) {
-                    uiState = if(reload) uiState.copy(substitutionReloading = false,
-                                                      substitutionError = sdsResult.exceptionOrNull()!!)
-                              else uiState.copy(substitutionState = UiState.FAILED,
-                                                substitutionError = sdsResult.exceptionOrNull()!!)
-                    return@collect
-                }
-
-                val substitutions = when (uiState.filterRole) {
-                    FilterRole.STUDENT -> {
-                        sdsResult.getOrNull()!!.substitutions.filterKeys { entry ->
-                            entry.lowercase().contains(uiState.filter.lowercase())
-                        }
+        repoScope.launch {
+            appRepo.updateExams {
+                if(it.isFailure) {
+                    log.w { "failed to update exams: ${it.exceptionOrNull()}"}
+                    uiState = if (uiState.examState == UiState.NORMAL_LOADING ||
+                        uiState.examState == UiState.NORMAL
+                    ) {
+                        uiState.copy(
+                            examState = UiState.NORMAL_FAILED,
+                            examError = it.exceptionOrNull()!!
+                        )
+                    } else {
+                        uiState.copy(
+                            examState = UiState.FAILED,
+                            examError = it.exceptionOrNull()!!
+                        )
                     }
-
-                    FilterRole.TEACHER -> {
-                        sdsResult.getOrNull()!!.substitutions.mapValues { klassSubs ->
-                            klassSubs.value.filter { aSub ->
-                                aSub.substTeacher.shortName.lowercase() == uiState.filter.lowercase()
-                            }
-                        }.filter { klassSubs ->
-                            klassSubs.value.isNotEmpty()
-                        }
-                    }
-
-                    else -> {
-                        sdsResult.getOrNull()!!.substitutions
+                } else {
+                    if(it.getOrNull() == false) {
+                        //TODO: Notify user of "no new data available"
+                        log.d { "No new data available (exam)!" }
+                    } else {
+                        log.d { "New exam data available!" }
                     }
                 }
-
-                _subStateFlow.value = sdsResult.getOrNull()!!.copy(
-                    substitutions = substitutions
-                )
-
-                uiState = uiState.copy(
-                    substitutionState = if(substitutions.isEmpty())
-                        UiState.EMPTY
-                    else
-                        UiState.NORMAL,
-                    substitutionReloading = false
-                )
-            }
-        }
-    }
-
-    private fun loadFoodplan() {
-        uiState = uiState.copy(
-            foodplanState = UiState.LOADING
-        )
-
-        viewModelScope.launch {
-            appRepo.foodPlan.collect {fpResult ->
-                if(fpResult.isFailure) {
-                    //Log.d("GSAppViewModel:loadSubs", "Error while fetching: ${sdsResult.exceptionOrNull()}")
-                    uiState = uiState.copy(
-                        foodplanState = UiState.FAILED,
-                        foodplanError = fpResult.exceptionOrNull()!!
-                    )
-                    return@collect
-                }
-
-                val foodplan = fpResult.getOrNull()!!
-                //Log.d("GSAppViewModel:loadSubs", "Got SubstitutionsDisplaySet " +
-                //        "with ${sds.substitutions} substitutions for ${sds.date}")
-
-                uiState = uiState.copy(
-                    foodplanState = if(foodplan.isEmpty()) UiState.EMPTY else UiState.NORMAL
-                )
-
-                _foodStateFlow.value = foodplan
             }
         }
     }

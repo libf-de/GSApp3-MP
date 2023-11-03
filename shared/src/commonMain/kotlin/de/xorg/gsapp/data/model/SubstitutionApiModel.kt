@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,20 @@
 
 package de.xorg.gsapp.data.model
 
-import kotlinx.serialization.Serializable
+/**
+ * Data class to hold a single substitution plan entry, as fetched from the website
+ * Subjects and teachers are still represented as strings, which should be matched
+ * up with objects from the database and converted to a Substitution afterwards.
+ * @property klass the affected class (spelled with k, to not interfere with kotlin class)
+ * @property lessonNr
+ * @property origSubject the subject to be substituted
+ * @property substTeacher the teacher who replaces
+ * @property substRoom the replacement room
+ * @property substSubject the replacement subject
+ * @property notes
+ * @property isNew whether this is a new entry, as denoted by bold text on website
+ */
 
-@Serializable
 data class SubstitutionApiModel(
     val klass: String,
     val lessonNr: String,

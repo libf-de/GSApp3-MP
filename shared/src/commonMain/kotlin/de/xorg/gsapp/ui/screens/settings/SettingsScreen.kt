@@ -1,38 +1,34 @@
+/*
+ * GSApp3 (https://github.com/libf-de/GSApp3)
+ * Copyright (C) 2023. Fabian Schillig
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package de.xorg.gsapp.ui.screens.settings
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Notifications
-import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,58 +37,47 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
-import de.xorg.gsapp.data.model.Teacher
+import de.xorg.gsapp.data.model.Filter
+import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.ClassListItem
-import de.xorg.gsapp.ui.components.SkeletonClassListItem
-import de.xorg.gsapp.ui.components.settings.SettingsFilterDialog
+import de.xorg.gsapp.ui.components.dialogs.SettingsRadioDialog
 import de.xorg.gsapp.ui.components.settings.SettingsItem
-import de.xorg.gsapp.ui.components.settings.SettingsRadioDialog
-import de.xorg.gsapp.ui.state.FilterRole
 import de.xorg.gsapp.ui.state.PushState
-import de.xorg.gsapp.ui.state.UiState
-import de.xorg.gsapp.ui.tools.LETTERS
-import de.xorg.gsapp.ui.tools.classList
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import getPlatformName
 import kotlinx.collections.immutable.toImmutableList
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
-import org.kodein.di.compose.localDI
-import org.kodein.di.instance
+import org.koin.compose.koinInject
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+/**
+ * The app settings composable
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: Navigator,
     modifier: Modifier = Modifier,
 ) {
-    val di = localDI()
-    val viewModel: SettingsViewModel by di.instance()
+    //val viewModel: SettingsViewModel = koinViewModel(vmClass = SettingsViewModel::class)
+    val viewModel: SettingsViewModel = koinInject()
+    val pushUtil: PushNotificationUtil = koinInject()
 
-    var showFilterDialog by remember { mutableStateOf(false) }
+    val pushState by viewModel.pushFlow.collectAsStateWithLifecycle(PushState.default)
+    val filterState by viewModel.filterFlow.collectAsStateWithLifecycle(Filter.NONE)
+
     var showPushDialog by remember { mutableStateOf(false) }
 
     Scaffold(modifier = modifier,
         topBar = {
         TopAppBar(
             title = {
-                Text(text = stringResource(MR.strings.settings_title)/*,
-                    fontFamily = fontFamilyResource(MR.fonts.LondrinaSolid.black),
-                    style = MaterialTheme.typography.headlineMedium*/
-                )
+                Text(text = stringResource(MR.strings.settings_title))
             },
             navigationIcon = {
                 IconButton(onClick = { navController.goBack() }) {
@@ -101,26 +86,6 @@ fun SettingsScreen(
             },
         )
     }) {
-        if(showFilterDialog) {
-            SettingsFilterDialog(
-                icon = { },
-                title = stringResource(MR.strings.filter_dialog_title),
-                message = stringResource(MR.strings.filter_dialog_description),
-                teacherList = viewModel.teachers.value,
-                teacherState = viewModel.teacherState,
-                selectedValue = viewModel.filterPreference.value,
-                confirmText = stringResource(MR.strings.dialog_save),
-                dismissText = stringResource(MR.strings.dialog_cancel),
-                onDismiss = {
-                    showFilterDialog = false
-                },
-                onConfirm = { role, filter ->
-                    showFilterDialog = false
-                    viewModel.setRoleAndFilter(role, filter)
-                }
-            )
-        }
-
         if(showPushDialog) {
             SettingsRadioDialog(
                 icon = { Icon(imageVector = Icons.Rounded.Notifications, contentDescription = "")},
@@ -129,7 +94,7 @@ fun SettingsScreen(
                 dismissText = stringResource(MR.strings.dialog_cancel),
                 confirmText = stringResource(MR.strings.dialog_save),
                 items = PushState.entries.toImmutableList(),
-                selectedValue = viewModel.pushPreference.value,
+                selectedValue = pushState,
                 onDismiss = { showPushDialog = false },
                 onConfirm = { selectedStringRes ->
                     showPushDialog = false
@@ -147,11 +112,11 @@ fun SettingsScreen(
                         contentDescription = "",
                         modifier = mod, tint = tint) },
                     title = stringResource(MR.strings.pref_filter),
-                    subtitle = stringResource(viewModel.rolePreference.value.descriptiveResource,
-                                              viewModel.filterPreference.value),
+                    subtitle = stringResource(filterState.role.descriptiveResource, filterState.value),
                     onClick = { navController.navigate(GSAppRoutes.SETTINGS_FILTER) }
                 )
             }
+
 
             item {
                 SettingsItem(
@@ -159,10 +124,21 @@ fun SettingsScreen(
                                                contentDescription = "",
                                                modifier = mod, tint = tint) },
                     title = stringResource(MR.strings.pref_push),
-                    subtitle = stringResource(viewModel.pushPreference.value.labelResource),
-                    onClick = { showPushDialog = true }
+                    subtitle = if(pushUtil.isSupported) stringResource(pushState.labelResource)
+                               else stringResource(MR.strings.push_unavailable, getPlatformName()),
+                    onClick = { if(pushUtil.isSupported) showPushDialog = true }
                 )
+            }
 
+            item {
+                SettingsItem(
+                    icon = { mod, tint -> Icon(painter = painterResource(MR.images.subjects),
+                        contentDescription = "",
+                        modifier = mod, tint = tint) },
+                    title = stringResource(MR.strings.pref_subjects),
+                    subtitle = stringResource(MR.strings.pref_subjects_desc),
+                    onClick = { navController.navigate(GSAppRoutes.SETTINGS_SUBJECTS) }
+                )
             }
 
         }

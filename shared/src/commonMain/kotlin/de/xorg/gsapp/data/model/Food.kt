@@ -1,6 +1,6 @@
 /*
  * GSApp3 (https://github.com/libf-de/GSApp3)
- * Copyright (C) 2023 Fabian Schillig
+ * Copyright (C) 2023. Fabian Schillig
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,14 @@
 
 package de.xorg.gsapp.data.model
 
-import kotlinx.serialization.Serializable
+//import kotlinx.serialization.Serializable
 
-@Serializable
+/**
+ * Data class to hold a single food offer
+ * @property num - number/id of the menu
+ * @property name - meal name
+ * @property additives - list of additives (might be short or long form!)
+ */
 data class Food(
     val num: Int,
     val name: String,
