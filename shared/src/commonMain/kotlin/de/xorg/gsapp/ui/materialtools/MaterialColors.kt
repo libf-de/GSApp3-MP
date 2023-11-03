@@ -66,7 +66,7 @@ object MaterialColors {
      * Calculates a new color by multiplying an additional alpha int value to the alpha channel of a
      * color in integer type.
      *
-     * @param originalARGB The original color.
+     * @param originalColor The original color.
      * @param alpha The additional alpha [0-255].
      * @return The blended color.
      */

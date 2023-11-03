@@ -46,6 +46,6 @@ enum class PushState(val value: Int) : StringResEnum {
         val default = DISABLED
 
         fun fromInt(value: Int): PushState
-                = PushState.values().firstOrNull { it.value == value } ?: default
+                = entries.firstOrNull { it.value == value } ?: default
     }
 }

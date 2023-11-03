@@ -115,7 +115,7 @@ fun SelectColorDialog(
                 Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly) {
 
-                    ColorPickerMode.values().forEach {
+                    ColorPickerMode.entries.forEach {
                         Row(modifier = Modifier.selectable(
                             selected = selectedPickMode.value == it,
                             onClick = {

@@ -60,7 +60,7 @@ data class Filter(
             }
 
             fun fromInt(value: Int): Role
-                    = Role.values().firstOrNull { it.value == value } ?: default
+                    = entries.firstOrNull { it.value == value } ?: default
         }
     }
 }

@@ -39,6 +39,6 @@ enum class ColorPickerMode(val value: Int): StringResEnum {
         val default = SIMPLE
 
         fun fromInt(value: Int): ColorPickerMode
-                = ColorPickerMode.values().firstOrNull { it.value == value } ?: default
+                = entries.firstOrNull { it.value == value } ?: default
     }
 }
