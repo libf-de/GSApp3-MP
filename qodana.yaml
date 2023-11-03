@@ -4,4 +4,6 @@ projectJDK: 11
 exclude:
   - name: All
     paths:
-      - "website-beta/**"
+      - website-beta
+include:
+  - name: CheckDependencyLicenses
