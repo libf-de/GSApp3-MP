@@ -20,29 +20,49 @@ package de.xorg.gsapp.ui.components.state
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import de.xorg.gsapp.res.MR
+import de.xorg.gsapp.ui.tools.windowSizeMargins
+import dev.icerock.moko.resources.StringResource
 import dev.icerock.moko.resources.compose.stringResource
 
-/**
- * A (generic) loading animation, used throughout the app.
- * Will probably include a nice Lottie animation here when it's available cross-platform.
- * TODO: Use Lottie :(
- */
+@Composable
+fun EmptyLocalComponent(
+    where: StringResource,
+    windowSizeClass: WindowSizeClass,
+    modifier: Modifier = Modifier.fillMaxSize().windowSizeMargins(windowSizeClass)
+) {
+    EmptyLocalComponent(stringResource(where), modifier)
+}
+
 
 @Composable
-fun LoadingComponent(
+fun EmptyLocalComponent(
+    where: StringResource,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier,
-           verticalArrangement = Arrangement.Center,
-           horizontalAlignment = Alignment.CenterHorizontally) {
-        CircularProgressIndicator()
-        Text(stringResource(MR.strings.generic_loading))
-    }
+    EmptyLocalComponent(stringResource(where), modifier)
+}
 
+@Composable
+fun EmptyLocalComponent(
+    where: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = stringResource(
+                MR.strings.empty_local,
+                where
+            )
+        )
+    }
 }

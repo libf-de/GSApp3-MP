@@ -18,6 +18,8 @@
 
 package de.xorg.gsapp.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,8 +35,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
@@ -43,9 +48,12 @@ import androidx.compose.ui.unit.sp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.ExamCard
+import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
+import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.DateUtil
+import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
@@ -56,7 +64,7 @@ import org.koin.compose.koinInject
 /**
  * The exam plan-tab composable
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun ExamsScreen(
     navController: Navigator
@@ -74,9 +82,12 @@ fun ExamsScreen(
         rememberTopAppBarState()
     )
 
+    val windowSizeClass = calculateWindowSizeClass()
+
     Scaffold(
         modifier = Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .padding(bottom = 84.dp),
         topBar = {
             MediumTopAppBar(
                 title = {
@@ -89,16 +100,20 @@ fun ExamsScreen(
                 actions = {
                     IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
                         Icon(imageVector = Icons.Filled.Settings,
-                            contentDescription = "Settings") //TODO: Localize!
+                            contentDescription = stringResource(MR.strings.settings_title))
                     }
                 }
             )
         }
     ) { innerPadding ->
         when(viewModel.uiState.substitutionState) {
-            UiState.NORMAL -> {
+            UiState.NORMAL,
+            UiState.NORMAL_LOADING,
+            UiState.NORMAL_FAILED -> {
                 LazyColumn(
-                    modifier = Modifier.padding(innerPadding).padding(bottom = 80.dp)
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .windowSizeMargins(windowSizeClass)
                 ) {
                     (exams.getOrNull() ?: emptyList())
                         .groupBy { it.date }
@@ -108,10 +123,8 @@ fun ExamsScreen(
                                     text = "${DateUtil.getWeekdayLong(it.key)}, " +
                                             DateUtil.getDateAsString(it.key),
                                     modifier = Modifier.padding(
-                                        start = 28.dp,
-                                        top = if(!isFirst) 12.dp else 0.dp,
-                                        end = 0.dp,
-                                        bottom = 0.dp
+                                        start = 12.dp,
+                                        top = if(!isFirst) 12.dp else 0.dp
                                     ),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontSize = 20.sp,
@@ -125,17 +138,38 @@ fun ExamsScreen(
                         }
                 }
             }
+
             UiState.LOADING -> {
                 LoadingComponent(modifier = Modifier.fillMaxSize())
             }
+
+            UiState.EMPTY_LOCAL -> {
+                EmptyLocalComponent(
+                    where = MR.strings.tab_exams
+                )
+            }
+
             UiState.EMPTY -> {
-                Text("keine Vertretungen")
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowSizeMargins(windowSizeClass),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = stringResource(MR.strings.examplan_empty)
+                    )
+                }
             }
-            UiState.NO_DATASOURCE -> {
-                Text("keine Vertretungen")
-            }
-            else -> {
-                Text("Fehler: ${viewModel.uiState.substitutionError.message}")
+
+            UiState.FAILED -> {
+                FailedComponent(
+                    exception = viewModel.uiState.examError,
+                    where = MR.strings.tab_exams,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowSizeMargins(windowSizeClass)
+                )
             }
         }
     }

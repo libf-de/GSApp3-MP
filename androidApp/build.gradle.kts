@@ -20,7 +20,8 @@ plugins {
     kotlin("multiplatform")
     id("com.android.application")
     id("org.jetbrains.compose")
-    id("com.google.gms.google-services")
+    id(Deps.GoogleServices._plugin)
+    id(Deps.SonarQube._plugin)
 }
 
 kotlin {
@@ -79,17 +80,17 @@ android {
 
 dependencies {
     // Firebase Messaging, for push notifications on android
-    implementation("com.google.firebase:firebase-messaging-ktx:23.3.0")
+    implementation(Deps.FirebaseMessaging)
 
     // Koin dependency injection
-    implementation("io.insert-koin:koin-core:3.5.0")
-    implementation("io.insert-koin:koin-android:3.5.0")
+    implementation(Deps.Koin.Core)
+    implementation(Deps.Koin.Android)
 
     // Android implementation of FlowSettings
-    implementation("com.russhwolf:multiplatform-settings-coroutines:1.1.0")
-    implementation("com.russhwolf:multiplatform-settings-datastore:1.1.0")
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation(Deps.MultiplatformSettings.Coroutines)
+    implementation(Deps.MultiplatformSettings.Datastore)
+    implementation(Deps.AndroidX.DatastorePreferences)
 
     // Kotlinx datetime
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+    implementation(Deps.KotlinX.Datetime)
 }

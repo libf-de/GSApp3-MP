@@ -39,12 +39,12 @@ data class SubstitutionSet(
     val haveUnknownTeachers: Boolean = false
 ) {
 
-    /**
-     * Constructor for an empty SubstitutionSet, used to initialize the app state.
-     */
-    constructor() : this(
-        dateStr = "",
-        date = LocalDate.fromEpochDays(0),
-        notes = "",
-        substitutions = emptyMap())
+    companion object {
+        val EMPTY = SubstitutionSet(
+            dateStr = "",
+            date = LocalDate.fromEpochDays(0),
+            notes = "",
+            substitutions = emptyMap())
+    }
+
 }

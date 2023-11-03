@@ -35,15 +35,12 @@ import com.google.firebase.messaging.RemoteMessage
 import de.xorg.gsapp.MainActivity
 import de.xorg.gsapp.R
 import de.xorg.gsapp.data.model.Filter
-import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
-import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.res.MR
+import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.tools.DateUtil
-import dev.icerock.moko.resources.StringResource
-import dev.icerock.moko.resources.compose.stringResource
 import dev.icerock.moko.resources.desc.desc
 import dev.icerock.moko.resources.format
 import kotlinx.coroutines.CoroutineScope
@@ -52,17 +49,16 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
-import org.koin.core.component.KoinComponent
 import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.todayIn
+import org.koin.android.ext.android.inject
+import org.koin.core.component.KoinComponent
 
 class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent {
     private val TAG = "GSAppFMS"
-    private val CHANNEL_ID = "GsappSubstitutions"
+    private val CHANNEL_ID = "GSAppSubstitutions"
     private val NTF_ID = 69420
 
     private val job = SupervisorJob()
@@ -78,9 +74,10 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             // Don't need to create the channel if it already exists
-            if(notificationManager
-                .notificationChannels
-                .firstOrNull { it.id == CHANNEL_ID } != null) return
+            if (notificationManager
+                    .notificationChannels
+                    .firstOrNull { it.id == CHANNEL_ID } != null
+            ) return
 
 
             val name = MR.strings.push_channel_name.desc().toString(this)
@@ -101,59 +98,71 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
      * FCM registration token is initially generated so this is where you would retrieve the token.
      *
      * NOTE: The app does NOT use token-based messaging, it only uses topic-based messaging!
-     * Thus new tokens aren't saved anywhere.
+     * Thus, new tokens aren't saved anywhere.
      */
     override fun onNewToken(token: String) {
-        //Log.d(TAG, "Refreshed token: $token")
+        // Ignore new tokens
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        //TODO: Improve notification!
-
-        val serviceInstance = this
-
         scope.launch {
-            val pushState = prefRepo.getPushFlow().lastOrNull() ?: PushState.default
-            val filter = prefRepo.getFilterFlow().lastOrNull() ?: Filter.NONE
-
-            if(pushState == PushState.DISABLED) return@launch
-
-            if(pushState == PushState.LIKE_FILTER && remoteMessage.data.isNotEmpty()) {
-                // Don't notify if Filter does not match
-                if(filter.role == Filter.Role.TEACHER &&
-                    remoteMessage.data["teachers"]?.contains(filter.value) != true) return@launch
-
-                if(filter.role == Filter.Role.STUDENT &&
-                    remoteMessage.data["classes"]?.contains(filter.value) != true) return@launch
-            }
-
-            val appRepository: GSAppRepository by inject()
-            appRepository.updateSubstitutions {
-                if(it.getOrDefault(false)) {
-                    // Update was successful -> show preview in notification
-                    scope.launch {
-                        appRepository.getSubstitutions().collectLatest { subSet ->
-                            postSubstitutionNotification(
-                                context = serviceInstance,
-                                substitutionSet = subSet.getOrNull(),
-                                filter = filter)
-                        }
-                    }
-
-                } else {
-                    postSubstitutionNotification(context = serviceInstance)
-                }
-
-
-                Log.d(TAG, "Updated substitution plan " +
-                        (if(it.getOrDefault(false)) "successfully" else ""))
-            }
+            handleMessage(remoteMessage)
         }
+
     }
 
-    private fun postSubstitutionNotification(context: Context,
-                                             substitutionSet: SubstitutionSet? = null,
-                                             filter: Filter? = null) {
+    private suspend fun handleMessage(remoteMessage: RemoteMessage) {
+        val pushState = prefRepo.getPushFlow().lastOrNull() ?: PushState.default
+        val filter = prefRepo.getFilterFlow().lastOrNull() ?: Filter.NONE
+
+        if (pushState == PushState.DISABLED) return
+
+
+        if (pushState == PushState.LIKE_FILTER &&
+            remoteMessage.data.isNotEmpty()
+        ) {
+            // Don't notify (=return) if FilterRole matches, but remote data doesn't contain the filter value
+            if (filter.role == Filter.Role.TEACHER &&
+                remoteMessage.data["teachers"]?.contains(filter.value) != true
+            ) return
+
+            if (filter.role == Filter.Role.STUDENT &&
+                remoteMessage.data["classes"]?.contains(filter.value) != true
+            ) return
+        }
+
+        val appRepository: GSAppRepository by inject()
+        appRepository.updateSubstitutions {
+            if (it.getOrDefault(false)) {
+                // Update was successful -> show preview in notification
+                scope.launch {
+                    appRepository.getSubstitutions().collectLatest { subSet ->
+                        postSubstitutionNotification(
+                            context = this@GSAppFirebaseMessagingService,
+                            substitutionSet = subSet.getOrNull(),
+                            filter = filter
+                        )
+                    }
+                }
+
+            } else {
+                postSubstitutionNotification(context = this@GSAppFirebaseMessagingService)
+            }
+
+
+            Log.d(
+                TAG, "Updated substitution plan " +
+                        (if (it.getOrDefault(false)) "successfully" else "")
+            )
+        }
+
+    }
+
+    private fun postSubstitutionNotification(
+        context: Context,
+        substitutionSet: SubstitutionSet? = null,
+        filter: Filter? = null
+    ) {
         createNotificationChannel()
 
         if (ActivityCompat.checkSelfPermission(
@@ -176,7 +185,8 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
             context,
             0,
             intent,
-            PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
 
         var builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -185,32 +195,28 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-        if(substitutionSet != null && filter != null && filter.role != Filter.Role.ALL) {
+        if (substitutionSet != null && filter != null && filter.role != Filter.Role.ALL) {
             val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
             val dayDelta = today.daysUntil(substitutionSet.date)
 
-            val relLabel: String
-            if(dayDelta == 0) {
-                relLabel = MR.strings.rel_today.desc().toString(context)
-            } else if(dayDelta == 1) {
-                relLabel = MR.strings.rel_tomorrow.desc().toString(context)
-            } else if(dayDelta == 2) {
-                relLabel = MR.strings.rel_after_tomorrow.desc().toString(context)
-            } else if(dayDelta <= 7) {
-                val localizedDay = DateUtil
-                    .getWeekdayLongRes(substitutionSet.date)
-                    .desc()
-                    .toString(context)
-                relLabel = MR.strings.rel_next_weekday.format(localizedDay).toString(context)
-            } else {
-                relLabel = MR.strings.rel_absolute.format(
-                    DateUtil.getDateAsString(
-                        substitutionSet.date
-                    ) { it.desc().toString(context) }
+            val relLabel: String = when (dayDelta) {
+                0 -> MR.strings.rel_today.getString(context)
+                1 -> MR.strings.rel_tomorrow.getString(context)
+                2 -> MR.strings.rel_after_tomorrow.getString(context)
+                3, 4, 5, 6, 7 -> {
+                    val localizedDay = DateUtil
+                        .getWeekdayLongRes(substitutionSet.date)
+                        .desc()
+                        .toString(context)
+                    MR.strings.rel_next_weekday.format(localizedDay).toString(context)
+                }
+
+                else -> MR.strings.rel_absolute.format(
+                    DateUtil.getDateAsString(substitutionSet.date) { it.desc().toString(context) }
                 ).toString(context)
             }
 
-            val subList = if(filter.role == Filter.Role.STUDENT) {
+            val subList = if (filter.role == Filter.Role.STUDENT) {
                 substitutionSet.substitutions[filter.value] ?: emptyList()
             } else {
                 substitutionSet.substitutions.flatMap {

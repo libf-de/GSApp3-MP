@@ -18,11 +18,6 @@
   -->
 
 <resources>
-    <string name="app_name">GSApp</string>
-    <string name="tab_substitutions">Vertretungsplan</string>
-    <string name="tab_foodplan">Speiseplan</string>
-    <string name="tab_exams">Klausuren</string>
-
     <!-- Weekdays, long form -->
     <string name="wd_mo_lo">Montag</string>
     <string name="wd_tu_lo">Dienstag</string>
@@ -51,6 +46,12 @@
     <!-- Date format (d=day, m=month, y=year) -->
     <string name="date_format">d.m.y</string>
 
+    <!--~~~~~~ App ~~~~~~-->
+    <string name="app_name">GSApp</string>
+    <string name="tab_substitutions">Vertretungsplan</string>
+    <string name="tab_foodplan">Speiseplan</string>
+    <string name="tab_exams">Klausuren</string>
+
     <!-- Substitution plan -->
     <string name="subplan_workorder_samesubject">%s Arbeitsauftrag</string>
     <string name="subplan_workorder">%s ➜ %s Arbeitsauftrag</string>
@@ -60,6 +61,14 @@
     <string name="subplan_normal">%s ➜ %s</string>
     <string name="subplan_dsc_location">Ort</string>
     <string name="subplan_dsc_teacher">Vertretender Lehrer:in</string>
+    <string name="subplan_empty">Keine Vertretungen :)</string>
+
+    <!-- Foodplan -->
+    <string name="foodplan_menu_no">%d. Menü</string>
+    <string name="foodplan_empty">(keine Essensversorgung)</string>
+
+    <!-- Exam plan -->
+    <string name="examplan_empty">Keine Klausuren (mehr) :)</string>
 
     <string name="settings_title">Einstellungen</string>
     <!-- Settings items -->
@@ -83,15 +92,10 @@
     <string name="filter_student">Schüler:in</string>
     <string name="filter_teacher">Lehrer:in</string>
 
-    <!-- Push labels -->
-    <string name="push_disabled">Deaktiviert</string>
-    <string name="push_filter">Nur wenn es mich betrifft</string>
-    <string name="push_enabled">Immer benachrichtigen</string>
-    <string name="push_dialog_title">Push-Nachrichten</string>
-    <string name="push_dialog_description">Wähle aus ob du keine, nur wenn es dich betrifft oder immer über neue Vertretungspläne benachrichtigt werden möchtest.</string>
-    <string name="push_unavailable">(Nicht verfügbar auf %s)</string>
-
     <!-- Subject management -->
+    <string name="subject_manager_subjects">Fächer</string>
+    <string name="subject_manager_empty_title">Keine Fächer</string>
+    <string name="subject_manager_empty_text">Verwende den "+"-Knopf unten um Fächer zu erstellen.</string>
     <string name="subject_manager_colorpicker_title">Wähle Farbe für %s</string>
     <string name="subject_manager_colorpicker_nullsubject">ein Fach</string>
     <string name="subject_manager_add_title">Fach hinzufügen</string>
@@ -102,29 +106,13 @@
     <string name="subject_manager_reset_dialog_replace">Alle ersetzen</string>
     <string name="subject_manager_reset_dialog_adddefault">Nur hinzufügen</string>
 
-    <!-- General dialog buttons -->
-    <string name="dialog_save">Speichern</string>
-    <string name="dialog_cancel">Abbrechen</string>
-    <string name="dialog_color_simple">Einfach</string>
-    <string name="dialog_color_simple_desc">Wähle aus einer Liste von Farben</string>
-    <string name="dialog_color_advanced">Erweitert</string>
-    <string name="dialog_color_advanced_desc">Wähle mittels Farbton, Sättigung und Helligkeit oder Hex-Code</string>
-
-    <string name="dialog_delete_title">Fach löschen?</string>
-    <string name="dialog_delete_text">Möchtest du das Fach "%s" ("%s") wirklich löschen?</string>
-    <string name="dialog_delete_confirm">Löschen</string>
-
-    <!-- Generic strings -->
-    <string name="generic_loading">Wird geladen…</string>
-    <string name="back">Zurück gehen</string>
-    <string name="failed_to_load">%s konnte nicht geladen werden</string>
-    <string name="failed_send_dev">Bitte sende diesen Fehler an den Entwickler:</string>
-
-    <!-- Foodplan -->
-    <string name="foodplan_menu_no">%d. Menü</string>
-    <string name="foodplan_error">Fehler: %s</string>
-    <string name="foodplan_error_empty">(keine Essensversorgung)</string>
-
+    <!-- Push settings/service -->
+    <string name="push_disabled">Deaktiviert</string>
+    <string name="push_filter">Nur wenn es mich betrifft</string>
+    <string name="push_enabled">Immer benachrichtigen</string>
+    <string name="push_dialog_title">Push-Nachrichten</string>
+    <string name="push_dialog_description">Wähle aus ob du keine, nur wenn es dich betrifft oder immer über neue Vertretungspläne benachrichtigt werden möchtest.</string>
+    <string name="push_unavailable">(Nicht verfügbar auf %s)</string>
     <string name="push_channel_name">Vertretungsplan-Nachrichten</string>
     <string name="push_channel_desc">Benachrichtigt dich sobald ein neuer Vertretungsplan verfügbar ist</string>
     <string name="push_notification_title">Neuer Vertretungsplan!</string>
@@ -134,4 +122,28 @@
     <string name="push_no_permission_body">Du hast Push-Benachrichtigungen aktiviert, aber die Berechtigung für Benachrichtigungen verweigert.\nBitte gehe zu den Einstellungen und aktiviere Benachrichtigungen, um keinen neuen Vertretungsplan zu verpassen.\nFalls du dies nicht möchtest, kannst du Push-Benachrichtigungen auch in den App-Einstellungen deaktivieren.</string>
     <string name="push_no_permission_fix">Zu den Einstellungen</string>
     <string name="push_no_permission_later">Nicht jetzt</string>
+    <string name="push_enabled_success">Push-Benachrichtigungen aktiviert</string>
+    <string name="push_enabled_failure">Push-Benachrichtigungen konnten nicht aktiviert werden</string>
+    <string name="push_disabled_success">Push-Benachrichtigungen deaktiviert</string>
+    <string name="push_disabled_failure">Push-Benachrichtigungen konnten nicht deaktiviert werden</string>
+
+    <!--~~~~ Generics ~~~~-->
+    <!-- General dialog buttons -->
+    <string name="dialog_save">Speichern</string>
+    <string name="dialog_cancel">Abbrechen</string>
+    <string name="dialog_color_simple">Einfach</string>
+    <string name="dialog_color_simple_desc">Wähle aus einer Liste von Farben</string>
+    <string name="dialog_color_advanced">Erweitert</string>
+    <string name="dialog_color_advanced_desc">Wähle mittels Farbton, Sättigung und Helligkeit oder Hex-Code</string>
+    <string name="dialog_delete_title">Fach löschen?</string>
+    <string name="dialog_delete_text">Möchtest du das Fach "%s" ("%s") wirklich löschen?</string>
+    <string name="dialog_delete_confirm">Löschen</string>
+
+    <!-- Generic strings -->
+    <string name="generic_loading">Wird geladen…</string>
+    <string name="back">Zurück gehen</string>
+    <string name="empty_local">Es wurde (noch) kein(e) %s heruntergeladen.\nFalls nichts passiert, überprüfe deine Internetverbindung.</string>
+    <string name="failed_to_load">%s konnte nicht geladen werden</string>
+    <string name="failed_send_dev">Bitte sende diesen Fehler an den Entwickler:</string>
+    <string name="unknown_cause">Unbekannte Ursache</string>
 </resources>

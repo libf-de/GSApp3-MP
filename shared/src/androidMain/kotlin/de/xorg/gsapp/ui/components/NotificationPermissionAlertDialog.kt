@@ -3,7 +3,6 @@ package de.xorg.gsapp.ui.components
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts

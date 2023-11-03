@@ -18,4 +18,4 @@
 
 package de.xorg.gsapp.data.exceptions
 
-class HolidayException : Exception()
+class HolidayException : Exception("It's vacation time")

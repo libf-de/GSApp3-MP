@@ -23,7 +23,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,7 +38,6 @@ import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,6 +50,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,11 +62,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Subject
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.components.dialogs.InputTextDialog
 import de.xorg.gsapp.ui.components.dialogs.SelectColorDialog
 import de.xorg.gsapp.ui.components.settings.SubjectListItem
+import de.xorg.gsapp.ui.components.state.FailedComponent
+import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
+import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
@@ -77,7 +79,9 @@ import org.koin.compose.koinInject
 /**
  * The app settings composable
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterial3WindowSizeClassApi::class
+)
 @Composable
 fun SubjectManager(
     navController: Navigator,
@@ -85,6 +89,7 @@ fun SubjectManager(
 ) {
     //val viewModel: SettingsViewModel = koinViewModel(vmClass = SettingsViewModel::class)
     val viewModel: SettingsViewModel = koinInject()
+    val windowSizeClass = calculateWindowSizeClass()
 
     val subjects by viewModel.subjects.collectAsStateWithLifecycle(
         initial = Result.success(emptyList()))
@@ -257,8 +262,6 @@ fun SubjectManager(
                             )
                         }
 
-                        ButtonDefaults
-
                         Button(
                             onClick = { showResetDialog = false },
                             shape = RoundedCornerShape(topStart = 4.dp,
@@ -281,27 +284,38 @@ fun SubjectManager(
 
         when(viewModel.subjectsState) {
             UiState.LOADING -> {
-                LoadingComponent(modifier = Modifier.fillMaxSize())
+                LoadingComponent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowSizeMargins(windowSizeClass)
+                )
             }
 
-            UiState.FAILED, UiState.NO_DATASOURCE -> {
+            UiState.FAILED -> {
+                FailedComponent(
+                    exception = viewModel.subjectsError.value,
+                    where = MR.strings.subject_manager_subjects,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowSizeMargins(windowSizeClass),
+                )
+            }
+
+            UiState.EMPTY, UiState.EMPTY_LOCAL -> {
                 Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowSizeMargins(windowSizeClass),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(stringResource(MR.strings.subject_manager_error_title), style = MaterialTheme.typography.displayMedium)
-                    Text(stringResource(MR.strings.subject_manager_error_text))
-                    Text(viewModel.subjectsError.value.stackTraceToString())
-                }
-            }
-
-            UiState.EMPTY -> {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(stringResource(MR.strings.subject_manager_empty_title), style = MaterialTheme.typography.displayMedium)
-                    Text(stringResource(MR.strings.subject_manager_empty_text))
+                    Text(
+                        text = stringResource(MR.strings.subject_manager_empty_title),
+                        style = MaterialTheme.typography.displayMedium
+                    )
+                    Text(
+                        text = stringResource(MR.strings.subject_manager_empty_text)
+                    )
                 }
             }
 
@@ -309,16 +323,17 @@ fun SubjectManager(
                 LazyColumn(
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                     modifier = modifier
+                        .fillMaxSize()
                         .padding(it)
-                        .fillMaxSize(),
+                        .windowSizeMargins(windowSizeClass),
                 ) {
                     if(viewModel.subjectsState == UiState.NORMAL_FAILED) {
                         item {
                             Column {
-                                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    Text(stringResource(MR.strings.subject_manager_error_title))
-                                    Text(stringResource(MR.strings.subject_manager_error_text))
-                                }
+                                FailedComponent(
+                                    exception = viewModel.subjectsError.value,
+                                    where = MR.strings.subject_manager_subjects,
+                                )
                                 Text(viewModel.subjectsError.value.message.toString())
                                 Divider(Modifier.height(1.dp).fillMaxWidth())
                             }
@@ -350,6 +365,7 @@ fun SubjectManager(
                     }
 
                     item {
+                        // Bottom "overscroll" so no items are covered up by FAB
                         Spacer(modifier.height(72.dp))
                     }
                 }

@@ -35,6 +35,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import org.lighthousegames.logging.logging
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 @NoLiveLiterals
 actual class GsWebsiteParser {
     companion object {
@@ -43,15 +44,16 @@ actual class GsWebsiteParser {
 
     actual suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet>  {
         return htmlDocument(result) {
-            var dateText = "(kein Datum)"
+            var dateText: String? = null
             findFirst("td[class*=vpUeberschr]") {
                 if(this.text.isNotEmpty())
                     dateText = this.text.trim()
             }
 
-            if(dateText == "Beschilderung beachten!") Result.failure<SubstitutionApiModelSet>(
-                HolidayException()
-            )
+            if(dateText == "Beschilderung beachten!")
+                return@htmlDocument Result.failure<SubstitutionApiModelSet>(
+                    HolidayException()
+                )
 
             var noteText = ""
             findFirst("td[class=vpTextLinks]") {
@@ -150,13 +152,13 @@ actual class GsWebsiteParser {
 
                     //Look for a mealtxt span - if we found one with text -> assign to mealName
                     if(!meal.findFirst("span[id=mealtext]") {
-                            if(this.text.isNotEmpty()) {
+                            return@findFirst if(this.text.isNotEmpty()) {
                                 mealName = this.text.trim()
-                                return@findFirst true //<- We've got mealtxt
+                                true //<- We've got mealtxt
                             } else {
                                 //TODO: This happens in holidays!
                                 log.w { "[loadFoodPlan]: Got food with empty name, on html: ${meal.html}" }
-                                return@findFirst false //<- No mealtxt, continue with next meal
+                                false //<- No mealtxt, continue with next meal
                             }
                         }) return@forEach //Continue with next meal if no mealtxt
 
@@ -165,7 +167,7 @@ actual class GsWebsiteParser {
                     }
 
                     if(!foods.containsKey(mealDate)) foods[mealDate] = mutableListOf()
-                    foods[mealDate]!!.add(
+                    foods[mealDate]?.add(
                         Food(
                             num = mealId,
                             name = mealName,
@@ -182,6 +184,26 @@ actual class GsWebsiteParser {
         }
     }
 
+    private fun additiveShortLongOrderMismatched(text: String, shouldBeShort: Boolean): Boolean {
+        return if (text.trim().endsWith(")").not() &&
+                   text.trim().length > 3) {
+            //probably not the shortcode
+            if (shouldBeShort) { //but should be -> mismatch
+                log.w { "[ParseAdditives]: MISMATCH BETWEEN isShort AND TEXT " +
+                        "(upper): $text" }
+                true
+            } else
+                false
+        } else {
+            if (!shouldBeShort) {
+                log.w { "[ParseAdditives]: MISMATCH BETWEEN isShort AND TEXT " +
+                        "(lower): $text" }
+                true
+            } else
+                false
+        }
+    }
+
     actual suspend fun parseAdditives(html: String): Result<Map<String, String>> {
         val additiveMap = mutableMapOf<String, String>()
         return try {
@@ -190,20 +212,8 @@ actual class GsWebsiteParser {
                     var isShort = true
                     var shortVal = ""
                     additives.children.forEach forAdditive@{
-                        if (!it.text.trim().endsWith(")") && it.text.trim().length > 3) {
-                            //probably not the shortcode
-                            if (isShort) {
-                                log.w { "[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT " +
-                                        "(upper): ${it.html}" }
-                                return@forAdditive
-                            }
-                        } else {
-                            if (!isShort) {
-                                log.w { "[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT " +
-                                        "(lower): ${it.html}" }
-                                return@forAdditive
-                            }
-                        }
+                        if(additiveShortLongOrderMismatched(it.text, isShort))
+                            return@forAdditive
 
 
                         if (isShort) {
@@ -223,7 +233,12 @@ actual class GsWebsiteParser {
         }
     }
 
-    //TODO: Has SkrapeIt a better solution for this??
+    /**
+     * Checks if the [DocElement] has a child element matching the given [selector].
+     * If SkrapeIt has a better solution for this, please tell me!
+     * @param selector The selector to check for
+     * @return True if the element has a child element matching the selector, false otherwise
+     */
     private fun DocElement.hasElement(selector: String): Boolean {
         return try {
             this.findFirst(selector).isPresent
@@ -232,152 +247,159 @@ actual class GsWebsiteParser {
         }
     }
 
+    /**
+     * Parses the date header of the exam table.
+     * @param docElement The table row containing the date header
+     * @param possibleYears The possible years of the exam table as parsed using Regex. Must contain exactly 3 items
+     *                      (0=full match, 1=first year, 2=second year)
+     * @return List of LocalDates for the following exam rows
+     */
+    private fun parseExamDatesHeader(docElement: DocElement, possibleYears: List<String>): List<LocalDate> {
+        assert(possibleYears.size == 3) { "Years array must contain 3 items!" }
+
+        //find all dates in table headings (td class=kopf) that have text
+        return docElement
+            .findAll("td[class=kopf]")
+            .filter { one -> one.text.isNotBlank() }
+            .map { dateHeader ->
+                // We only need the first date of the week (the one before the line break)
+                val weekStartDate: String = dateHeader.html.substringBefore("<br>")
+
+                // Parse the german date-string using Regex to get the month and day
+                val protoDate = Regex("([0-3]?[0-9])\\.([0-1]?[0-9])\\.")
+                    .find(weekStartDate)
+                    ?.groupValues ?: listOf("01", "01")
+
+                // Choose year by month (if month is in first "half" of year, use first year, else second year)
+                val protoYear = if (protoDate[2].toInt() in 8..12)
+                    possibleYears[1] //First half of school year
+                else
+                    possibleYears[2] //Second half of school year
+
+                LocalDate(
+                    year = protoYear.toInt(),
+                    monthNumber = protoDate[2].toInt(),
+                    dayOfMonth = protoDate[1].toInt()
+                )
+            }
+    }
+
+    private fun parseExamCell(cell: DocElement,
+                              startOfCurrentWeek: LocalDate,
+                              dayOffset: Int,
+                              course: ExamCourse,
+                              exams: MutableList<Exam>) {
+        if (cell.text.isNotEmpty()) {
+            //There are some exams in this cell!
+            val examDay = startOfCurrentWeek.plus(dayOffset, DateTimeUnit.DAY)
+            if (Regex("[^a-zA-Z0-9\\s]").matches(cell.text) ||
+                cell.text == "Ferien"
+            ) {
+                // This is a holiday, skip it!
+                // It does not happen in the exam plan that was up when writing this code,
+                // but apparently it was like that in the past.
+                return
+            } else if (cell.text == "Abgabe SF") {
+                //This is submission of seminar papers, add it!
+                exams.add(
+                    Exam(
+                        label = "Abgabe SF",
+                        date = examDay,
+                        course = course
+                    )
+                )
+            } else {
+                //This is an exam(s) cell, add them/it to the list!
+                cell.text.trim().split(" ").forEach { examLbl ->
+                    if (examLbl.length < 6) //There *should* be no else cases
+                        exams.add(
+                            Exam(
+                                label = examLbl.trim(),
+                                date = examDay,
+                                course = course
+                            )
+                        )
+                }
+            }
+        }
+    }
+
+    /**
+     * Parses the exam table from the website.
+     *
+     * First, the date header is parsed using [parseExamDatesHeader].
+     * Then, the table is parsed row by row (week by week, for single weekday)
+     * column by column (weekday for weekday).
+     *
+     * @param html The html of the exam table
+     * @param course The course of the exam table
+     * @return List of parsed exams or Exception
+     */
     actual suspend fun parseExams(
         html: String,
         course: ExamCourse
     ): Result<List<Exam>> {
         val exams: MutableList<Exam> = mutableListOf()
-        val germanDateRegex = Regex("([0-3]?[0-9])\\.([0-1]?[0-9])\\.([0-9]{1,4})")
-        val germanDateWithoutYearRegex = Regex("([0-3]?[0-9])\\.([0-1]?[0-9])\\.")
 
         return try {
             htmlDocument(html) {
-                //val dates: MutableList<LocalDate> = mutableListOf()
-
                 val header = findFirst("td[class*=ueberschr]").html
 
                 //years[0] = "2023/2024", [1] = 2023, [2] = 2024
                 val years = Regex("([0-9]{4})/([0-9]{4})").find(header)?.groupValues ?: emptyList()
 
-                if (years.size != 3) println("WARNING: Years array size != 3!!")
-
-                findAll("td[class=kopf] ~ td").map { dateHeader -> //find all dates in table headings
-                    val weekStart: String = dateHeader.html.split("<br>")[0] //TODO: Doof.
-                    val protoDate =
-                        germanDateWithoutYearRegex.find(weekStart)?.groupValues ?: listOf(
-                            "01",
-                            "01"
-                        )
-                    val protoYear = if (protoDate[2].toInt() in 8..12) years[1] else years[2]
-
-                    LocalDate(
-                        year = protoYear.toInt(),
-                        monthNumber = protoDate[2].toInt(),
-                        dayOfMonth = protoDate[1].toInt()
-                    )
-
-
-                    /*dates.add(
-                        LocalDate(
-
-                        )
-                    )*/
-                    /*val weekStart: String = vpEnt.html().split("<br>").get(0) //TODO: Doof.
-                    val cal = Calendar.getInstance()
-                    cal.time = Objects.requireNonNull(format.parse(weekStart + "2000"))
-                    //int month = Integer.parseInt(Pattern.compile("([0-9]+)(?!.*[0-9])").matcher(weekStart).group(0));
-                    if (8 <= cal[Calendar.MONTH] && cal[Calendar.MONTH] <= 12) //Wenn Monat zwischen 8 und 12 -> erstes Jahr, sonst 2. Jahr
-                        cal[Calendar.YEAR] = jahre[0].toInt() //1. Jahr setzen
-                    else cal[Calendar.YEAR] = jahre[1].toInt() //2. Jahr setzen
-                    daten.add(cal.time) //Wochenstart-Datum hinzufügen*/
-                }
-
+                assert(years.size == 3) { "Years array must contain 3 items!" }
 
                 var dates: List<LocalDate>? = null
 
-                var currentColumn: Int
-                var dayOffset: Int = -1 //= currentRow
+                var currentWeekIndex: Int //= current Column
+                var dayOffset: Int = -1 //= current Row
 
                 findAll("tr").forEach forRow@{
                     if (it.hasElement("td[class*=\"ueberschr\"]")) {
-                        //We've found the header row, no need to parse columns...
-                        return@forRow //...just continue with the next row TODO: dont set day to 0
+                        //We've found the top-most header row, no need to parse columns...
+                        return@forRow //...just continue with the next row
                     }
 
                     if (it.hasElement("td[class*=\"kopf\"]")) {
                         //This is the "second" header row containing the dates, parse them!
-                        dates = it.findAll("td[class=kopf]").filter { one ->
-                            one.text.isNotBlank()
-                        }.map { dateHeader -> //find all dates in table headings
-                            val weekStartDate: String = dateHeader.html.split("<br>")[0] //TODO: Doof.
-                            val protoDate = germanDateWithoutYearRegex
-                                .find(weekStartDate)?.groupValues ?: listOf("01", "01")
-                            val protoYear = if (protoDate[2].toInt() in 8..12)
-                                years[1] //First half of school year
-                            else
-                                years[2] //Second half of school year
+                        dates = parseExamDatesHeader(it, years)
 
-                            LocalDate(
-                                year = protoYear.toInt(),
-                                monthNumber = protoDate[2].toInt(),
-                                dayOfMonth = protoDate[1].toInt()
-                            )
-                        }
-
+                        //Reset dayOffset-counter
                         dayOffset = 0
                         return@forRow
                     }
 
                     if (it.hasElement("td[class*=\"ferien\"]")) {
                         //This is actually the second table, below the exam plan.
-                        //Theoretically, we could now end table parsing, but for the sake of it
-                        //continue. TODO: Stop.
+                        //We can now stop parsing the table.
                         return@forRow
                     }
 
-                    currentColumn = 0
+                    // Reset week index, we're parsing a new row (= new weekday)
+                    currentWeekIndex = 0
                     it.findAll("td").forEach forCell@{ cell ->
-                        if (dates == null) {
-                            log.w { "dates array does not exist, this should not happen -> " +
-                                    "dateHeader was not found!" }
-
-                            return@htmlDocument Result.failure(
-                                ElementNotFoundException(
-                                    "dates array does not exist, this should not happen -> " +
-                                    "dateHeader was not found!"
-                                )
-                            )
-                        }
-
                         if (cell.classNames.contains("tag")) {
                             //This is the first column containing date names. Skip that.
                             return@forCell
                         }
 
-                        if (cell.text.isNotEmpty()) {
-                            //There are some exams in this cell!
-                            val examDay = dates!![currentColumn].plus(dayOffset, DateTimeUnit.DAY)
-                            if (Regex("[^a-zA-Z0-9\\s]").matches(cell.text) ||
-                                cell.text == "Ferien"
-                            ) {
-                                //TODO: Is there anything to do here? Continue??
-                            } else if (cell.text == "Abgabe SF") {
-                                //This is submission of seminar papers, add it!
-                                exams.add(
-                                    Exam(
-                                        label = "Abgabe SF",
-                                        date = examDay,
-                                        course = course
-                                    )
-                                )
-                            } else {
-                                //This is an exam(s) cell, add them/it to the list!
-                                cell.text.trim().split(" ").forEach { examLbl ->
-                                    if (examLbl.length < 6) //TODO: Are there any "else" cases??
-                                        exams.add(
-                                            Exam(
-                                                label = examLbl.trim(),
-                                                date = examDay,
-                                                course = course
-                                            )
-                                        )
-                                }
-                            }
-                        }
+                        assert(dates != null) { "Dates array doesn't exist, this should not happen!" }
 
-                        currentColumn++
+                        parseExamCell(
+                            cell = cell,
+                            startOfCurrentWeek = dates!![currentWeekIndex],
+                            dayOffset = dayOffset,
+                            course = course,
+                            exams = exams
+                        )
+
+                        // Increment to next week (= next column)
+                        currentWeekIndex++
                     }
 
+                    //We've parsed all weeks for this weekday, increment weekday offset
+                    // and continue with next weekday (= next row)
                     dayOffset++
                 }
 

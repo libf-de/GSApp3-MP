@@ -47,7 +47,7 @@ actual class GsWebsiteParser {
         val doc = HTMLDocument.documentWithString(result)
 
         val dateHead: HTMLElement? = doc.querySelector("td[class*=vpUeberschr]")
-        var dateText = "(kein Datum)"
+        var dateText: String? = null
         if(dateHead != null)
             if(!dateHead.isEmpty())
                 dateText = dateHead.textContent

@@ -2,7 +2,7 @@ package de.xorg.gsapp.data.platform
 
 import androidx.compose.runtime.Composable
 
-interface PlatformInterface {
+fun interface PlatformInterface {
     @Composable
-    fun sendErrorReport(ex: Throwable)
+    fun SendErrorReportButton(ex: Throwable)
 }

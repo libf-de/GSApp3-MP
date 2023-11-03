@@ -18,11 +18,6 @@
   -->
 
 <resources>
-    <string name="app_name">GSApp</string>
-    <string name="tab_substitutions">Substitutions</string>
-    <string name="tab_foodplan">Food plan</string>
-    <string name="tab_exams">Exams</string>
-
     <!-- Weekdays, long form -->
     <string name="wd_mo_lo">Monday</string>
     <string name="wd_tu_lo">Tuesday</string>
@@ -51,6 +46,12 @@
     <!-- Date format (d=day, m=month, y=year) -->
     <string name="date_format">m.d.y</string>
 
+    <!--~~~~~~ App ~~~~~~-->
+    <string name="app_name">GSApp</string>
+    <string name="tab_substitutions">Substitutions</string>
+    <string name="tab_foodplan">Food plan</string>
+    <string name="tab_exams">Exams</string>
+
     <!-- Substitution plan -->
     <string name="subplan_workorder_samesubject">%s work order</string>
     <string name="subplan_workorder">%s ➜ %s work order</string>
@@ -60,6 +61,14 @@
     <string name="subplan_normal">%s ➜ %s</string>
     <string name="subplan_dsc_location">Location</string>
     <string name="subplan_dsc_teacher">Replacement teacher</string>
+    <string name="subplan_empty">No substitutions :)</string>
+
+    <!-- Foodplan -->
+    <string name="foodplan_menu_no">Menu #%d</string>
+    <string name="foodplan_empty">(no meal service)</string>
+
+    <!-- Exam plan -->
+    <string name="examplan_empty">No (more) exams :)</string>
 
 
     <!--- Settings -->
@@ -85,17 +94,8 @@
     <string name="filter_dialog_error_no_teachers">No teachers were found, please enter your abbreviation by hand.</string>
     <string name="filter_dialog_error_teachers_failed">Teachers could not be loaded, please enter their abbreviation by hand.</string>
 
-    <!-- Push labels -->
-    <string name="push_disabled">Disabled</string>
-    <string name="push_filter">Only if it affects me</string>
-    <string name="push_enabled">Always notify</string>
-    <string name="push_dialog_title">Push notifications</string>
-    <string name="push_dialog_description">Choose whether you want to receive no notification, notification only when it affects you, or always notification of new substitution plans.</string>
-    <string name="push_unavailable">(not available on %s)</string>
-
     <!-- Subject management -->
-    <string name="subject_manager_error_title">Error</string>
-    <string name="subject_manager_error_text">Failed to load subjects, caused by:</string>
+    <string name="subject_manager_subjects">Subjects</string>
     <string name="subject_manager_empty_title">No subjects</string>
     <string name="subject_manager_empty_text">Click the + button at the bottom to add one.</string>
     <string name="subject_manager_colorpicker_title">Choose color for %s</string>
@@ -108,31 +108,13 @@
     <string name="subject_manager_reset_dialog_replace">Replace all</string>
     <string name="subject_manager_reset_dialog_adddefault">Only add</string>
 
-    <!-- General dialog buttons -->
-    <string name="dialog_save">Save</string>
-    <string name="dialog_cancel">Cancel</string>
-    <string name="dialog_color_simple">Simple</string>
-    <string name="dialog_color_simple_desc">Choose from a list of colors</string>
-    <string name="dialog_color_advanced">Advanced</string>
-    <string name="dialog_color_advanced_desc">Choose using hue, saturation and brightness or using a hex string</string>
-    <string name="dialog_color_hex">Hex:</string>
-    
-    <string name="dialog_delete_title">Delete subject?</string>
-    <string name="dialog_delete_text">Do you really want to delete the subject "%s" ("%s")?</string>
-    <string name="dialog_delete_confirm">Delete</string>
-
-    <!-- Generic strings -->
-    <string name="generic_loading">Loading, please wait…</string>
-    <string name="generic_error_null">(null-error)</string>
-    <string name="back">Go back</string>
-    <string name="failed_to_load">Failed to load %s</string>
-    <string name="failed_send_dev">Please send a report with this error to the developer:</string>
-
-    <!-- Foodplan -->
-    <string name="foodplan_menu_no">Menu #%d</string>
-    <string name="foodplan_error">Error: %s</string>
-    <string name="foodplan_error_empty">(no meal service)</string>
-
+    <!-- Push settings/service -->
+    <string name="push_disabled">Disabled</string>
+    <string name="push_filter">Only if it affects me</string>
+    <string name="push_enabled">Always notify</string>
+    <string name="push_dialog_title">Push notifications</string>
+    <string name="push_dialog_description">Choose whether you want to receive no notification, notification only when it affects you, or always notification of new substitution plans.</string>
+    <string name="push_unavailable">(not available on %s)</string>
     <string name="push_channel_name">Substitution plan notifications</string>
     <string name="push_channel_desc">Notifies you when a new substitution plan is available</string>
     <string name="push_notification_title">New substitution plan!</string>
@@ -142,5 +124,30 @@
     <string name="push_no_permission_body">You have enabled push notifications, but denied permission for notifications.\nPlease go to settings and enable notifications to not miss new substitution plans.\nIf you don\'t want this, you can also disable push notifications in the app settings.</string>
     <string name="push_no_permission_fix">Go to settings</string>
     <string name="push_no_permission_later">Not now</string>
+    <string name="push_enabled_success">Push notifications enabled</string>
+    <string name="push_enabled_failure">Failed to enable push notifications</string>
+    <string name="push_disabled_success">Push notifications disabled</string>
+    <string name="push_disabled_failure">Failed to disable push notifications</string>
 
+    <!--~~~~ Generics ~~~~-->
+    <!-- General dialog buttons -->
+    <string name="dialog_save">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_color_simple">Simple</string>
+    <string name="dialog_color_simple_desc">Choose from a list of colors</string>
+    <string name="dialog_color_advanced">Advanced</string>
+    <string name="dialog_color_advanced_desc">Choose using hue, saturation and brightness or using a hex string</string>
+    <string name="dialog_color_hex">Hex:</string>
+    <string name="dialog_delete_title">Delete subject?</string>
+    <string name="dialog_delete_text">Do you really want to delete the subject "%s" ("%s")?</string>
+    <string name="dialog_delete_confirm">Delete</string>
+
+    <!-- Generic strings -->
+    <string name="generic_loading">Loading, please wait…</string>
+    <string name="generic_error_null">(null-error)</string>
+    <string name="empty_local">No %s has been downloaded (yet).\nIf nothing happens, check your internet connection.</string>
+    <string name="back">Go back</string>
+    <string name="failed_to_load">Failed to load %s</string>
+    <string name="failed_send_dev">Please send a report with this error to the developer:</string>
+    <string name="unknown_cause">Unknown cause</string>
 </resources>

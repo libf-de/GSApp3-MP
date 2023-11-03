@@ -19,6 +19,7 @@
 package de.xorg.gsapp
 
 import MainView
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
@@ -53,46 +54,21 @@ class MainActivity : PreComposeActivity() {
         ActivityResultContracts.RequestPermission(),
     ) { }
 
+    /**
+     * Verify that the user has granted the notification permission, and if not, ask for it.
+     * Should only be called if push notifications are enabled.
+     * @param prefRepo the preferences repository, to set flag to ask user for notification permission
+     */
     private suspend fun askNotificationPermission(prefRepo: PreferencesRepository) {
-        // This is only necessary for API level >= 33 (TIRAMISU)
-
-        //val pushState = prefRepo.getPushFlow().lastOrNull() ?: PushState.default
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) ==
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                println("permission granted")
-                // FCM SDK (and your app) can post notifications.
-            } else if (shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
-                // TODO: display an educational UI explaining to the user the features that will be enabled
-                //       by them granting the POST_NOTIFICATION permission. This UI should provide the user
-                //       "OK" and "No thanks" buttons. If the user selects "OK," directly request the permission.
-                //       If the user selects "No thanks," allow the user to continue without notifications.
-                println("show dialog")
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            if (shouldShowRequestPermissionRationale(POST_NOTIFICATIONS)) {
+                // Set the flag-setting to true, so that we can show the user an educational UI
+                // later explaining that push notifications require the notification permission
                 prefRepo.setAskUserForNotificationPermission(true)
-
-                /*AlertDialog.Builder(this)
-                    .setTitle(MR.strings.push_no_permission_title.desc().toString(this))
-                    .setMessage(MR.strings.push_no_permission_body.desc().toString(this))
-                    .setPositiveButton(MR.strings.push_no_permission_fix.desc().toString(this)
-                    ) { di, _ ->
-                        val intent = Intent()
-                        intent.action = "android.settings.APP_NOTIFICATION_SETTINGS"
-                        intent.putExtra("android.provider.extra.APP_PACKAGE", packageName)
-                        intent.putExtra("app_package", packageName)
-                        intent.putExtra("app_uid", applicationInfo.uid)
-                        startActivity(intent)
-                        di.dismiss()
-                    }
-                    .setNegativeButton(MR.strings.push_no_permission_later.desc().toString()) {
-                        di, _ -> di.dismiss()
-                    }.create().show()*/
             } else {
-                println("askForPermission")
-
-                // Directly ask for the permission
-                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                // Directly ask for notification permission
+                requestPermissionLauncher.launch(POST_NOTIFICATIONS)
             }
         }
     }
@@ -113,16 +89,12 @@ class MainActivity : PreComposeActivity() {
         super.onResume()
         val prefRepo: PreferencesRepository by inject()
 
+        // If push notifications are enabled, verify that we have notification permission
         scope.launch {
             prefRepo.getPushFlow().collect {
                 if(it == PushState.DISABLED) return@collect
                 askNotificationPermission(prefRepo)
             }
-            /*prefRepo.getAskUserForNotificationPermissionFlow().collect {
-                if(it) {
-                    askNotificationPermission(prefRepo)
-                }
-            }*/
         }
     }
 

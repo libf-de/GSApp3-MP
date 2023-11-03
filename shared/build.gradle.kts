@@ -22,8 +22,9 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.compose")
     kotlin("plugin.serialization")
-    id("dev.icerock.mobile.multiplatform-resources")
-    id("app.cash.sqldelight")
+    id(Deps.Moko.Resources._plugin)
+    id(Deps.Sqldelight._plugin)
+    id(Deps.SonarQube._plugin)
 }
 
 kotlin {
@@ -60,8 +61,8 @@ kotlin {
             linkerOpts.add("-lsqlite3")  // TODO: Find out which linker flags are actually needed
 
             // Used to provide (localized) resources on iOS
-            export("dev.icerock.moko:resources:0.23.0")
-            export("dev.icerock.moko:graphics:0.9.0") // toUIColor here
+            export(Deps.Moko.Resources.Core)
+            export(Deps.Moko.Graphics) // toUIColor here
         }
 
         //extraSpecAttributes["resources"] = "['src/commonMain/resources/**', 'src/iosMain/resources/**']"
@@ -69,9 +70,11 @@ kotlin {
     }
 
     sourceSets {
-        val ktorVersion = "2.3.4"
-        val precomposeVersion = "1.5.1"
-        val loggingVersion = "1.3.0"
+        val commonTest by getting {
+            dependencies {
+                implementation(Deps.Moko.Resources.Test)
+            }
+        }
 
         val commonMain by getting {
             dependencies {
@@ -84,39 +87,47 @@ kotlin {
                 implementation(compose.components.resources) //TODO: Is this needed?
 
                 // Logging
-                api("org.lighthousegames:logging:$loggingVersion")
+                api(Deps.Logging)
 
                 // Support for Kotlin Coroutines
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation(Deps.KotlinX.Coroutines)
 
                 // Support for immutable Collections (should improve recomposing performance) TODO: Does it?
-                implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
+                implementation(Deps.KotlinX.ImmutableCollections)
 
                 // Koin Dependency Injection
-                api("io.insert-koin:koin-core:3.5.0")
-                implementation("io.insert-koin:koin-compose:1.1.0")
+                api(Deps.Koin.Core)
+                implementation(Deps.Koin.Compose)
 
                 // Kotlinx Datetime -> Crossplatform DateTime implementation
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+                implementation(Deps.KotlinX.Datetime)
 
                 // Ktor -> used to do web requests
-                implementation("io.ktor:ktor-client-core:$ktorVersion")
-                implementation("io.ktor:ktor-client-cio:$ktorVersion")
+                implementation(Deps.Ktor.Core)
+                implementation(Deps.Ktor.Cio)
 
                 // Multiplatform Settings
-                implementation("com.russhwolf:multiplatform-settings:1.1.0")
-                implementation("com.russhwolf:multiplatform-settings-coroutines:1.1.0")
+                implementation(Deps.MultiplatformSettings.Core)
+                implementation(Deps.MultiplatformSettings.Coroutines)
+
+                // Multiplatform Resources (moko resources)
+                api(Deps.Moko.Resources.Core)
+                api(Deps.Moko.Resources.Compose)
 
                 // Sqldelight coroutines extension
-                implementation("app.cash.sqldelight:coroutines-extensions:2.0.0")
+                implementation(Deps.Sqldelight.Coroutines)
+
+                // Window size classes
+                implementation(Deps.WindowSizeClass)
 
                 // Insetsx -> Provides paddings respecting on-screen keyboards
+                //TODO: Does stuff work without it?
                 //implementation("com.moriatsushi.insetsx:insetsx:0.1.0-alpha10")
 
                 // Precompose -> Multiplatform Navigation
-                api("moe.tlaster:precompose:$precomposeVersion")
-                api("moe.tlaster:precompose-viewmodel:$precomposeVersion")
-                api("moe.tlaster:precompose-koin:$precomposeVersion")
+                api(Deps.Precompose.Core)
+                api(Deps.Precompose.ViewModel)
+                api(Deps.Precompose.Koin)
 
             }
         }
@@ -124,23 +135,22 @@ kotlin {
             dependsOn(commonMain)
             dependencies {
                 // Compose Multiplatform
-                api("androidx.activity:activity-compose:1.7.2")
-                api("androidx.appcompat:appcompat:1.6.1")
-                api("androidx.core:core-ktx:1.10.1")
+                api(Deps.AndroidX.ActivityCompose)
+                api(Deps.AndroidX.AppCompat)
+                api(Deps.AndroidX.CoreKtx)
 
                 // Skrapeit -> used for html parsing
-                implementation("it.skrape:skrapeit:1.2.2")
+                implementation(Deps.SkrapeIt)
 
                 // Android Database Driver
-                implementation("app.cash.sqldelight:android-driver:2.0.0")
+                implementation(Deps.Sqldelight.AndroidDriver)
 
                 // Firebase Messaging -> used for push notification
-                implementation("com.google.firebase:firebase-messaging-ktx:23.2.1")
+                implementation(Deps.FirebaseMessaging)
 
                 // Android implementation of FlowSettings
-                implementation("com.russhwolf:multiplatform-settings-datastore:1.1.0")
-                implementation("androidx.datastore:datastore-preferences:1.0.0")
-
+                implementation(Deps.MultiplatformSettings.Datastore)
+                implementation(Deps.AndroidX.DatastorePreferences)
 
                 // Preview android composables
                 implementation(compose.preview)
@@ -151,10 +161,10 @@ kotlin {
                 dependsOn(commonMain)
 
                 // Sqldelight iOS database driver
-                implementation("app.cash.sqldelight:native-driver:2.0.0")
+                implementation(Deps.Sqldelight.NativeDriver)
 
                 // Ktor iOS driver TODO: Needed?
-                implementation("io.ktor:ktor-client-darwin:$ktorVersion")
+                implementation(Deps.Ktor.Darwin)
             }
         }
         val desktopMain by getting {
@@ -167,16 +177,13 @@ kotlin {
                 implementation(compose.preview)
 
                 // Sqldelight desktop database driver
-                implementation("app.cash.sqldelight:sqlite-driver:2.0.0")
-
-                // Used to get cache folder on desktop OSes TODO: Remove, only used in JsonDataSource
-                implementation("net.harawata:appdirs:1.2.2")
+                implementation(Deps.Sqldelight.SqliteDriver)
 
                 // Skrapeit, used for html parsing
-                implementation("it.skrape:skrapeit:1.2.2")
+                implementation(Deps.SkrapeIt)
 
                 // Kotlinx coroutines
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
+                implementation(Deps.KotlinX.CoroutinesSwing)
             }
         }
     }
@@ -205,17 +212,9 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
+        kotlinCompilerExtensionVersion = Versions.Kotlin.CompilerExtension
     }
 }
-
-dependencies {
-    commonMainApi("dev.icerock.moko:resources:0.23.0") // TODO: Move to commonMain
-    commonMainApi("dev.icerock.moko:resources-compose:0.23.0") // for compose multiplatform
-
-    commonTestImplementation("dev.icerock.moko:resources-test:0.23.0") // for testing
-}
-
 
 multiplatformResources {
     multiplatformResourcesPackage = "de.xorg.gsapp.res"
@@ -228,5 +227,5 @@ sqldelight {
             packageName.set("de.xorg.gsapp.data.sql")
         }
     }
-    linkSqlite = true
+    linkSqlite.set(true)
 }

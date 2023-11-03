@@ -7,7 +7,6 @@ import com.russhwolf.settings.coroutines.toFlowSettings
 import de.xorg.gsapp.data.push.DesktopPushUtilStub
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.sql.GsAppDatabase
-import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import java.io.File
 import java.util.prefs.Preferences

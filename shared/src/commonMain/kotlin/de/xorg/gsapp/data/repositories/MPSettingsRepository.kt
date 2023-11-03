@@ -40,7 +40,6 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
         const val AskNotifyPermission = "askNotifyPermission"
     }
 
-    //private val appSettings: Settings by di.instance()
     private val appSettings: FlowSettings by inject()
 
     /**

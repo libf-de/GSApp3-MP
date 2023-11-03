@@ -48,6 +48,8 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -73,6 +75,7 @@ import de.xorg.gsapp.ui.components.settings.SkeletonClassListItem
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.LETTERS
 import de.xorg.gsapp.ui.tools.classList
+import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import dev.icerock.moko.resources.compose.stringResource
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -82,7 +85,9 @@ import org.koin.compose.koinInject
 /**
  * This composable is the "substitution plan filter" settings dialog.
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterial3WindowSizeClassApi::class
+)
 @Composable
 fun FilterSettingsScreen(
     navController: Navigator,
@@ -90,11 +95,10 @@ fun FilterSettingsScreen(
 ) {
     //val viewModel: SettingsViewModel = koinViewModel(vmClass = SettingsViewModel::class)
     val viewModel: SettingsViewModel = koinInject()
-    val teachers by viewModel.teachers.collectAsStateWithLifecycle(Result.success(emptyList()))
+    val windowSizeClass = calculateWindowSizeClass()
 
+    val teachers by viewModel.teachers.collectAsStateWithLifecycle(Result.success(emptyList()))
     val filterState by viewModel.filterFlow.collectAsStateWithLifecycle(Filter.NONE)
-    //val roleState by viewModel.roleFlow.collectAsStateWithLifecycle(Filter.Role.default)
-    //val filterVal by remember { viewModel.filterFlow.collectAsStateWithLifecycle("")
 
     // FilterValue to store in settings
     // (Teacher shortName / Student class)
@@ -126,8 +130,6 @@ fun FilterSettingsScreen(
 
     val confirmFocusReq = remember { FocusRequester() }
 
-
-
     Scaffold(modifier = modifier,
         topBar = {
             TopAppBar(
@@ -136,7 +138,7 @@ fun FilterSettingsScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.goBack() }) {
-                        Icon(Icons.Rounded.ArrowBack, "")
+                        Icon(Icons.Rounded.ArrowBack, null)
                     }
                 },
             )
@@ -145,8 +147,7 @@ fun FilterSettingsScreen(
         Column(
             modifier = Modifier
                 .padding(scaffoldPadding)
-                .padding(start = 18.dp,
-                         end = 18.dp)
+                .windowSizeMargins(windowSizeClass)
                 /*.imePadding()*/
         ) {
             Text(text = stringResource(MR.strings.filter_dialog_description),

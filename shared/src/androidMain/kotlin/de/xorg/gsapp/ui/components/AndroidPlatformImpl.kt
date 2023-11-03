@@ -11,7 +11,7 @@ import org.koin.core.component.KoinComponent
 
 class AndroidPlatformImpl : PlatformInterface, KoinComponent {
     @Composable
-    override fun sendErrorReport(ex: Throwable) {
+    override fun SendErrorReportButton(ex: Throwable) {
         val context = LocalContext.current
         Button(
             onClick = {

@@ -104,7 +104,7 @@ fun GSApp() {
                 NavHost(
                     navigator = navigator,
                     navTransition = NavTransition(),
-                    initialRoute = GSAppRoutes.SUBSTITUTIONS, //TODO: Revert back to SUBSTITUTIONS
+                    initialRoute = GSAppRoutes.FOODPLAN, //TODO: Revert back to SUBSTITUTIONS
                 ) {
                     scene(
                         route = GSAppRoutes.SUBSTITUTIONS,

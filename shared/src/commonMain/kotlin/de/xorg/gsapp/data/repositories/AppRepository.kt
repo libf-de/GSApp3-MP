@@ -19,7 +19,6 @@
 package de.xorg.gsapp.data.repositories
 
 import androidx.compose.ui.graphics.Color
-import de.xorg.gsapp.data.exceptions.NoEntriesException
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
@@ -99,39 +98,6 @@ class AppRepository : GSAppRepository, KoinComponent {
     override fun getSubstitutions(): Flow<Result<SubstitutionSet>>
         = localDataSource.getSubstitutionPlanFlow()
 
-    /*override fun getFilteredSubstitutions(): Flow<Result<SubstitutionSet>> = combine(
-        getSubstitutions(), getRoleFlow(), getFilterValueFlow()
-    ) { subs, role, filter ->
-        if(role == FilterRole.ALL) return@combine subs
-
-        subs.mapCatching {
-            it.copy(
-                substitutions = when(role) {
-                    FilterRole.STUDENT -> {
-                        it.substitutions.filterKeys { entry ->
-                            entry.lowercase().contains(filter.lowercase())
-                        }
-                    }
-
-                    FilterRole.TEACHER -> {
-                        it.substitutions.mapValues { subsPerKlass ->
-                            subsPerKlass.value.filter { aSub ->
-                                aSub.substTeacher.shortName.lowercase() == filter.lowercase()
-                            }
-                        }.filter { subsPerKlass ->
-                            subsPerKlass.value.isNotEmpty()
-                        }
-                    }
-
-                    else -> { //TODO: Is returning instantly much faster than this?
-                        it.substitutions
-                    }
-                }
-            )
-        }
-
-    }*/
-
     override suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit) {
         log.d { "updateSubstitutions in AppRepository" }
         try {
@@ -148,21 +114,8 @@ class AppRepository : GSAppRepository, KoinComponent {
                     return
                 }
 
-                /*val apiSds = this.getOrNull()!!
-
-                val dbCandidateId = localDataSource.findIdByDateString(apiSds.dateStr)
-                if(dbCandidateId.isFailure) {
-                    callback(
-                        Result.failure(
-                            dbCandidateId.exceptionOrNull() ?: Exception("unknown cause (candidate) :(")
-                        )
-                    )
-                }*/
-
-
-
                 //TODO: Compare remote vs. local by hash AND DATE? (https://github.com/libf-de/GSApp3-MP/issues/8)
-                val localLatestHash = localDataSource.getLatestSubstitutionHash()
+                val localLatestHash = localDataSource.getLatestSubstitutionHashAndDate()
                 if(localLatestHash.isFailure) {
                     log.w { "getLocalHash failed :/" }
                     callback(
@@ -174,9 +127,8 @@ class AppRepository : GSAppRepository, KoinComponent {
                 }
 
                 //If remote plan is different from latest local -> store it!
-                if(localLatestHash.getOrNull()!! != this.getOrNull()!!.hashCode()) {
+                if(localLatestHash.getOrNull()!!.first != this.getOrNull()!!.hashCode()) {
                     log.d { "got new plan!" }
-                    localDataSource.addSubstitutionPlan(this.getOrNull()!!)
                     localDataSource.cleanupSubstitutionPlan()
                     callback(Result.success(true))
                 } else {
@@ -219,11 +171,10 @@ class AppRepository : GSAppRepository, KoinComponent {
                     return
                 }
 
+                // TODO: Use failure for empty foodplan or success(false)?
                 if(this.getOrNull()!!.first.isEmpty()) {
                     callback(
-                        Result.failure(
-                            NoEntriesException()
-                        )
+                        Result.success(false)
                     )
                     return
                 }
@@ -242,8 +193,8 @@ class AppRepository : GSAppRepository, KoinComponent {
 
                 //If remote plan is newer than latest local -> store it!
                 if(localLatestDate.getOrNull()!! < remoteLatestDate) {
-                    localDataSource.addFoodMap(this.getOrNull()!!.first)
-                    localDataSource.addAllAdditives(this.getOrNull()!!.second)
+                    //localDataSource.addFoodMap(this.getOrNull()!!.first)
+                    //localDataSource.addAllAdditives(this.getOrNull()!!.second)
                     localDataSource.cleanupFoodPlan()
                     callback(Result.success(true))
                 } else {

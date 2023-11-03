@@ -45,7 +45,8 @@ interface GSAppRepository {
     fun getSubstitutions(): Flow<Result<SubstitutionSet>>
     suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit)
 
-    fun getFoodplan(): Flow<Result<Map<LocalDate, List<Food>>>> //TODO: Maybe switch to separate datelist + query foods per date?
+    //Could switch to separate datelist + query foods per date?
+    fun getFoodplan(): Flow<Result<Map<LocalDate, List<Food>>>>
     suspend fun updateFoodplan(callback: (Result<Boolean>) -> Unit)
 
     fun getExams(): Flow<Result<List<Exam>>>
@@ -64,6 +65,4 @@ interface GSAppRepository {
     suspend fun deleteSubject(value: Subject): Result<Boolean>
     suspend fun resetSubjects(): Result<Boolean>
     suspend fun editSubject(subject: Subject, newLongName: String? = null, newColor: Color? = null): Result<Subject>
-
-    //fun getFilteredSubstitutions(): Flow<Result<SubstitutionSet>>
 }

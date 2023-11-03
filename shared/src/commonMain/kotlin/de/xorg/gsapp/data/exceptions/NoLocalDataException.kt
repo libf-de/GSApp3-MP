@@ -16,13 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.xorg.gsapp.data.cache
+package de.xorg.gsapp.data.exceptions
 
-import android.content.Context
-import java.io.File
-
-class AndroidCacheManager(private val context: Context) : CacheManager {
-    override fun getCacheDirectory(): File {
-        return context.cacheDir
-    }
-}
+// An exception that indicates that there is no local data available.
+class NoLocalDataException : Exception("No local data available.")

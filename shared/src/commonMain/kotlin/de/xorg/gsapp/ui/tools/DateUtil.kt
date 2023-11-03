@@ -22,13 +22,7 @@ import androidx.compose.runtime.Composable
 import de.xorg.gsapp.res.MR
 import dev.icerock.moko.resources.StringResource
 import dev.icerock.moko.resources.compose.stringResource
-import dev.icerock.moko.resources.desc.desc
-import dev.icerock.moko.resources.format
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.daysUntil
-import kotlinx.datetime.todayIn
 
 /**
  * Helper functions to work with localized dates.

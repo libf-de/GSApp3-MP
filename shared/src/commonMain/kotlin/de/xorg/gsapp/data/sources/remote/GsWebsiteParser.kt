@@ -61,7 +61,9 @@ private val germanMonthsMap = mapOf(
     "dezember" to Month.DECEMBER
 )
 
-fun parseSubstitutionDate(dateStr: String): LocalDate {
+fun parseSubstitutionDate(dateStr: String?): LocalDate {
+    if(dateStr == null) return LocalDate.fromEpochDays(0)
+
     val titleDateRegex = Regex("[a-zA-Z]+,\\s+den\\s+([0-9]+).\\s+([a-zA-Z]+)\\s+([0-9]+)")
     val dateParts = titleDateRegex.find(dateStr)?.groupValues ?: listOf(
         "",

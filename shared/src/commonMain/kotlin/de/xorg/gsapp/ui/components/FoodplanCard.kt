@@ -50,8 +50,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.ui.materialtools.MaterialColors
 import de.xorg.gsapp.res.MR
+import de.xorg.gsapp.ui.materialtools.MaterialColors
 import dev.icerock.moko.resources.compose.stringResource
 
 /**

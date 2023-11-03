@@ -21,7 +21,7 @@ package de.xorg.gsapp.ui.viewmodels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.russhwolf.settings.SettingsListener
+import de.xorg.gsapp.data.exceptions.NoLocalDataException
 import de.xorg.gsapp.data.model.Filter
 //import com.hoc081098.kmp.viewmodel.ViewModel
 import de.xorg.gsapp.data.repositories.GSAppRepository
@@ -31,9 +31,7 @@ import de.xorg.gsapp.ui.state.UiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
@@ -122,20 +120,24 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         viewModelScope.launch {
             subFlow.collect {
                 uiState = if (it.isFailure) {
-                    if (uiState.substitutionState == UiState.NORMAL_LOADING ||
-                        uiState.substitutionState == UiState.NORMAL
-                    ) {
-
-                        uiState.copy(
-                            substitutionState = UiState.NORMAL_FAILED,
-                            substitutionError = it.exceptionOrNull()!!
-                        )
-
+                    if (it.exceptionOrNull() is NoLocalDataException) {
+                        uiState.copy(substitutionState = UiState.EMPTY_LOCAL)
                     } else {
-                        uiState.copy(
-                            substitutionState = UiState.FAILED,
-                            substitutionError = it.exceptionOrNull()!!
-                        )
+                        if (uiState.substitutionState == UiState.NORMAL_LOADING ||
+                            uiState.substitutionState == UiState.NORMAL
+                        ) {
+
+                            uiState.copy(
+                                substitutionState = UiState.NORMAL_FAILED,
+                                substitutionError = it.exceptionOrNull()!!
+                            )
+
+                        } else {
+                            uiState.copy(
+                                substitutionState = UiState.FAILED,
+                                substitutionError = it.exceptionOrNull()!!
+                            )
+                        }
                     }
                 } else {
                     if(it.getOrNull()!!.haveUnknownSubs)
@@ -156,20 +158,22 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         viewModelScope.launch {
             foodFlow.collect {
                 uiState = if (it.isFailure) {
-                    if (uiState.foodplanState == UiState.NORMAL_LOADING ||
-                        uiState.foodplanState == UiState.NORMAL
-                    ) {
-
-                        uiState.copy(
-                            foodplanState = UiState.NORMAL_FAILED,
-                            foodplanError = it.exceptionOrNull()!!
-                        )
-
+                    if(it.exceptionOrNull() is NoLocalDataException) {
+                        uiState.copy(foodplanState = UiState.EMPTY_LOCAL)
                     } else {
-                        uiState.copy(
-                            foodplanState = UiState.FAILED,
-                            foodplanError = it.exceptionOrNull()!!
-                        )
+                        if (uiState.foodplanState == UiState.NORMAL_LOADING ||
+                            uiState.foodplanState == UiState.NORMAL
+                        ) {
+                            uiState.copy(
+                                foodplanState = UiState.NORMAL_FAILED,
+                                foodplanError = it.exceptionOrNull()!!
+                            )
+                        } else {
+                            uiState.copy(
+                                foodplanState = UiState.FAILED,
+                                foodplanError = it.exceptionOrNull()!!
+                            )
+                        }
                     }
                 } else {
                     if (it.getOrNull()!!.isEmpty()) {
@@ -184,15 +188,24 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         viewModelScope.launch {
             examFlow.collect {
                 uiState = if(it.isFailure) {
-                    if(uiState.examState == UiState.NORMAL_LOADING ||
-                        uiState.examState == UiState.NORMAL) {
-
-                        uiState.copy(examState = UiState.NORMAL_FAILED,
-                            examError = it.exceptionOrNull()!!)
-
+                    if(it.exceptionOrNull() is NoLocalDataException) {
+                        uiState.copy(examState = UiState.EMPTY_LOCAL)
                     } else {
-                        uiState.copy(examState = UiState.FAILED,
-                            examError = it.exceptionOrNull()!!)
+                        if (uiState.examState == UiState.NORMAL_LOADING ||
+                            uiState.examState == UiState.NORMAL
+                        ) {
+
+                            uiState.copy(
+                                examState = UiState.NORMAL_FAILED,
+                                examError = it.exceptionOrNull()!!
+                            )
+
+                        } else {
+                            uiState.copy(
+                                examState = UiState.FAILED,
+                                examError = it.exceptionOrNull()!!
+                            )
+                        }
                     }
                 } else {
                     if(it.getOrNull()!!.isEmpty()) {

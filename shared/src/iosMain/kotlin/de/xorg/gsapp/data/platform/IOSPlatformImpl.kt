@@ -8,9 +8,9 @@ import platform.Foundation.NSURLComponents
 import platform.Foundation.NSURLQueryItem
 import platform.UIKit.UIApplication
 
-class iOSPlatformImpl : PlatformInterface, KoinComponent {
+class IOSPlatformImpl : PlatformInterface, KoinComponent {
     @Composable
-    override fun sendErrorReport(ex: Throwable) {
+    override fun SendErrorReportButton(ex: Throwable) {
         Button(
             onClick = {
                 try {

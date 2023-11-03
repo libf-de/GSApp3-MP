@@ -47,15 +47,6 @@ data class Subject(
                                              color = dbSubject.color ?: Color.Unspecified)
 
     /**
-     * By default, two Subjects are the same if they have the same shortName.
-     * This is to easily merge app defaults and user preferences.
-     */
-    /*override fun equals(other: Any?): Boolean {
-        if(other !is Subject) return false
-        return other.shortName == this.shortName
-    }*/
-
-    /**
      * Checks if a given Subject is not the empty Subject (=blank shortName)
      */
     fun isNotBlank(): Boolean = this.shortName.isNotBlank()

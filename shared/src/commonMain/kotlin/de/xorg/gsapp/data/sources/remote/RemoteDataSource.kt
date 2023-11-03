@@ -27,8 +27,6 @@ import kotlinx.datetime.LocalDate
 interface RemoteDataSource {
     suspend fun getSubstitutionPlan(): Result<SubstitutionApiModelSet>
     suspend fun getTeachers(): Result<List<Teacher>>
-    suspend fun getFoodplan(): Result<Map<LocalDate, List<Food>>>
-    suspend fun getAdditives(): Result<Map<String, String>>
     suspend fun getFoodplanAndAdditives(): Result<Pair<Map<LocalDate, List<Food>>, Map<String, String>>>
     suspend fun getExams(): Result<List<Exam>>
 }

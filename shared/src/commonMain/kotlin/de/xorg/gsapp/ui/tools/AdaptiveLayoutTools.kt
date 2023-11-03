@@ -16,6 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.xorg.gsapp.data.exceptions
+package de.xorg.gsapp.ui.tools
 
-class NoEntriesException : Exception()
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
+val WindowSizeClass.horizontalMargin: Dp
+    get() = when(this.widthSizeClass) {
+        WindowWidthSizeClass.Compact -> 16.dp
+        WindowWidthSizeClass.Medium, WindowWidthSizeClass.Expanded -> 24.dp
+        else -> 0.dp
+    }
+
+fun Modifier.windowSizeMargins(windowSizeClass: WindowSizeClass): Modifier {
+    return this.padding(horizontal = windowSizeClass.horizontalMargin)
+}

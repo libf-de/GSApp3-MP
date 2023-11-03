@@ -26,9 +26,7 @@ import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import kotlinx.datetime.LocalDate
@@ -65,15 +63,6 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
             )
         }
     }
-    /*private val client = HttpClient(CIO) {
-
-
-        install(HttpTimeout) {
-            this.connectTimeoutMillis = 8000
-            this.requestTimeoutMillis = 8000
-            this.socketTimeoutMillis = 8000
-        }
-    }*/
 
     private var foodplanHtmlCache: String? = null
 
@@ -130,43 +119,6 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
 
             return Result.success(teachers)
         } catch(ex: Exception) {
-            log.e { ex.stackTraceToString() }
-            return Result.failure(ex)
-        }
-    }
-
-    override suspend fun getFoodplan(): Result<Map<LocalDate, List<Food>>> {
-        try {
-            val response: HttpResponse = client.get("https://schulkueche-bestellung.de/de/menu/14")
-
-            if (response.status.value !in 200..299) {
-                log.e { "loadFoodPlan(): Unexpected code: $response" }
-                return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
-            }
-
-            foodplanHtmlCache = response.body()
-            return parser.parseFoodOffers(response.body())
-        } catch (e: Exception) {
-            log.e { e.stackTraceToString() }
-            return Result.failure(e)
-        }
-    }
-
-    override suspend fun getAdditives(): Result<Map<String, String>> {
-        try {
-            foodplanHtmlCache?.let {
-                return parser.parseAdditives(it)
-            }
-
-            val response: HttpResponse = client.get("https://schulkueche-bestellung.de/de/menu/14")
-
-            if (response.status.value !in 200..299) {
-                log.e { "loadAdditives(): Unexpected code: $response" }
-                return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
-            }
-
-            return parser.parseAdditives(response.body())
-        } catch (ex: Exception){
             log.e { ex.stackTraceToString() }
             return Result.failure(ex)
         }

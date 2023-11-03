@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.Color
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
-import de.xorg.gsapp.data.exceptions.NoEntriesException
+import de.xorg.gsapp.data.exceptions.NoLocalDataException
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
@@ -32,6 +32,7 @@ import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sql.GsAppDatabase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
@@ -58,6 +59,7 @@ import org.lighthousegames.logging.logging
  *   disk space (if supported by platform)
  */
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SqldelightDataSource : LocalDataSource, KoinComponent {
 
     companion object {
@@ -66,12 +68,22 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
 
     private val database: GsAppDatabase by inject()
 
+    /**
+     * Tries to execute a flow, returns a flow with a failure result if an exception occurs.
+     * @param flowToTry Flow<Result<T>> The flow to try to execute
+     * @return Flow<Result<T>> The flow with the result
+     */
     private fun <T> tryFlow(flowToTry: Flow<Result<T>>): Flow<Result<T>> = try {
         flowToTry
     } catch (ex: Exception) {
         flow {emit(Result.failure(ex)) }
     }
 
+    /**
+     * Returns a flow for the substitution plan from local storage.
+     * Will return a NoLocalDataException if no local data is available.
+     * @return Flow<Result<SubstitutionSet>>
+     */
     override fun getSubstitutionPlanFlow(): Flow<Result<SubstitutionSet>> =
         tryFlow(
             database.dbSubstitutionSetQueries
@@ -82,7 +94,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                     if(dbSubset == null) //Return exception if there is no latest SubstitutionSet
                         return@flatMapConcat flow {
                             emit(
-                                Result.failure(NoEntriesException())
+                                Result.failure(NoLocalDataException())
                             )
                         }
 
@@ -92,7 +104,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                         .mapToList(Dispatchers.IO)
                         .map {
                             var haveUnknownSubs = false
-                            var haveUnknwonTeas = false
+                            var haveUnknownTeas = false
 
                             Result.success(
                                 SubstitutionSet(
@@ -108,7 +120,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                                             haveUnknownSubs = true
 
                                         if(dbSub.substTeacherLongName == null)
-                                            haveUnknwonTeas = true
+                                            haveUnknownTeas = true
 
                                         Substitution(
                                             klass = dbSub.klass,
@@ -133,13 +145,17 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                                         )
                                     }.groupBy { subs -> subs.klass },
                                     haveUnknownSubs = haveUnknownSubs,
-                                    haveUnknownTeachers = haveUnknwonTeas
+                                    haveUnknownTeachers = haveUnknownTeas
                                 )
                             )
                         }
                 }
         )
 
+    /**
+     * Returns the latest SubstitutionSet hash and date from local storage.
+     * @return Result<Pair<Int, LocalDate>>
+     */
     override fun getLatestSubstitutionHashAndDate(): Result<Pair<Int, LocalDate>> {
         return try {
             val latestSet = database
@@ -149,29 +165,18 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
 
             Result.success(
                 Pair(latestSet?.hashCode?.toInt() ?: -1, latestSet?.date ?: LocalDate.fromEpochDays(0))
-                //Pair(-1, latestSet?.date ?: LocalDate.fromEpochDays(0))
             )
         } catch(ex: Exception) {
             Result.failure(ex)
         }
     }
 
-    override fun getLatestSubstitutionHash(): Result<Int> {
-        return try {
-            Result.success(
-                database
-                    .dbSubstitutionSetQueries
-                    .selectLatest()
-                    .executeAsOneOrNull()
-                    ?.hashCode
-                    ?.toInt() ?: -1
-            )
-        } catch(ex: Exception) {
-            Result.failure(ex)
-        }
-    }
-
-    override fun findIdByDateString(dateStr: String): Result<Long?> {
+    /**
+     * Returns the SubstitutionSet id for a given date string.
+     * @param dateStr DateString
+     * @return Result<Long?> SubstitutionSet id or null if not found
+     */
+    override fun findSubstitutionSetIdByDateString(dateStr: String): Result<Long?> {
         return try {
             Result.success(
                 database
@@ -184,17 +189,14 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    /**
+     * Adds a new SubstitutionSet to local storage.
+     * @param value SubstitutionSet to add
+     */
     override suspend fun addSubstitutionPlan(value: SubstitutionApiModelSet) {
-        //val subsList = value.substitutions.flatMap { it.value }.distinct()
-        val teachers = value.substitutionApiModels.map { it.substTeacher }.distinct()
-        val subjects = value.substitutionApiModels.flatMap { listOf(it.origSubject, it.substSubject) }.distinct()
-
-        //val teachers = value.map { it.substTeacher }.distinct()
-        //val subjects = subsList.flatMap { listOf(it.origSubject, it.substSubject) }.distinct()
-
         database.transaction {
             database.dbSubstitutionSetQueries.insertSubstitutionSet(
-                dateStr = value.dateStr,
+                dateStr = value.dateStr ?: "",
                 date = value.date,
                 notes = value.notes,
                 hashCode = value.hashCode().toLong()
@@ -219,53 +221,9 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
-    /*override suspend fun addSubstitutionPlan(value: SubstitutionSet) {
-        val subsList = value.substitutions.flatMap { it.value }.distinct()
-        val teachers = subsList.map { it.substTeacher }.distinct()
-        val subjects = subsList.flatMap { listOf(it.origSubject, it.substSubject) }.distinct()
-
-        database.transaction {
-            // Store missing teachers in the database
-            teachers.forEach { teacher ->
-                database.dbTeacherQueries.insertTeacher(
-                    shortName = teacher.shortName,
-                    longName = teacher.longName
-                )
-            }
-
-            // Store missing subjects in the database
-            /*subjects.forEach { subject ->
-                database.dbSubjectQueries.insertSubject(
-                    shortName = subject.shortName,
-                    longName = subject.longName,
-                    color = subject.color
-                )
-            }*/
-
-            database.dbSubstitutionSetQueries.insertSubstitutionSet(
-                date = value.date,
-                dateStr = value.dateStr,
-                notes = value.notes
-            )
-
-            val setId = database.dbSubstitutionSetQueries.lastInsertRowId().executeAsOne()
-
-            subsList.forEach {sub ->
-                database.dbSubstitutionQueries.insertSubstitution(
-                    assSet = setId,
-                    klass = sub.klass,
-                    lessonNr = sub.lessonNr,
-                    origSubject = sub.origSubject.shortName,
-                    substTeacher = sub.substTeacher.shortName,
-                    substRoom = sub.substRoom,
-                    substSubject = sub.substSubject.shortName,
-                    notes = sub.notes,
-                    isNew = sub.isNew
-                )
-            }
-        }
-    }*/
-
+    /**
+     * Clears past SubstitutionSets from local storage.
+     */
     override suspend fun cleanupSubstitutionPlan() {
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
         val oldSets = database.dbSubstitutionSetQueries.getLegacyIds(today).executeAsList()
@@ -284,6 +242,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         log.d { "cleanupSubstitutionPlan(): Cleanup done!" }
     }
 
+    /**
+     * Returns a flow for the list of subjects from local storage.
+     * @return Flow<Result<List<Subject>>> List of subjects
+     */
     override fun getSubjectsFlow(): Flow<Result<List<Subject>>>
         = tryFlow(database.dbSubjectQueries
             .selectAll()
@@ -297,6 +259,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                 )
             })
 
+    /**
+     * Adds new subjects to local storage.
+     * @param value List of subjects
+     */
     override suspend fun addAllSubjects(value: List<Subject>) {
         database.dbSubjectQueries.transaction {
             value.forEach { subject ->
@@ -309,6 +275,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    /**
+     * Adds a new subject to local storage.
+     * @param value Subject to add
+     */
     override suspend fun addSubject(value: Subject) {
         database.dbSubjectQueries.insertSubject(
             shortName = value.shortName,
@@ -317,23 +287,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         )
     }
 
-    override suspend fun subjectExists(shortName: String): Boolean {
-        return try {
-            database.dbSubjectQueries.countByShort(shortName).executeAsOne() > 0
-        } catch(ex: Exception) {
-            log.w { "Exception while checking subject existence: ${ex.stackTraceToString()}"}
-            false
-        }
-    }
-
-    override suspend fun countSubjects(): Result<Long> {
-        return try {
-            Result.success(database.dbSubjectQueries.countAll().executeAsOne())
-        } catch (ex: Exception) {
-            Result.failure(ex)
-        }
-    }
-
+    /**
+     * Deletes all subjects and adds new ones from/to local storage.
+     * @param value List of subjects
+     */
     override suspend fun resetSubjects(value: List<Subject>) {
         database.dbSubjectQueries.transaction {
             database.dbSubjectQueries.deleteAllSubjects()
@@ -347,6 +304,38 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    /**
+     * Returns whether there is a subject with the given shortName
+     * @param shortName ShortName to check
+     * @return Boolean Whether subject exists
+     */
+    override suspend fun subjectExists(shortName: String): Boolean {
+        return try {
+            database.dbSubjectQueries.countByShort(shortName).executeAsOne() > 0
+        } catch(ex: Exception) {
+            log.w { "Exception while checking subject existence: ${ex.stackTraceToString()}"}
+            false
+        }
+    }
+
+    /**
+     * Returns the number of subjects in local storage.
+     * @return Result<Long> Number of subjects
+     */
+    override suspend fun countSubjects(): Result<Long> {
+        return try {
+            Result.success(database.dbSubjectQueries.countAll().executeAsOne())
+        } catch (ex: Exception) {
+            Result.failure(ex)
+        }
+    }
+
+
+
+    /**
+     * Returns a flow for the list of teachers from local storage.
+     * @return Flow<Result<List<Teacher>>> List of teachers
+     */
     override fun getTeachersFlow(): Flow<Result<List<Teacher>>>
     = tryFlow(
         database.dbTeacherQueries
@@ -360,6 +349,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
             }
     )
 
+    /**
+     * Adds new teachers to local storage.
+     * @param value List of teachers
+     */
     override suspend fun addAllTeachers(value: List<Teacher>) {
         database.dbTeacherQueries.transaction {
             value.forEach {teacher ->
@@ -371,6 +364,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    /**
+     * Adds a new teacher to local storage.
+     * @param value Teacher to add
+     */
     override suspend fun addTeacher(value: Teacher) {
         database.dbTeacherQueries.insertTeacher(
             shortName = value.shortName,
@@ -378,6 +375,11 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         )
     }
 
+    /**
+     * Edits a teacher in local storage.
+     * Teacher shortName must already exist in database.
+     * @param value Teacher to edit
+     */
     override suspend fun updateTeacher(value: Teacher) {
         database.dbTeacherQueries.updateTeacher(
             shortName = value.shortName,
@@ -385,47 +387,75 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         )
     }
 
+    /**
+     * Deletes a teacher from local storage.
+     * @param value Teacher to delete
+     */
     override suspend fun deleteTeacher(value: Teacher) {
         database.dbTeacherQueries.deleteTeacher(
             shortName = value.shortName
         )
     }
 
+    /**
+     * Returns a flow for the food plan from local storage.
+     * Will return a NoLocalDataException if no local data is available.
+     * @return Flow<Result<Map<LocalDate, List<Food>>>>
+     */
     override fun getFoodMapFlow(): Flow<Result<Map<LocalDate, List<Food>>>> =
         database.dbFoodQueries
             .selectAll()
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { dbFoodList ->
-                Result.success(
-                    dbFoodList.groupBy { it.date }
-                      .mapValues { foodList ->
-                        foodList.value.map { dbFood ->
-                            Food(
-                                num = dbFood.foodId.toInt(),
-                                name = dbFood.name,
-                                additives = dbFood.additives
-                            )
-                        }
-                      }
-                )
+                if(dbFoodList.isEmpty()) {
+                    Result.failure(NoLocalDataException())
+                } else {
+                    Result.success(
+                        dbFoodList.groupBy { it.date }
+                            .mapValues { foodList ->
+                                foodList.value.map { dbFood ->
+                                    Food(
+                                        num = dbFood.foodId.toInt(),
+                                        name = dbFood.name,
+                                        additives = dbFood.additives
+                                    )
+                                }
+                            }
+                    )
+                }
             }
 
+    /**
+     * Returns a flow for foods for the given date from local storage.
+     * Will return a NoLocalDataException if no local data is available.
+     * @param date Date to get foods for
+     * @return Flow<Result<List<Food>>> Foods for the given date
+     */
     override fun getFoodsForDateFlow(date: LocalDate): Flow<Result<List<Food>>>
     = tryFlow(
         database.dbFoodQueries.selectByDate(date).asFlow().mapToList(Dispatchers.IO).map {
-            Result.success(
-                it.map { dbFood ->
-                    Food(
-                        num = dbFood.foodId.toInt(),
-                        name = dbFood.name,
-                        additives = dbFood.additives
-                    )
-                }
-            )
+            if(it.isEmpty()) {
+                Result.failure(NoLocalDataException())
+            } else {
+                Result.success(
+                    it.map { dbFood ->
+                        Food(
+                            num = dbFood.foodId.toInt(),
+                            name = dbFood.name,
+                            additives = dbFood.additives
+                        )
+                    }
+                )
+            }
         }
     )
 
+    /**
+     * Returns a flow for the list of dates for which food is available from local storage.
+     * Will return a NoLocalDataException if no local data is available.
+     * @return Flow<Result<List<LocalDate>>> List of dates for which food is available
+     */
     override fun getFoodDatesFlow(): Flow<Result<List<LocalDate>>>
         = try {
             database.dbFoodQueries
@@ -433,33 +463,47 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                 .asFlow()
                 .mapToList(Dispatchers.IO)
                 .map {
-                    Result.success(it)
+                    if(it.isEmpty()) Result.failure(NoLocalDataException())
+                    else Result.success(it)
                 }
         } catch(ex: Exception) {
             flow { emit(Result.failure(ex)) }
         }
 
+    /**
+     * Returns the latest food plan from local storage as a list.
+     * Will return a NoLocalDataException if no local data is available.
+     * @return Result<List<Food>> Latest food plan
+     */
     override fun getLatestFoods(): Result<List<Food>> {
         return try {
-            Result.success(
-                database
-                    .dbFoodQueries
-                    .selectLatestFoods()
-                    .executeAsList()
-                    .map {
-                        Food(
-                            num = it.foodId.toInt(),
-                            name = it.name,
-                            additives = it.additives
-                        )
-                    }
-            )
+            val foodList = database
+                .dbFoodQueries
+                .selectLatestFoods()
+                .executeAsList()
+                .map {
+                    Food(
+                        num = it.foodId.toInt(),
+                        name = it.name,
+                        additives = it.additives
+                    )
+                }
+
+            if(foodList.isEmpty())
+                Result.failure(NoLocalDataException())
+            else
+                Result.success(foodList)
 
         } catch(ex: Exception) {
             Result.failure(ex)
         }
     }
 
+    /**
+     * Returns the latest food plan date from local storage.
+     * Will return start of epoch if no local data is available.
+     * @return Result<LocalDate> Latest food plan date
+     */
     override fun getLatestFoodDate(): Result<LocalDate> {
         return try {
             val latestSet = database
@@ -477,6 +521,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    /**
+     * Adds a new food plan to local storage.
+     * @param value Map of date to list of food
+     */
     override suspend fun addFoodMap(value: Map<LocalDate, List<Food>>) {
         database.dbFoodQueries.transaction {
             value.forEach { dayFoods ->
@@ -492,6 +540,11 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    /**
+     * Edits a subject in local storage.
+     * Subject shortName must already exist in database.
+     * @param value Subject to edit
+     */
     override suspend fun updateSubject(value: Subject) {
         database.dbSubjectQueries.updateSubject(
             shortName = value.shortName,
@@ -500,10 +553,17 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         )
     }
 
+    /**
+     * Deletes a subject from local storage.
+     * @param value Subject to delete
+     */
     override suspend fun deleteSubject(value: Subject) {
         database.dbSubjectQueries.deleteSubject(value.shortName)
     }
 
+    /**
+     * Clears past foods from local storage.
+     */
     override suspend fun cleanupFoodPlan() {
         val sevenDaysAgo = Clock.System
             .todayIn(TimeZone.currentSystemDefault())
@@ -511,6 +571,11 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         database.dbFoodQueries.clearOld(sevenDaysAgo)
     }
 
+    /**
+     * Returns a flow for the list of additives from local storage.
+     * Will return empty map if no local data is available.
+     * @return Flow<Result<Map<String, String>>> List of additives
+     */
     override fun getAdditivesFlow(): Flow<Result<Map<String, String>>>
     = tryFlow(
         database.dbAdditiveQueries
@@ -526,6 +591,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
             }
     )
 
+    /**
+     * Adds new additives to local storage.
+     * @param value Map of additives
+     */
     override suspend fun addAllAdditives(value: Map<String, String>) {
         database.dbAdditiveQueries.transaction {
             value.forEach {
@@ -534,6 +603,11 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    /**
+     * Returns a flow for the list of exams from local storage.
+     * Will return a NoLocalDataException if no local data is available.
+     * @return Flow<Result<List<Exam>>> List of exams
+     */
     override fun getExamsFlow(): Flow<Result<List<Exam>>>
     = tryFlow(
         database.dbExamQueries
@@ -541,31 +615,39 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { examList ->
-                Result.success(
-                    examList
-                        .map {
-                            val subject = if(it.subject == null ||
-                                it.subjectLongName == null ||
-                                it.subjectColor == null)
-                                null
-                            else
-                                Subject(
-                                    shortName = it.subject,
-                                    longName = it.subjectLongName,
-                                    color = it.subjectColor
-                                )
+                if(examList.isEmpty()) {
+                    Result.failure(NoLocalDataException())
+                } else {
+                    Result.success(
+                        examList
+                            .map {
+                                val subject = if(it.subject == null ||
+                                    it.subjectLongName == null ||
+                                    it.subjectColor == null)
+                                    null
+                                else
+                                    Subject(
+                                        shortName = it.subject,
+                                        longName = it.subjectLongName,
+                                        color = it.subjectColor
+                                    )
 
-                            Exam(
-                                label = it.label,
-                                date = it.date,
-                                course = it.course,
-                                subject = subject,
-                                isCoursework = it.isCoursework
-                            )}
-                )
+                                Exam(
+                                    label = it.label,
+                                    date = it.date,
+                                    course = it.course,
+                                    subject = subject,
+                                    isCoursework = it.isCoursework
+                                )}
+                    )
+                }
             }
     )
 
+    /**
+     * Returns the latest exams from local storage. Won't emit updates as not a flow!
+     * @return Result<List<Exam>> Latest exams
+     */
     override suspend fun getAllExams(): Result<List<Exam>> {
         return try {
             Result.success(
@@ -592,6 +674,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    /**
+     * Clears all exams and adds new ones from/to local storage.
+     * @param value List of exams
+     */
     override suspend fun clearAndAddAllExams(value: List<Exam>) {
         database.dbExamQueries.transaction {
             database.dbExamQueries.clearAll()
@@ -608,6 +694,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    /**
+     * Adds new exams to local storage.
+     * @param value List of exams
+     */
     override suspend fun addAllExams(value: List<Exam>) {
         database.dbExamQueries.transaction {
             value.forEach {
@@ -622,6 +712,9 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    /**
+     * Clears past exams from local storage.
+     */
     override suspend fun cleanupExams() {
         val aMonthAgo = Clock.System
             .todayIn(TimeZone.currentSystemDefault())
@@ -629,6 +722,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         database.dbExamQueries.clearOlder(aMonthAgo)
     }
 
+    /**
+     * Deletes a given exam from local storage.
+     * @param toDelete Exam to delete
+     */
     override suspend fun deleteExam(toDelete: Exam) {
         database.dbExamQueries.deleteByValues(toDelete.label, toDelete.date)
     }

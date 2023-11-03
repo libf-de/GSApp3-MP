@@ -28,7 +28,7 @@ import kotlinx.datetime.LocalDate
  * @param substitutionApiModels list of substitutions
  */
 data class SubstitutionApiModelSet(
-    val dateStr: String,
+    val dateStr: String?,
     val date: LocalDate,
     val notes: String,
     val substitutionApiModels: List<SubstitutionApiModel>

@@ -49,6 +49,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,14 +66,17 @@ import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.FancyIndicator
 import de.xorg.gsapp.ui.components.FoodplanCard
+import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
+import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.DateUtil
-import de.xorg.gsapp.ui.tools.getErrorAsString
+import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -85,7 +90,9 @@ import org.lighthousegames.logging.logging
 /**
  * The foodplan-tab composable
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalCoroutinesApi::class
+)
 @Composable
 fun FoodplanScreen(
     navController: Navigator
@@ -94,6 +101,12 @@ fun FoodplanScreen(
 
     //val viewModel: GSAppViewModel = koinViewModel(vmClass = GSAppViewModel::class)
     val viewModel: GSAppViewModel = koinInject()
+    val windowSizeClass = calculateWindowSizeClass()
+
+    val listState = rememberLazyListState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        rememberTopAppBarState()
+    )
 
     val foodplan by viewModel.foodFlow
         .mapLatest { it.getOrDefault(emptyMap()) }
@@ -105,18 +118,15 @@ fun FoodplanScreen(
     var currentPageIndex by remember { mutableStateOf(todayIndex) }
 
     with(pagerState) {
-        LaunchedEffect(key1 = currentPageIndex) {
+        LaunchedEffect(currentPageIndex) {
             launch {
                 animateScrollToPage(
-                    page = (currentPageIndex)
+                    page = currentPageIndex
                 )
             }
         }
     }
 
-    //TODO: Have loading/error/... states!!
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-    val listState = rememberLazyListState()
 
     Scaffold(
         modifier = Modifier
@@ -151,11 +161,14 @@ fun FoodplanScreen(
             )
         }
     ) { innerPadding ->
-
         when(viewModel.uiState.foodplanState) {
-            UiState.NORMAL, UiState.NORMAL_FAILED, UiState.NORMAL_LOADING -> {
+            UiState.NORMAL,
+            UiState.NORMAL_FAILED,
+            UiState.NORMAL_LOADING -> {
                 LazyColumn(
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .windowSizeMargins(windowSizeClass),
                     state = listState,
                     verticalArrangement = Arrangement.spacedBy(16.dp) ) {
                     // Tabs
@@ -244,24 +257,37 @@ fun FoodplanScreen(
 
             UiState.EMPTY -> {
                 Column(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalArrangement = Arrangement.Center
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .windowSizeMargins(windowSizeClass),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(stringResource(MR.strings.foodplan_error_empty))
+                    Text(
+                        text = stringResource(MR.strings.foodplan_empty)
+                    )
                 }
+            }
+
+            UiState.EMPTY_LOCAL -> {
+                EmptyLocalComponent(
+                    where = MR.strings.tab_foodplan,
+                    windowSizeClass = windowSizeClass
+                )
             }
 
             UiState.LOADING -> {
                 LoadingComponent(modifier = Modifier.fillMaxSize())
             }
 
-            else -> {
-                Column(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(text = getErrorAsString(viewModel.uiState.foodplanError))
-                }
+            UiState.FAILED -> {
+                FailedComponent(
+                    exception = viewModel.uiState.foodplanError,
+                    where = MR.strings.tab_foodplan,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowSizeMargins(windowSizeClass)
+                )
             }
         }
     }

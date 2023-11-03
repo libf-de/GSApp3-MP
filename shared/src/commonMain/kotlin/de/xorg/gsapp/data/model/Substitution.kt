@@ -18,6 +18,8 @@
 
 package de.xorg.gsapp.data.model
 
+const val DEFAULT_BLANK_STRING = "(kein)"
+
 /**
  * Data class to hold a single substitution plan entry
  * @property type whether it's a cancellation, etc.
@@ -74,11 +76,11 @@ data class Substitution(
             SubstitutionType.BREASTFEED
         else
             SubstitutionType.NORMAL,
-        klass = klass.ifBlank { "(kein)" },
+        klass = klass.ifBlank { DEFAULT_BLANK_STRING },
         lessonNr = lessonNr.ifBlank { "?" },
         origSubject = origSubject,
         substTeacher = substTeacher,
-        substRoom = substRoom.ifBlank { "(kein)" },
+        substRoom = substRoom.ifBlank { DEFAULT_BLANK_STRING },
         substSubject = substSubject,
         notes = notes,
         isNew = isNew
@@ -95,11 +97,11 @@ data class Substitution(
                 origSubject: Subject,
                 substTeacher: Teacher,
                 substSubject: Subject) : this(
-                    klass = primitive.klass.ifBlank { "(kein)" },
+                    klass = primitive.klass.ifBlank { DEFAULT_BLANK_STRING },
                     lessonNr = primitive.lessonNr.ifBlank { "?" },
                     origSubject = origSubject,
                     substTeacher = substTeacher,
-                    substRoom = primitive.substRoom.ifBlank { "(kein)" },
+                    substRoom = primitive.substRoom.ifBlank { DEFAULT_BLANK_STRING },
                     substSubject = substSubject,
                     notes = primitive.notes,
                     isNew = primitive.isNew

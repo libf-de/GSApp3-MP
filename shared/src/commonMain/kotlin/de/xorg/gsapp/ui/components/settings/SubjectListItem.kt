@@ -39,7 +39,6 @@ import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -73,9 +72,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Subject
+import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.materialtools.MaterialColors
 import de.xorg.gsapp.ui.tools.foregroundColorForBackground
-import de.xorg.gsapp.res.MR
 import dev.icerock.moko.resources.compose.stringResource
 
 @Composable
@@ -116,7 +115,7 @@ fun SubjectListItem(
                         focusManager.clearFocus()
                     }
                 ),
-                modifier = Modifier.onKeyEvent {
+                modifier = modifier.onKeyEvent {
                     when (it.key) {
                         Key.Enter -> {
                             onNameEdited(subject, editValue)
@@ -158,15 +157,12 @@ fun SubjectListItem(
                     Box(contentAlignment = Alignment.CenterStart,
                         modifier = Modifier
                             .clearAndSetSemantics { } // Subject color is probably not important for blind people
-                            .padding(start = 5.dp, //TODO: guidelines?
-                                top = 5.dp,
-                                bottom = 5.dp,
-                                end = 10.dp)) {
+                            .padding(horizontal = 16.dp, vertical = 5.dp)) {
 
                         /* Subject Short+Color -> Circle Background */
                         Box(contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(46.dp)
                                 .clip(CircleShape)
                                 .background(subject.color)
                                 .clickable(interactionSource = remember { MutableInteractionSource() },

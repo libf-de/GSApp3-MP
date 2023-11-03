@@ -35,6 +35,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -46,10 +48,12 @@ import androidx.compose.ui.unit.sp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.components.SubstitutionCard
-import de.xorg.gsapp.ui.components.state.ErrorComponent
+import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
+import de.xorg.gsapp.ui.components.state.FailedComponent
+import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
+import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
@@ -60,15 +64,16 @@ import org.koin.compose.koinInject
 /**
  * This is the substitution plan-tab composable
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun SubstitutionsScreen(
     navController: Navigator
 ) {
     //val viewModel: GSAppViewModel = koinViewModel(vmClass = GSAppViewModel::class)
     val viewModel: GSAppViewModel = koinInject()
+    val windowSizeClass = calculateWindowSizeClass()
 
-    val sds by viewModel.subFlow.collectAsStateWithLifecycle(Result.success(SubstitutionSet()))
+    val sds by viewModel.subFlow.collectAsStateWithLifecycle(Result.success(SubstitutionSet.EMPTY))
     var isFirst = false
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -77,7 +82,8 @@ fun SubstitutionsScreen(
 
     Scaffold(
         modifier = Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .padding(bottom = 84.dp),
         topBar = {
             MediumTopAppBar(
                 title = {
@@ -90,28 +96,30 @@ fun SubstitutionsScreen(
                 actions = {
                     IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
                         Icon(imageVector = Icons.Filled.Settings,
-                            contentDescription = "Settings") //TODO: Localize!
+                            contentDescription = stringResource(MR.strings.settings_title))
                     }
                 }
             )
         }
     ) { innerPadding ->
         when(viewModel.uiState.substitutionState) {
-            UiState.NORMAL -> {
+            UiState.NORMAL,
+            UiState.NORMAL_LOADING,
+            UiState.NORMAL_FAILED -> {
                 LazyColumn(
-                    modifier = Modifier.padding(innerPadding).padding(bottom = 80.dp)
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .windowSizeMargins(windowSizeClass)
                 ) {
-                    sds.getOrDefault(SubstitutionSet())
+                    sds.getOrDefault(SubstitutionSet.EMPTY)
                         .substitutions
                         .forEach {
                             item {
                                 Text(
                                     text = it.key,
                                     modifier = Modifier.padding(
-                                        start = 28.dp,
-                                        top = if(!isFirst) 12.dp else 0.dp,
-                                        end = 0.dp,
-                                        bottom = 0.dp
+                                        start = 12.dp,
+                                        top = if(!isFirst) 12.dp else 0.dp
                                     ),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontSize = 20.sp,
@@ -125,38 +133,44 @@ fun SubstitutionsScreen(
                         }
                 }
             }
+
             UiState.LOADING -> {
-                LoadingComponent(modifier = Modifier.fillMaxSize())
+                LoadingComponent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowSizeMargins(windowSizeClass)
+                )
             }
+
             UiState.EMPTY -> {
-                Column(modifier = Modifier.fillMaxSize(),
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowSizeMargins(windowSizeClass),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("keine Vertretungen")
+                    Text(
+                        text = stringResource(MR.strings.subplan_empty)
+                    )
                 }
             }
-            UiState.NO_DATASOURCE -> {
-                Column(modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("keine Vertretungen")
-                }
+
+            UiState.EMPTY_LOCAL -> {
+                EmptyLocalComponent(
+                    where = MR.strings.tab_substitutions,
+                    windowSizeClass = windowSizeClass
+                )
             }
-            else -> {
-                ErrorComponent(
+
+            UiState.FAILED -> {
+                FailedComponent(
                     exception = viewModel.uiState.substitutionError,
-                    where = "Vertretungsplan",
-                    modifier = Modifier.fillMaxSize()
+                    where = MR.strings.tab_substitutions,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowSizeMargins(windowSizeClass)
                 )
             }
         }
-
-
-
-
-
-
     }
-
-
 }

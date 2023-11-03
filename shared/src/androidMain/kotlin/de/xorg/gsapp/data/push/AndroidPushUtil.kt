@@ -19,20 +19,16 @@
 package de.xorg.gsapp.data.push
 
 import android.Manifest.permission.POST_NOTIFICATIONS
-import android.app.Activity
 import android.content.Context
-import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import de.xorg.gsapp.data.repositories.PreferencesRepository
+import de.xorg.gsapp.res.MR
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,9 +37,9 @@ import org.koin.core.component.inject
 
 class AndroidPushUtil : PushNotificationUtil, KoinComponent {
 
-    //private val activity: Activity by inject()
     private val context: Context by inject()
     private val prefRepo: PreferencesRepository by inject()
+    private val TAG = "AndroidPushUtil"
 
     override val isSupported: Boolean = true
 
@@ -54,11 +50,11 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
         Firebase.messaging.subscribeToTopic("substitutions")
             .addOnCompleteListener { task ->
                 callback(task.isSuccessful)
-                var msg = "Push enabled!"
+                var msg = MR.strings.push_enabled_success.getString(context)
                 if (!task.isSuccessful) {
-                    msg = "Failed to enable push :("
+                    msg = MR.strings.push_enabled_failure.getString(context)
                 }
-                Log.d("AndroidPushUtil", msg)
+                Log.d(TAG, msg)
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             }
     }
@@ -70,21 +66,17 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
         Firebase.messaging.unsubscribeFromTopic("substitutions")
             .addOnCompleteListener { task ->
                 callback(task.isSuccessful)
-                var msg = "Push disabled!"
+                var msg = MR.strings.push_disabled_success.getString(context)
                 if (!task.isSuccessful) {
-                    msg = "Failed to disable push :("
+                    msg = MR.strings.push_disabled_failure.getString(context)
                 }
-                Log.d("AndroidPushUtil", msg)
+                Log.d(TAG, msg)
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             }
     }
 
     override fun ensurePushPermissions(callback: (success: Boolean) -> Unit) {
-        var granted = false;
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-
             CoroutineScope(Dispatchers.IO).launch {
                 prefRepo.setAskUserForNotificationPermission(
                     ContextCompat
