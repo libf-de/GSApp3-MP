@@ -73,10 +73,6 @@ fun ColorPicker(
     val v = remember { mutableStateOf(colorState.value?.value() ?: 1f) }
 
     var hex by remember { mutableStateOf(colorState.value.toHexString()) }
-    val cursorPosition = remember { mutableStateOf(0) }
-
-
-    var validHex by remember { mutableStateOf(false) }
 
     LaunchedEffect(colorState.value) {
         h.value = colorState.value?.hue() ?: 0f
@@ -108,24 +104,6 @@ fun ColorPicker(
             HexInputField(
                 colorState
             )
-
-            /*OutlinedTextField(
-                label = { Text(stringResource(MR.strings.dialog_color_hex)) },
-                modifier = Modifier.width(maxDim.dp + 52.dp),
-                value = hex,
-                isError = validHex,
-                onValueChange = {
-                    validHex = it.isValidHexColor()
-
-                    hex = it.substring(0, 7)
-
-                    if(validHex) {
-                        try {
-                            colorState.value = Color.fromHex(it)
-                        } catch (_: Exception) { }
-                    }
-                }
-            )*/
         } else {
             SatValPanel(s, v, h.asFloatState(), modifier.width(maxDim.dp))
             HueBar(h, modifier = Modifier.width(maxDim.dp))

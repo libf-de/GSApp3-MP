@@ -37,20 +37,17 @@ import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.res.MR
 import dev.icerock.moko.resources.compose.stringResource
 
-/*value: String? = null,
-    placeholder: String? = null,
-    label: String? = null,*/
 @Composable
 fun InputTextDialog(
     onConfirm: (String) -> Unit,
     onCancel: () -> Unit,
     title: String? = null,
     message: String? = null,
+    value: String? = null,
+    placeholder: String? = null,
+    label: String? = null,
     modifier: Modifier = Modifier
 ) {
-    val value: String? = null
-    val placeholder: String? = null
-    val label: String? = null
     var inputValue by remember { mutableStateOf(value ?: "") }
 
     AlertDialog(

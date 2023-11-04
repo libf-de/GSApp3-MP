@@ -22,14 +22,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
@@ -37,25 +30,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
@@ -130,6 +108,43 @@ fun FilterSettingsScreen(
 
     val confirmFocusReq = remember { FocusRequester() }
 
+    fun setRole(role: Filter.Role) {
+        if(roleVal != role) { //clear filter
+            filterVal = ""
+            teacherLong = ""
+            teacherCandidate = null
+        }
+        if(Filter.Role.shouldStore(role)) //Store if requested
+            viewModel.setFilter(Filter(role, filterVal))
+
+        roleVal = role //Set new role
+    }
+
+    fun handleTeacherShortChange(value: String) {
+        filterVal = value.uppercase()  //Make input all-caps and alphanumeric
+            .replace(Regex("[^A-Za-z0-9]"), "")
+        isValid = filterVal.length > 2 //Valid if TeacherShort +3 characters
+        teacherCandidate = teachers
+            .getOrDefault(emptyList())
+            .firstOrNull { teacher ->
+                return@firstOrNull teacher.shortName == filterVal
+            }
+        teacherLong = teacherCandidate?.longName ?: ""
+        if(isValid) viewModel.setFilter(Filter(roleVal, filterVal))
+    }
+
+    fun clearFilter() {
+        viewModel.setFilter(Filter.NONE)
+        teacherLong = ""
+        filterVal = ""
+        teacherCandidate = null
+        isValid = false
+    }
+
+    fun handleOnShortEnterPressed() {
+        if (teacherCandidate != null) confirmFocusReq.requestFocus()
+    }
+
     Scaffold(modifier = modifier,
         topBar = {
             TopAppBar(
@@ -159,16 +174,7 @@ fun FilterSettingsScreen(
                     Row(modifier = Modifier.selectable(
                         selected = roleVal == it,
                         onClick = {
-                            if(roleVal != it) { //clear filter
-                                filterVal = ""
-                                teacherLong = ""
-                                teacherCandidate = null
-                            }
-                            if(Filter.Role.shouldStore(it)) //Store if requested
-                                viewModel.setFilter(Filter(it, filterVal))
-
-                            roleVal = it //Set new role
-
+                            setRole(it)
                         }
                     )) {
                         RadioButton(selected = (roleVal == it),
@@ -182,177 +188,208 @@ fun FilterSettingsScreen(
             }
 
 
-            AnimatedVisibility(roleVal == Filter.Role.TEACHER) {
-                Box(modifier = Modifier.padding(bottom = 8.dp)) {
-                    OutlinedTextField(
-                        value = teacherLong,
-                        onValueChange = { },
-                        readOnly = false,
-                        label = { },
-                        isError = !isValid,
-                        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End),
-                        interactionSource = inputInteractionSource,
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                viewModel.setFilter(Filter.NONE)
-                                teacherLong = ""
-                                filterVal = ""
-                                teacherCandidate = null
-                                isValid = false
-                            }) {
-                                Icon(Icons.Default.Clear, "")
-                            }
-                        },
-                        maxLines = 1,
-                        modifier = Modifier.fillMaxWidth().drawWithContent {
-                            if (layoutDirection == LayoutDirection.Rtl) {
-                                clipRect(right = size.width / 3f) {
-                                    this@drawWithContent.drawContent()
-                                }
-                            } else {
-                                clipRect(left = size.width / 3f) {
-                                    this@drawWithContent.drawContent()
-                                }
-                            }
-                        }
-                    )
-
-                    OutlinedTextField(
-                        value = filterVal,
-                        onValueChange = {
-                            filterVal = it.uppercase()  //Make input all-caps and alphanumeric
-                                          .replace(Regex("[^A-Za-z0-9]"), "")
-                            isValid = filterVal.length > 2 //Valid if TeacherShort +3 characters
-                            teacherCandidate = teachers
-                                .getOrDefault(emptyList())
-                                .firstOrNull { teacher ->
-                                    return@firstOrNull teacher.shortName == filterVal
-                                }
-                            teacherLong = teacherCandidate?.longName ?: ""
-                            if(isValid) viewModel.setFilter(Filter(roleVal, filterVal))
-                        },
-                        label = { Text(text = stringResource(MR.strings.filter_dialog_teacher_short)) },
-                        interactionSource = inputInteractionSource,
-                        isError = !isValid,
-                        maxLines = 1,
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                viewModel.setFilter(Filter.NONE)
-                                teacherLong = ""
-                                filterVal = ""
-                                teacherCandidate = null
-                                isValid = false
-                            }) {
-                                Icon(Icons.Default.Clear, "")
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                            .onKeyEvent {
-                                if (it.key == Key.Enter) {
-                                    if (teacherCandidate != null)
-                                        confirmFocusReq.requestFocus()
-                                    return@onKeyEvent true
-                                }
-                                if (!LETTERS.contains(it.key)) return@onKeyEvent true
-                                return@onKeyEvent false
-                            }
-                            .drawWithContent {
-                                if (layoutDirection == LayoutDirection.Rtl) {
-                                    clipRect(left = size.width * 2 / 3f) {
-                                        this@drawWithContent.drawContent()
-                                    }
-                                } else {
-                                    clipRect(right = size.width * 2 / 3f) {
-                                        this@drawWithContent.drawContent()
-                                    }
-                                }
-                            }
-                    )
-
-                }
-            }
+            TeacherTextField(
+                longValue = teacherLong,
+                isValid = isValid,
+                interactionSource = inputInteractionSource,
+                onLongClearPressed = {
+                    clearFilter()
+                },
+                shortValue = filterVal,
+                onShortValueChange = {
+                    handleTeacherShortChange(it)
+                },
+                onShortEnterPressed = ::handleOnShortEnterPressed,
+                onShortClearPressed = {
+                    viewModel.setFilter(Filter.NONE)
+                    teacherLong = ""
+                    filterVal = ""
+                    teacherCandidate = null
+                    isValid = false
+                },
+                visible = roleVal == Filter.Role.TEACHER
+            )
 
 
             LazyColumn(modifier = Modifier) {
-                if(roleVal == Filter.Role.TEACHER)
-                    when (viewModel.teacherState) {
-                        UiState.EMPTY -> item { Text("Es wurden keine Lehrer gefunden, bitte geben Sie ihr Kürzel von Hand ein.") }
-                        UiState.FAILED -> item { Text("Lehrer konnten nicht geladen werden, bitte geben Sie ihr Kürzel von Hand ein.") }
-                        else -> {}
-                    }
+                when {
+                    roleVal == Filter.Role.TEACHER && viewModel.teacherState == UiState.EMPTY
+                    -> item { Text("Es wurden keine Lehrer gefunden, bitte geben Sie ihr Kürzel von Hand ein.") }
+
+                    roleVal == Filter.Role.TEACHER && viewModel.teacherState == UiState.FAILED
+                    -> item { Text("Lehrer konnten nicht geladen werden, bitte geben Sie ihr Kürzel von Hand ein.") }
+                }
 
                 item {
                     Divider(modifier = Modifier.fillMaxWidth().height(1.dp))
                 }
 
-                if(roleVal == Filter.Role.TEACHER) {
-                    if(viewModel.teacherState == UiState.NORMAL &&
-                        teacherCandidate == null) {
+                when {
+                    roleVal == Filter.Role.TEACHER &&
+                    viewModel.teacherState == UiState.NORMAL &&
+                    teacherCandidate == null -> {
                         items(teachers.getOrDefault(emptyList()).filter { teacher ->
-                            return@filter teacher.shortName
-                                .lowercase()
-                                .contains(filterVal.lowercase())
+                            return@filter teacher.shortName.lowercase().contains(filterVal.lowercase())
                                     || teacher.longName.contains(filterVal.lowercase())
                         }) {
-                            Column(
-                                Modifier
-                                    .animateItemPlacement()
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        onClick = {
-                                            filterVal = it.shortName.uppercase()
-                                            teacherLong = it.longName
-                                            isValid = true
-                                            viewModel.setFilter(
-                                                Filter(
-                                                    role = Filter.Role.TEACHER,
-                                                    value = it.shortName.uppercase()
-                                                )
-                                            )
-                                        },
-                                        indication = rememberRipple(bounded = true)
+                            TextItem(
+                                onClick = {
+                                    filterVal = it.shortName.uppercase()
+                                    teacherLong = it.longName
+                                    isValid = true
+                                    viewModel.setFilter(
+                                        Filter(
+                                            role = Filter.Role.TEACHER,
+                                            value = it.shortName.uppercase()
+                                        )
                                     )
-                            ) {
-                                Text(
-                                    text = "${it.shortName} ⸺ ${it.longName}",
-                                    modifier = Modifier.padding(12.dp),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = if (it.longName == teacherLong)
-                                        MaterialTheme.colorScheme.primary
-                                    else Color.Unspecified
-                                )
-                                Divider(
-                                    modifier = Modifier.fillMaxWidth()
-                                        .height(1.dp)
-                                )
-                            }
-                        }
-                    } else if(viewModel.teacherState == UiState.LOADING) {
-                        for(i in 0..20) {
-                            item {
-                                SkeletonClassListItem(Modifier.animateItemPlacement())
-                            }
+                                },
+                                text = "${it.shortName} ⸺ ${it.longName}",
+                                selected = it.longName == teacherLong
+                            )
                         }
                     }
-                } else if(roleVal == Filter.Role.STUDENT) {
-                    items(classList) { className ->
-                        ClassListItem(
-                            label = className,
-                            highlight = className == filterVal,
-                            modifier = Modifier.animateItemPlacement())
-                        {
-                            filterVal = className
-                            viewModel.setFilter(
-                                Filter(
-                                    role = Filter.Role.STUDENT,
-                                    value = className
+
+                    roleVal == Filter.Role.TEACHER && viewModel.teacherState == UiState.LOADING -> {
+                        items(List(20) { "" }) {
+                            SkeletonClassListItem(Modifier.animateItemPlacement())
+                        }
+                    }
+
+                    roleVal == Filter.Role.STUDENT -> {
+                        items(classList) { className ->
+                            ClassListItem(
+                                label = className,
+                                highlight = className == filterVal,
+                                modifier = Modifier.animateItemPlacement())
+                            {
+                                filterVal = className
+                                viewModel.setFilter(
+                                    Filter(
+                                        role = Filter.Role.STUDENT,
+                                        value = className
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
             }
 
+        }
+    }
+}
+
+@Composable
+fun TeacherTextField(
+    longValue: String,
+    isValid: Boolean,
+    interactionSource: MutableInteractionSource,
+    onLongClearPressed: () -> Unit = {},
+    shortValue: String,
+    onShortValueChange: (String) -> Unit,
+    onShortClearPressed: () -> Unit = {},
+    onShortEnterPressed: () -> Unit = {},
+    visible: Boolean
+) {
+    AnimatedVisibility(visible) {
+        Box(modifier = Modifier.padding(bottom = 8.dp)) {
+            OutlinedTextField(
+                value = longValue,
+                onValueChange = { },
+                readOnly = false,
+                label = { },
+                isError = !isValid,
+                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End),
+                interactionSource = interactionSource,
+                trailingIcon = {
+                    IconButton(onClick = onLongClearPressed) {
+                        Icon(Icons.Default.Clear, "")
+                    }
+                },
+                maxLines = 1,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clipToRect(ratio = 1 / 3f, direction = ClipDirection.End)
+            )
+
+            OutlinedTextField(
+                value = shortValue,
+                onValueChange = onShortValueChange,
+                label = { Text(text = stringResource(MR.strings.filter_dialog_teacher_short)) },
+                interactionSource = interactionSource,
+                isError = !isValid,
+                maxLines = 1,
+                trailingIcon = {
+                    IconButton(onClick = onShortClearPressed) {
+                        Icon(Icons.Default.Clear, "")
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onKeyEvent {
+                        if (it.key == Key.Enter) {
+                            onShortEnterPressed()
+                            return@onKeyEvent true
+                        }
+                        if (!LETTERS.contains(it.key)) return@onKeyEvent true
+                        return@onKeyEvent false
+                    }
+                    .clipToRect(ratio = 2 / 3f, direction = ClipDirection.Start)
+
+            )
+
+        }
+    }
+}
+
+@Composable
+private fun TextItem(
+    onClick: () -> Unit,
+    text: String,
+    selected: Boolean
+) {
+    Column(
+        Modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = onClick,
+                indication = rememberRipple(bounded = true)
+            )
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(12.dp),
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (selected)
+                MaterialTheme.colorScheme.primary
+            else Color.Unspecified
+        )
+        Divider(
+            modifier = Modifier.fillMaxWidth()
+                .height(1.dp)
+        )
+    }
+}
+
+private enum class ClipDirection {
+    Start, End
+}
+
+private fun Modifier.clipToRect(ratio: Float, direction: ClipDirection): Modifier {
+    return this.drawWithContent {
+        var clipRight = direction == ClipDirection.End
+        if(layoutDirection == LayoutDirection.Ltr) {
+            clipRight = !clipRight
+        }
+        if (clipRight) {
+            clipRect(right = size.width * ratio) {
+                this@drawWithContent.drawContent()
+            }
+        } else {
+            clipRect(left = size.width * ratio) {
+                this@drawWithContent.drawContent()
+            }
         }
     }
 }
