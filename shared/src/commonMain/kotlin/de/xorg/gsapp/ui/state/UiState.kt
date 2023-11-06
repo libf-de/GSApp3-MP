@@ -21,7 +21,7 @@ package de.xorg.gsapp.ui.state
 /**
  * Loading states for the main app tabs.
  */
-enum class UiState {
+/*enum class UiState {
     LOADING, // Show loading component
     NORMAL_LOADING, // Data loaded, but also still refreshing
     NORMAL_FAILED, // Data loaded, but refreshing failed
@@ -29,4 +29,14 @@ enum class UiState {
     EMPTY_LOCAL, // There is no local data available.
     EMPTY, // There are no entries in the loaded plan.
     NORMAL // Data was loaded successfully, display the data!
+}*/
+
+sealed class UiState<out T> {
+    object Loading : UiState<Nothing>()
+    data class NormalLoading<T>(val data: T) : UiState<T>()
+    data class NormalFailed<T>(val data: T, val exception: Exception) : UiState<T>()
+    data class Failure(val exception: Exception) : UiState<Nothing>()
+    data class Normal<T>(val data: T) : UiState<T>()
+    object Empty : UiState<Nothing>()
+    object EmptyLocal : UiState<Nothing>()
 }

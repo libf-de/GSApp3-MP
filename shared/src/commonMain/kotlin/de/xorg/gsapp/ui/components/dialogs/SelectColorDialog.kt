@@ -57,6 +57,7 @@ import dev.icerock.moko.resources.compose.stringResource
 
 @Composable
 fun SelectColorDialog(
+    visible: Boolean,
     onConfirm: (Color) -> Unit,
     onCancel: () -> Unit,
     showButtons: Boolean = true,
@@ -66,116 +67,125 @@ fun SelectColorDialog(
     pickMode: ColorPickerMode = ColorPickerMode.default,
     onPickModeChanged: (ColorPickerMode) -> Unit = { _ -> }
 ) {
-    val selectedColor = remember { mutableStateOf(preselectedColor) }
-    val selectedHarmonizedColor = remember { mutableStateOf(preselectedColor) }
-    val selectedPickMode = remember { mutableStateOf(pickMode) }
+    if(visible) {
+        val selectedColor = remember { mutableStateOf(preselectedColor) }
+        val selectedHarmonizedColor = remember { mutableStateOf(preselectedColor) }
+        val selectedPickMode = remember { mutableStateOf(pickMode) }
 
-    val orientation = remember { mutableStateOf(ScreenOrientation.SQUARE) }
+        val orientation = remember { mutableStateOf(ScreenOrientation.SQUARE) }
 
-    LaunchedEffect(selectedPickMode.value) {
-        onPickModeChanged(selectedPickMode.value)
-    }
-
-    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
-    LaunchedEffect(selectedColor.value, MaterialTheme.colorScheme.primary) {
-        selectedHarmonizedColor.value = selectedColor
-            .value
-            ?.toArgb()
-            ?.let {
-                MaterialColors.harmonize(
-                    colorToHarmonize = it,
-                    colorToHarmonizeWith = primaryColor
-                )
-            }
-            ?.let { Color(it) }
-    }
-
-    /**
-     * Bodge-fix to get window/screen orientation
-     * TODO: Use proper way if there is one.
-     */
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .onSizeChanged {
-            orientation.value = it.getOrientation()
+        LaunchedEffect(selectedPickMode.value) {
+            onPickModeChanged(selectedPickMode.value)
         }
-    )
 
-    AlertDialog(
-        onDismissRequest = onCancel,
-        title = {
-            if(title != null)
-                Text(text = title)
-        },
-        text = {
-            Column {
-                if(message != null)
-                    Text(text = message)
-
-                Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly) {
-
-                    ColorPickerMode.entries.forEach {
-                        Row(modifier = Modifier.selectable(
-                            selected = selectedPickMode.value == it,
-                            onClick = {
-                                selectedPickMode.value = it
-                            }
-                        )) {
-                            RadioButton(selected = (selectedPickMode.value == it),
-                                onClick = null // null recommended for accessibility with screen readers
-                            )
-                            Text(modifier = Modifier.padding(start = 4.dp).height(
-                                IntrinsicSize.Max),
-                                text = stringResource(it.labelResource) )
-                        }
-                    }
+        val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+        LaunchedEffect(selectedColor.value, MaterialTheme.colorScheme.primary) {
+            selectedHarmonizedColor.value = selectedColor
+                .value
+                ?.toArgb()
+                ?.let {
+                    MaterialColors.harmonize(
+                        colorToHarmonize = it,
+                        colorToHarmonizeWith = primaryColor
+                    )
                 }
+                ?.let { Color(it) }
+        }
 
-                when(selectedPickMode.value) {
-                    ColorPickerMode.SIMPLE -> {
-                        ColorListPicker(colorState = selectedColor)
-                    }
-
-                    ColorPickerMode.ADVANCED -> {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            ColorPicker(
-                                colorState = selectedColor,
-                                orientation = orientation.value,
-                                maxDim = 200,
-                                modifier = Modifier.fillMaxWidth())
-                        }
-                    }
-                }
+        /**
+         * Bodge-fix to get window/screen orientation
+         * TODO: Use proper way if there is one.
+         */
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .onSizeChanged {
+                orientation.value = it.getOrientation()
             }
-        },
-        confirmButton = {
-            if(showButtons) {
-                Button(
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = selectedHarmonizedColor.value ?: Color.Transparent,
-                        contentColor = foregroundColorForBackground(selectedHarmonizedColor.value)
-                    ),
+        )
+
+        AlertDialog(
+            onDismissRequest = onCancel,
+            title = {
+                if (title != null)
+                    Text(text = title)
+            },
+            text = {
+                Column {
+                    if (message != null)
+                        Text(text = message)
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+
+                        ColorPickerMode.entries.forEach {
+                            Row(modifier = Modifier.selectable(
+                                selected = selectedPickMode.value == it,
+                                onClick = {
+                                    selectedPickMode.value = it
+                                }
+                            )) {
+                                RadioButton(
+                                    selected = (selectedPickMode.value == it),
+                                    onClick = null // null recommended for accessibility with screen readers
+                                )
+                                Text(
+                                    modifier = Modifier.padding(start = 4.dp).height(
+                                        IntrinsicSize.Max
+                                    ),
+                                    text = stringResource(it.labelResource)
+                                )
+                            }
+                        }
+                    }
+
+                    when (selectedPickMode.value) {
+                        ColorPickerMode.SIMPLE -> {
+                            ColorListPicker(colorState = selectedColor)
+                        }
+
+                        ColorPickerMode.ADVANCED -> {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                ColorPicker(
+                                    colorState = selectedColor,
+                                    orientation = orientation.value,
+                                    maxDim = 200,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                if (showButtons) {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = selectedHarmonizedColor.value ?: Color.Transparent,
+                            contentColor = foregroundColorForBackground(selectedHarmonizedColor.value)
+                        ),
+                        onClick = {
+                            onConfirm(selectedHarmonizedColor.value ?: Color.Unspecified)
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(MR.strings.dialog_save)
+                        )
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
                     onClick = {
-                        onConfirm(selectedHarmonizedColor.value ?: Color.Unspecified)
+                        onCancel()
                     }
                 ) {
                     Text(
-                        text = stringResource(MR.strings.dialog_save)
+                        text = stringResource(MR.strings.dialog_cancel)
                     )
                 }
             }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onCancel()
-                }
-            ) {
-                Text(
-                    text = stringResource(MR.strings.dialog_cancel)
-                )
-            }
-        }
-    )
+        )
+    }
 }

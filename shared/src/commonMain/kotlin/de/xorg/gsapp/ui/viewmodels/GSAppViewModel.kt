@@ -18,6 +18,7 @@
 
 package de.xorg.gsapp.ui.viewmodels
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -31,6 +32,7 @@ import de.xorg.gsapp.ui.state.UiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.shareIn
@@ -116,12 +118,22 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         updateSubstitutions()
     }
 
+    private suspend fun <T> SharedFlow<T>.updateData(uiState: MutableState<AppState>) {
+        this.collect {
+            uiState.value =
+        }
+    }
+
     private fun initStateFromFlows() {
         viewModelScope.launch {
             subFlow.collect {
                 uiState = if (it.isFailure) {
                     if (it.exceptionOrNull() is NoLocalDataException) {
-                        uiState.copy(substitutionState = UiState.EMPTY_LOCAL)
+                        if(uiState.substitutionState == UiState.LOADING) {
+                            uiState.copy(substitutionState = UiState.LOADING)
+                        } else {
+                            uiState.copy(substitutionState = UiState.EMPTY_LOCAL)
+                        }
                     } else {
                         if (uiState.substitutionState == UiState.NORMAL_LOADING ||
                             uiState.substitutionState == UiState.NORMAL

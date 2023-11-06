@@ -162,6 +162,7 @@ fun FoodplanScreen(
         }
     ) { innerPadding ->
         when(viewModel.uiState.foodplanState) {
+            is UiState.Normal
             UiState.NORMAL,
             UiState.NORMAL_FAILED,
             UiState.NORMAL_LOADING -> {

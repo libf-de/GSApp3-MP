@@ -39,6 +39,7 @@ import dev.icerock.moko.resources.compose.stringResource
 
 @Composable
 fun InputTextDialog(
+    visible: Boolean,
     onConfirm: (String) -> Unit,
     onCancel: () -> Unit,
     title: String? = null,
@@ -50,52 +51,62 @@ fun InputTextDialog(
 ) {
     var inputValue by remember { mutableStateOf(value ?: "") }
 
-    AlertDialog(
-        onDismissRequest = onCancel,
-        title = {
-            if(title != null)
-                Text(text = title)
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                if(message != null)
-                    Text(text = message)
+    if(visible) {
+        AlertDialog(
+            onDismissRequest = onCancel,
+            title = {
+                OptionalText(text = title)
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OptionalText(text = message)
 
-                OutlinedTextField(
-                    value = inputValue,
-                    label = { if(label != null) Text(label) },
-                    onValueChange = { text -> inputValue = text.capitalize(Locale.current) },
-                    placeholder = { if(placeholder != null) Text(placeholder) },
-                    isError = inputValue.isBlank(),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                enabled = inputValue.isNotBlank(),
-                onClick = {
-                    onConfirm(inputValue)
+                    OutlinedTextField(
+                        value = inputValue,
+                        label = {  },
+                        onValueChange = { text -> inputValue = text.capitalize(Locale.current) },
+                        placeholder = { OptionalText(placeholder) },
+                        isError = inputValue.isBlank(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
-            ) {
-                Text(
-                    text = stringResource(MR.strings.dialog_save)
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onCancel()
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = inputValue.isNotBlank(),
+                    onClick = {
+                        onConfirm(inputValue)
+                    }
+                ) {
+                    Text(
+                        text = stringResource(MR.strings.dialog_save)
+                    )
                 }
-            ) {
-                Text(
-                    text = stringResource(MR.strings.dialog_cancel)
-                )
-            }
-        },
-        modifier = modifier
-    )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        onCancel()
+                    }
+                ) {
+                    Text(
+                        text = stringResource(MR.strings.dialog_cancel)
+                    )
+                }
+            },
+            modifier = modifier
+        )
+    }
+}
+
+@Composable
+fun OptionalText(
+    text: String?,
+    modifier: Modifier = Modifier
+) {
+    if(text != null) {
+        Text(text = text, modifier = modifier)
+    }
 }

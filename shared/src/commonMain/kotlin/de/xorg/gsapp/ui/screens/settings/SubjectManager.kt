@@ -35,28 +35,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AlertDialogDefaults
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -96,13 +78,21 @@ fun SubjectManager(
 
     var colorEditShow by remember { mutableStateOf(false) }
     var colorEditSubject by remember { mutableStateOf<Subject?>(null) }
+    fun handleEditColor(subject: Subject) {
+        colorEditSubject = subject
+        colorEditShow = true
+    }
 
     var showAddNewDialog by remember { mutableStateOf(false) }
 
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    val showDeleteDialog = remember { mutableStateOf(false) }
     var subjectToDelete by remember { mutableStateOf(Subject.emptySubject) }
+    fun handleDeleteSubject(subject: Subject) {
+        subjectToDelete = subject
+        showDeleteDialog.value = true
+    }
 
-    var showResetDialog by remember { mutableStateOf(false) }
+    val showResetDialog = remember { mutableStateOf(false) }
 
     Scaffold(modifier = modifier,
         topBar = {
@@ -125,7 +115,7 @@ fun SubjectManager(
                     }
 
                     IconButton(onClick = {
-                            showResetDialog = true
+                            showResetDialog.value = true
                     }) {
                         Icon(painter = painterResource(MR.images.reset),
                              contentDescription = stringResource(MR.strings.subject_manager_reset_dialog_title))
@@ -142,145 +132,51 @@ fun SubjectManager(
             }
         }
     ) {
-        if(colorEditShow) {
-            SelectColorDialog(
-                onConfirm = { selectedColor ->
-                    colorEditShow = false
-                    if(colorEditSubject != null)
-                        viewModel.updateSubject(colorEditSubject!!, color = selectedColor)
-                },
-                onCancel = {
-                    colorEditShow = false
-                },
-                preselectedColor = colorEditSubject?.color,
-                title = stringResource(MR.strings.subject_manager_colorpicker_title,
-                    colorEditSubject?.longName ?: stringResource(MR.strings.subject_manager_colorpicker_nullsubject)
-                ),
-                pickMode = viewModel.colorpickerMode.value,
-                onPickModeChanged = { pickerMode -> viewModel.setColorpickerMode(pickerMode) }
-            )
-        }
 
-        if(showAddNewDialog) {
-            InputTextDialog(
-                onConfirm = { shortName ->
-                    viewModel.addSubject(Subject(shortName = shortName))
-                    showAddNewDialog = false
-                },
-                onCancel = { showAddNewDialog = false },
-                title = stringResource(MR.strings.subject_manager_add_title),
-                message = stringResource(MR.strings.subject_manager_add_desc),
+        SelectColorDialog(
+            visible = colorEditShow,
+            onConfirm = { selectedColor ->
+                colorEditShow = false
+                if(colorEditSubject != null)
+                    viewModel.updateSubject(colorEditSubject!!, color = selectedColor)
+            },
+            onCancel = {
+                colorEditShow = false
+            },
+            preselectedColor = colorEditSubject?.color,
+            title = stringResource(MR.strings.subject_manager_colorpicker_title,
+                colorEditSubject?.longName ?: stringResource(MR.strings.subject_manager_colorpicker_nullsubject)
+            ),
+            pickMode = viewModel.colorpickerMode.value,
+            onPickModeChanged = { pickerMode -> viewModel.setColorpickerMode(pickerMode) }
+        )
 
-                modifier = Modifier.width(300.dp)
-            )
-        }
+        InputTextDialog(
+            visible = showAddNewDialog,
+            onConfirm = { shortName ->
+                viewModel.addSubject(Subject(shortName = shortName))
+                showAddNewDialog = false
+            },
+            onCancel = { showAddNewDialog = false },
+            title = stringResource(MR.strings.subject_manager_add_title),
+            message = stringResource(MR.strings.subject_manager_add_desc),
 
-        if(showDeleteDialog && subjectToDelete.isNotBlank()) {
-            AlertDialog(
-                onDismissRequest = {
-                    showDeleteDialog = false
-                    subjectToDelete = Subject.emptySubject
-                },
-                title = { Text(stringResource(MR.strings.dialog_delete_title)) },
-                text = { Text(stringResource(MR.strings.dialog_delete_text, subjectToDelete.shortName, subjectToDelete.longName)) },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            viewModel.deleteSubject(subjectToDelete)
-                            showDeleteDialog = false
-                            subjectToDelete = Subject.emptySubject
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(MR.strings.dialog_delete_confirm),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            showDeleteDialog = false
-                            subjectToDelete = Subject.emptySubject
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(MR.strings.dialog_cancel)
-                        )
-                    }
-                },
-                modifier = modifier
-            )
-        }
+            modifier = Modifier.width(300.dp)
+        )
 
-        if(showResetDialog) {
-            AlertDialog(onDismissRequest = {
-                showResetDialog = false
-            }) {
-                Surface(
-                    color = AlertDialogDefaults.containerColor,
-                    shape = RoundedCornerShape(28.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(all = 24.dp)
-                    ) {
-                        Text(
-                            text = stringResource(MR.strings.subject_manager_reset_dialog_title),
-                            style = MaterialTheme.typography.headlineMedium,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
 
-                        Text(
-                            text = stringResource(MR.strings.subject_manager_reset_dialog_text),
-                            modifier = Modifier.padding(bottom = 24.dp)
-                        )
+        DeleteSubjectDialog(
+            visibleState = showDeleteDialog,
+            onDeletePressed = { viewModel.deleteSubject(subjectToDelete); subjectToDelete = Subject.emptySubject },
+            onCancelPressed = { subjectToDelete = Subject.emptySubject },
+            subjectToDelete = subjectToDelete
+        )
 
-                        Button(
-                            onClick = { viewModel.resetSubjects(); showResetDialog = false },
-                            shape = RoundedCornerShape(bottomStart = 4.dp,
-                                                       bottomEnd = 4.dp,
-                                                       topStart = 12.dp,
-                                                       topEnd = 12.dp),
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
-                        ) {
-                            Text(
-                                text = stringResource(MR.strings.subject_manager_reset_dialog_replace),
-                                style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
-
-                        Button(
-                            onClick = { viewModel.updateSubjects(true); showResetDialog = false },
-                            shape = RoundedCornerShape(4.dp),
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
-                        ) {
-                            Text(
-                                text = stringResource(MR.strings.subject_manager_reset_dialog_adddefault),
-                                style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
-
-                        Button(
-                            onClick = { showResetDialog = false },
-                            shape = RoundedCornerShape(topStart = 4.dp,
-                                                       topEnd = 4.dp,
-                                                       bottomStart = 12.dp,
-                                                       bottomEnd = 12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = stringResource(MR.strings.dialog_cancel),
-                                style = MaterialTheme.typography.labelLarge,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
-                    }
-                }
-
-            }
-        }
+        ResetSubjectsDialog(
+            visibleState = showResetDialog,
+            onResetPressed = { viewModel.resetSubjects() },
+            onUpdatePressed = { viewModel.updateSubjects(true) }
+        )
 
         when(viewModel.subjectsState) {
             UiState.LOADING -> {
@@ -350,17 +246,14 @@ fun SubjectManager(
                                 animationSpec = tween(500)
                             ),
                             subject = subject,
-                            onDelete = { sub -> subjectToDelete = sub; showDeleteDialog = true },
+                            onDelete = ::handleDeleteSubject,
                             onNameEdited = { sub, name ->
                                 viewModel.updateSubject(
                                     oldSubject = sub,
                                     longName = name
                                 )
                             },
-                            onColorClick = { sub ->
-                                colorEditSubject = sub
-                                colorEditShow = true
-                            }
+                            onColorClick = ::handleEditColor
                         )
                     }
 
@@ -370,6 +263,142 @@ fun SubjectManager(
                     }
                 }
             }
+        }
+    }
+}
+
+
+@Composable
+fun DeleteSubjectDialog(
+    visibleState: MutableState<Boolean>,
+    onDeletePressed: () -> Unit,
+    onCancelPressed: () -> Unit,
+    subjectToDelete: Subject,
+    modifier: Modifier = Modifier
+    ) {
+    if(visibleState.value && subjectToDelete.isNotBlank()) {
+        AlertDialog(
+            onDismissRequest = {
+                visibleState.value = false
+                onCancelPressed()
+            },
+            title = {
+                Text(
+                    text = stringResource(MR.strings.dialog_delete_title)
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(
+                        MR.strings.dialog_delete_text,
+                        subjectToDelete.shortName,
+                        subjectToDelete.longName)
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        visibleState.value = false
+                        onDeletePressed()
+                    }
+                ) {
+                    Text(
+                        text = stringResource(MR.strings.dialog_delete_confirm),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        visibleState.value = false
+                        onCancelPressed()
+                    }
+                ) {
+                    Text(
+                        text = stringResource(MR.strings.dialog_cancel)
+                    )
+                }
+            },
+            modifier = modifier
+        )
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ResetSubjectsDialog(
+    visibleState: MutableState<Boolean>,
+    onResetPressed: () -> Unit,
+    onUpdatePressed: () -> Unit,
+) {
+    if(visibleState.value) {
+        AlertDialog(onDismissRequest = {
+            visibleState.value = false
+        }) {
+            Surface(
+                color = AlertDialogDefaults.containerColor,
+                shape = RoundedCornerShape(28.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(all = 24.dp)
+                ) {
+                    Text(
+                        text = stringResource(MR.strings.subject_manager_reset_dialog_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Text(
+                        text = stringResource(MR.strings.subject_manager_reset_dialog_text),
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
+
+                    Button(
+                        onClick = { onResetPressed(); visibleState.value = false },
+                        shape = RoundedCornerShape(bottomStart = 4.dp,
+                            bottomEnd = 4.dp,
+                            topStart = 12.dp,
+                            topEnd = 12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(MR.strings.subject_manager_reset_dialog_replace),
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+
+                    Button(
+                        onClick = { onUpdatePressed(); visibleState.value = false },
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(MR.strings.subject_manager_reset_dialog_adddefault),
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+
+                    Button(
+                        onClick = { visibleState.value = false },
+                        shape = RoundedCornerShape(topStart = 4.dp,
+                            topEnd = 4.dp,
+                            bottomStart = 12.dp,
+                            bottomEnd = 12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = stringResource(MR.strings.dialog_cancel),
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                }
+            }
+
         }
     }
 }
