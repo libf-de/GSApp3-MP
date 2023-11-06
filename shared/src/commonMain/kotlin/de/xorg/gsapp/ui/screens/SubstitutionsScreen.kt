@@ -18,6 +18,11 @@
 
 package de.xorg.gsapp.ui.screens
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,11 +43,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,6 +59,8 @@ import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
 import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
+import de.xorg.gsapp.ui.state.isLoading
+import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
@@ -73,6 +80,15 @@ fun SubstitutionsScreen(
     //val viewModel: GSAppViewModel = koinViewModel(vmClass = GSAppViewModel::class)
     val viewModel: GSAppViewModel = koinInject()
     val windowSizeClass = calculateWindowSizeClass()
+
+    /*val infiniteTransition = rememberInfiniteTransition()
+    val angle by infiniteTransition.animateFloat(
+        initialValue = 0F,
+        targetValue = 360F,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing)
+        )
+    )*/
 
     val sds by viewModel.subFlow.collectAsStateWithLifecycle(Result.success(SubstitutionSet.EMPTY))
     var isFirst = false
@@ -102,6 +118,14 @@ fun SubstitutionsScreen(
                     IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
                         Icon(imageVector = Icons.Filled.Settings,
                             contentDescription = stringResource(MR.strings.settings_title))
+                    }
+
+                    IconButton(onClick = { viewModel.updateSubstitutions() }) {
+                        Icon(imageVector = Icons.Rounded.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.spinAnimation(
+                                viewModel.uiState.substitutionState.isLoading()
+                            ))
                     }
                 }
             )
@@ -178,4 +202,8 @@ fun SubstitutionsScreen(
             }
         }
     }
+}
+
+private fun Float.isAboutNormal(): Boolean {
+    return this in 355F .. 360F
 }

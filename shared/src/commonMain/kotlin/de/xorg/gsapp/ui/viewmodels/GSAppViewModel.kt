@@ -95,6 +95,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         replay = 1
     )
 
+
     val foodFlow = appRepo.getFoodplan().shareIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -116,12 +117,6 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         updateExams()
         updateFoodplan()
         updateSubstitutions()
-    }
-
-    private suspend fun <T> SharedFlow<T>.updateData(uiState: MutableState<AppState>) {
-        this.collect {
-            uiState.value =
-        }
     }
 
     private fun initStateFromFlows() {
@@ -242,7 +237,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    private fun updateSubstitutions() {
+    fun updateSubstitutions() {
         log.d { "updating substitutions started" }
         uiState = if(uiState.substitutionState == UiState.NORMAL)
             uiState.copy(substitutionState = UiState.NORMAL_LOADING)
