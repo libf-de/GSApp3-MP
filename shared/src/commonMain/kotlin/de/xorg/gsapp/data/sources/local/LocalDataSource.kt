@@ -61,6 +61,12 @@ interface LocalDataSource {
      * Adds a new SubstitutionSet to local storage.
      * @param value SubstitutionSet to add
      */
+    suspend fun addSubstitutionPlanAndCleanup(value: SubstitutionApiModelSet)
+
+    /**
+     * Adds a new SubstitutionSet to local storage.
+     * @param value SubstitutionSet to add
+     */
     suspend fun addSubstitutionPlan(value: SubstitutionApiModelSet)
 
     /**

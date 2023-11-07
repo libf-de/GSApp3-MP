@@ -112,15 +112,22 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
     }
 
     private suspend fun handleMessage(remoteMessage: RemoteMessage) {
-        val pushState = prefRepo.getPushFlow().lastOrNull() ?: PushState.default
-        val filter = prefRepo.getFilterFlow().lastOrNull() ?: Filter.NONE
+        println("in handleMessage")
+        val pushState = prefRepo.getPush()
+        val filter = prefRepo.getFilter()
+        //val pushState = prefRepo.getPushFlow().lastOrNull() ?: PushState.default
+        //val filter = prefRepo.getFilterFlow().lastOrNull() ?: Filter.NONE
+        println("in after load settings")
 
-        if (pushState == PushState.DISABLED) return
-
+        if (pushState == PushState.DISABLED) {
+            println("push is disabled :/")
+            return
+        }
 
         if (pushState == PushState.LIKE_FILTER &&
             remoteMessage.data.isNotEmpty()
         ) {
+            println("in like filter")
             // Don't notify (=return) if FilterRole matches, but remote data doesn't contain the filter value
             if (filter.role == Filter.Role.TEACHER &&
                 remoteMessage.data["teachers"]?.contains(filter.value) != true
@@ -129,11 +136,13 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
             if (filter.role == Filter.Role.STUDENT &&
                 remoteMessage.data["classes"]?.contains(filter.value) != true
             ) return
+            println("out like filter")
         }
 
+        println("before repository")
         val appRepository: GSAppRepository by inject()
         appRepository.updateSubstitutions {
-            if (it.getOrDefault(false)) {
+            /*if (it.getOrDefault(false)) {*/
                 // Update was successful -> show preview in notification
                 scope.launch {
                     appRepository.getSubstitutions().collectLatest { subSet ->
@@ -145,9 +154,9 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
                     }
                 }
 
-            } else {
+            /*} else {
                 postSubstitutionNotification(context = this@GSAppFirebaseMessagingService)
-            }
+            }*/
 
 
             Log.d(

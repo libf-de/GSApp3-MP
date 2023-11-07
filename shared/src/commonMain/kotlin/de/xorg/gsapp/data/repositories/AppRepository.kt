@@ -129,8 +129,9 @@ class AppRepository : GSAppRepository, KoinComponent {
                 //If remote plan is different from latest local -> store it!
                 if(localLatestHash.getOrNull()!!.first != this.getOrNull()!!.hashCode()) {
                     log.d { "got new plan!" }
-                    localDataSource.addSubstitutionPlan(this.getOrNull()!!)
-                    localDataSource.cleanupSubstitutionPlan()
+                    localDataSource.addSubstitutionPlanAndCleanup(this.getOrNull()!!)
+                    /*localDataSource.addSubstitutionPlan(this.getOrNull()!!)
+                    localDataSource.cleanupSubstitutionPlan()*/
                     callback(Result.success(true))
                 } else {
                     log.d { "no new plan!" }

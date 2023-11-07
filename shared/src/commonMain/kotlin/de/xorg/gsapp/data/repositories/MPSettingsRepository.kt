@@ -138,6 +138,13 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
         Filter(role ,value)
     }
 
+    override suspend fun getFilter(): Filter {
+        return Filter(
+            Filter.Role.fromInt(appSettings.getInt(PrefKeys.FilterRole, Filter.Role.default.value)),
+            appSettings.getString(PrefKeys.FilterValue, "")
+        )
+    }
+
     override suspend fun setFilter(value: Filter) {
         appSettings.putInt(PrefKeys.FilterRole, value.role.value)
         appSettings.putString(PrefKeys.FilterValue, value.value)

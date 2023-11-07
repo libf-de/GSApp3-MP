@@ -51,6 +51,7 @@ interface PreferencesRepository {
 
 
     fun getFilterFlow(): Flow<Filter>
+    suspend fun getFilter(): Filter
     suspend fun setFilter(value: Filter)
 
 

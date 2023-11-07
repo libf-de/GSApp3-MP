@@ -263,6 +263,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                 } else {
                     if(it.getOrNull() == false) {
                         //TODO: Notify user of "no new data available"
+                        uiState = uiState.copy(substitutionState = UiState.NORMAL)
                         log.d { "No new data available (substitution plan)!" }
                     } else {
                         log.d { "New substitution data available!" }

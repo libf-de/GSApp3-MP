@@ -34,10 +34,8 @@ import de.xorg.gsapp.data.sql.GsAppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -90,9 +88,12 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                 .selectLatest()
                 .asFlow()
                 .mapToOneOrNull(Dispatchers.IO)
-                .flatMapConcat { dbSubset -> //flatMapLatest?
+                .distinctUntilChanged()
+                .flatMapLatest { dbSubset -> //flatMapLatest?
+                    println("got dbSubset.id ${dbSubset?.id ?: -1}")
+
                     if(dbSubset == null) //Return exception if there is no latest SubstitutionSet
-                        return@flatMapConcat flow {
+                        return@flatMapLatest flow {
                             emit(
                                 Result.failure(NoLocalDataException())
                             )
@@ -102,6 +103,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                         .findSubstitutionsBySetId(dbSubset.id)
                         .asFlow()
                         .mapToList(Dispatchers.IO)
+                        .distinctUntilChanged()
                         .map {
                             var haveUnknownSubs = false
                             var haveUnknownTeas = false
@@ -186,6 +188,45 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
             )
         } catch(ex: Exception) {
             Result.failure(ex)
+        }
+    }
+
+    override suspend fun addSubstitutionPlanAndCleanup(value: SubstitutionApiModelSet) {
+        database.transaction {
+            database.dbSubstitutionSetQueries.insertSubstitutionSet(
+                dateStr = value.dateStr ?: "",
+                date = value.date,
+                notes = value.notes,
+                hashCode = value.hashCode().toLong()
+                /*hashCode = 12L*/
+            )
+
+            val setId = database.dbSubstitutionSetQueries.lastInsertRowId().executeAsOne()
+
+            value.substitutionApiModels.forEach {
+                database.dbSubstitutionQueries.insertSubstitution(
+                    assSet = setId,
+                    klass = it.klass,
+                    lessonNr = it.lessonNr,
+                    origSubject = it.origSubject,
+                    substTeacher = it.substTeacher,
+                    substRoom = it.substRoom,
+                    substSubject = it.substSubject,
+                    notes = it.notes,
+                    isNew = it.isNew
+                )
+            }
+
+            val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+            val oldSets = database.dbSubstitutionSetQueries.getLegacyIds(today).executeAsList()
+            log.d { "cleanupSubstitutionPlan(): Found ${oldSets.size} old plans..." }
+
+            oldSets.forEach { cSetId -> database.dbSubstitutionQueries.deleteBySetId(cSetId) }
+            oldSets.forEach { cSetId ->
+                database.dbSubstitutionSetQueries.deleteSubstitutionSet(cSetId)
+            }
+
+            log.d { "cleanupSubstitutionPlan(): Cleanup done!" }
         }
     }
 
