@@ -30,6 +30,16 @@ data class Filter(
         val NONE = Filter(Role.ALL, "")
     }
 
+    fun substitutionMatches(substitution: Substitution): Boolean {
+        return when(role) {
+            Role.ALL -> true
+            Role.TEACHER -> substitution.substTeacher.shortName.lowercase() == value.lowercase()
+            Role.STUDENT -> {
+                substitution.klass.lowercase() == value.lowercase()
+            }
+        }
+    }
+
 
     /**
      * The filter roles for filtering the substitution plan, either by not filtering (ALL),

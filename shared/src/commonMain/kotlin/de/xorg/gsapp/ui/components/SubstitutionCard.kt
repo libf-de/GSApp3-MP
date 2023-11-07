@@ -18,7 +18,9 @@
 
 package de.xorg.gsapp.ui.components
 
-import androidx.compose.animation.core.animateIntOffsetAsState
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -29,37 +31,33 @@ import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.LocationOn
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionType
+import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.materialtools.ColorRoles
 import de.xorg.gsapp.ui.materialtools.MaterialColors
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 
+@OptIn(ExperimentalAnimationApi::class)
 @ExperimentalMaterial3Api
 @Composable
 fun SubstitutionCard(
@@ -72,236 +70,127 @@ fun SubstitutionCard(
     val colorRoles = MaterialColors.getColorRoles(color = harmonizedColor,
         isLightTheme = isSystemInDarkTheme())
 
-    var totalWidth by remember { mutableStateOf(64.dp) }
+
     var isExpanded by remember { mutableStateOf(false) }
 
-    var smallRoomPosition by remember { mutableStateOf(Offset.Zero) }
-    var largeRoomPosition by remember { mutableStateOf(Offset.Zero) }
-    val roomOffset = animateIntOffsetAsState(
-        targetValue = if (isExpanded && largeRoomPosition.x != 0f) {
-            IntOffset(
-                (largeRoomPosition.x - smallRoomPosition.x).toInt(),
-                (largeRoomPosition.y - smallRoomPosition.y).toInt()
-            )
-        } else {
-            IntOffset.Zero
-        },
-        label = "offset"
-    )
-
-    var smallTeacherPosition by remember { mutableStateOf(Offset.Zero) }
-    var largeTeacherPosition by remember { mutableStateOf(Offset.Zero) }
-    val teacherOffset = animateIntOffsetAsState(
-        targetValue = if (isExpanded && false) {
-            IntOffset(
-                (largeTeacherPosition.x - smallTeacherPosition.x).toInt(),
-                (largeTeacherPosition.y - smallTeacherPosition.y).toInt()
-            )
-        } else {
-            IntOffset.Zero
-        },
-        label = "offset"
-    )
-
-    var smallNotesPosition by remember { mutableStateOf(Offset.Zero) }
-    var largeNotesPosition by remember { mutableStateOf(Offset.Zero) }
-    val notesOffset = animateIntOffsetAsState(
-        targetValue = if (isExpanded && largeNotesPosition.x != 0f) {
-            IntOffset(
-                (largeNotesPosition.x - smallNotesPosition.x).toInt(),
-                (largeNotesPosition.y - smallNotesPosition.y).toInt()
-            )
-        } else {
-            IntOffset.Zero
-        },
-        label = "offset"
-    )
-
     Card(modifier = modifier
+        .animateContentSize()
         .padding(vertical = 4.dp)
-        .height(if(!isExpanded) 70.dp else Dp.Unspecified)
-        .clickable { isExpanded = !isExpanded }
-        .onGloballyPositioned { coords -> totalWidth = coords.size.width.dp },
+        .clickable { isExpanded = !isExpanded },
         colors = CardDefaults.cardColors(containerColor = Color(colorRoles.accentContainer))) {
 
-        /**** begin Card RowLayout **/
-        Row(modifier = Modifier.fillMaxWidth() ) {
-            /**** begin LessonNumber | w=55.dp **/
-            LessonNr(
-                value = value.lessonNrAsString(),
-                colorRoles = colorRoles,
-                modifier = Modifier
-                    .padding(start = 15.dp,
-                        top = 15.dp,
-                        bottom = 15.dp)
-                    .fillMaxHeight()
-            )
-            /** end LessonNumber ****/
-
-            Box {
-                SmallContentBox(
+        AnimatedContent(
+            targetState = isExpanded
+        ) { expanded ->
+            when(expanded) {
+                true -> LargeCardContent(
                     value = value,
-                    totalWidth = totalWidth,
-                    colorRoles = colorRoles,
-                    onRoomPositioned = { room ->
-                        smallRoomPosition = room
-                    },
-                    onTeacherPositioned = { teacher ->
-                        smallTeacherPosition = teacher
-                    },
-                    onNotesPositioned = { notes ->
-                        smallNotesPosition = notes
-                    },
-                    roomOffsetState = roomOffset,
-                    teacherOffsetState = teacherOffset,
-                    notesOffsetState = notesOffset,
-                    modifier = Modifier.alpha(if(isExpanded) 0.5f else 1f)
+                    colorRoles = colorRoles
                 )
-
-                LargeContentBox(
+                false -> SmallCardContent(
                     value = value,
-                    colorRoles = colorRoles,
-                    modifier = Modifier.alpha(if(isExpanded) 0.2f else 0f),
-                    onRoomPositioned = { room ->
-                        largeRoomPosition = room
-                    },
-                    onTeacherPositioned = { teacher ->
-                        largeTeacherPosition = teacher
-                    },
-                    onNotesPositioned = { notes ->
-                        largeNotesPosition = notes
-                    }
+                    colorRoles = colorRoles
                 )
             }
+        }
 
-        } /** end Card RowLayout ****/
+        /**** begin Card RowLayout **/
+
     }
 }
 
 @Composable
-private fun LargeContentBox(
+private fun LargeCardContent(
     value: Substitution,
-    colorRoles: ColorRoles,
-    modifier: Modifier = Modifier,
-    onRoomPositioned: (room: Offset) -> Unit = {},
-    onTeacherPositioned: (teacher: Offset) -> Unit = {},
-    onNotesPositioned: (notes: Offset) -> Unit = {}
+    colorRoles: ColorRoles
 ) {
     Column(
-        modifier = modifier
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Row {
-            Icon(
-                painter = painterResource(MR.images.groups),
-                contentDescription = "Klasse",
-                modifier = Modifier.alignByBaseline().size(24.dp),
-                tint = Color(colorRoles.onAccentContainer)
-            )
+        val style = MaterialTheme.typography.bodyLarge
 
-            Text(
-                text = value.klass,
-                modifier = Modifier.alignByBaseline(),
-                softWrap = false,
-                color = Color(colorRoles.onAccentContainer)
-            )
-        }
-        Row {
-            Icon(
-                painter = painterResource(MR.images.original_subject),
-                contentDescription = "zu vertretendes Fach",
-                modifier = Modifier.alignByBaseline().size(24.dp),
-                tint = Color(colorRoles.onAccentContainer)
-            )
-            Text(
-                text = value.origSubject.longName,
-                modifier = Modifier.alignByBaseline(),
-                softWrap = false,
-                color = Color(colorRoles.onAccentContainer)
-            )
-        }
-        Row {
-            Icon(
-                painter = painterResource(MR.images.replacement_subject),
-                contentDescription = "Ersatzfach",
-                modifier = Modifier.alignByBaseline().size(24.dp),
-                tint = Color(colorRoles.onAccentContainer)
-            )
-            Text(
-                text = value.substSubject.longName,
-                modifier = Modifier.alignByBaseline(),
-                softWrap = false,
-                color = Color(colorRoles.onAccentContainer)
-            )
-        }
-        Row {
-            Icon(
-                imageVector = Icons.Rounded.LocationOn,
-                contentDescription = "Raum",
-                modifier = Modifier.alignByBaseline().size(24.dp),
-                tint = Color(colorRoles.onAccentContainer),
-            )
-            Text(
-                text = value.substRoom,
-                modifier = Modifier.alignByBaseline().onGloballyPositioned {
-                    onRoomPositioned(it.positionInRoot())
-                },
-                softWrap = false,
-                color = Color(colorRoles.onAccentContainer)
-            )
-        }
-        if(value.hasSubstTeacher) {
-            Row {
-                Icon(imageVector = Icons.Outlined.Person,
-                    contentDescription = stringResource(MR.strings.subplan_dsc_teacher),
-                    modifier = Modifier.alignByBaseline().size(24.dp),
-                    tint = Color(colorRoles.onAccentContainer))
+        IconAndText(
+            text = "${value.klass}, ${value.lessonNr}. Stunde",
+            icon = painterResource(MR.images.class_lesson),
+            contentDescription = "Klasse / Stunde",
+            tint = Color(colorRoles.onAccentContainer),
+            style = style,
+            spacedBy = 8.dp
+        )
 
-                Text(text = value.substTeacher.longName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .alignByBaseline()
-                        .onGloballyPositioned {
-                                              onTeacherPositioned(it.positionInRoot())
-                        },
-                    softWrap = false,
-                    color = Color(colorRoles.onAccentContainer))
-            }
-        }
-        if(value.shouldDisplayNotes()) {
-            Row {
-                Icon(
-                    imageVector = Icons.Rounded.Info,
-                    contentDescription = "Bemerkungen",
-                    modifier = Modifier.alignByBaseline().size(24.dp),
-                    tint = Color(colorRoles.onAccentContainer)
-                )
-                Text(
-                    text = value.notes,
-                    modifier = Modifier.alignByBaseline().onGloballyPositioned { onNotesPositioned(it.positionInRoot()) },
-                    softWrap = false,
-                    color = Color(colorRoles.onAccentContainer)
-                )
-            }
-        }
+        IconAndText(
+            text = value.origSubject.longName,
+            icon = painterResource(MR.images.original_subject),
+            contentDescription = "zu vertretendes Fach",
+            tint = Color(colorRoles.onAccentContainer),
+            style = style,
+            spacedBy = 8.dp
+        )
 
+        IconAndText(
+            text = value.substSubject.longName,
+            icon = painterResource(MR.images.replacement_subject),
+            contentDescription = "Ersatzfach",
+            tint = Color(colorRoles.onAccentContainer),
+            style = style,
+            spacedBy = 8.dp
+        )
+
+        LocationItem(
+            value = value,
+            style = style,
+            spacedBy = 8.dp,
+            tint = Color(colorRoles.onAccentContainer),
+        )
+
+        TeacherItem(
+            value = value.substTeacher,
+            style = style,
+            spacedBy = 8.dp,
+            tint = Color(colorRoles.onAccentContainer),
+        )
+
+        IconAndText(
+            text = value.notes.ifBlank { "Keine Bemerkungen" },
+            icon = Icons.Rounded.Info,
+            contentDescription = "Bemerkungen",
+            tint = Color(colorRoles.onAccentContainer),
+            softWrap = true,
+            spacedBy = 8.dp,
+            style = style
+        )
     }
 }
 
 @Composable
-private fun SmallContentBox(
+private fun SmallCardContent(
     value: Substitution,
-    totalWidth: Dp,
-    colorRoles: ColorRoles,
-    roomOffsetState: State<IntOffset>,
-    teacherOffsetState: State<IntOffset>,
-    notesOffsetState: State<IntOffset>,
-    modifier: Modifier = Modifier,
-    onRoomPositioned: (room: Offset) -> Unit,
-    onTeacherPositioned: (teacher: Offset) -> Unit,
-    onNotesPositioned: (notes: Offset) -> Unit = {}
+    colorRoles: ColorRoles
 ) {
-    Row(modifier = modifier) {
+    var totalWidth by remember { mutableStateOf(64.dp) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(70.dp)
+            .onGloballyPositioned {totalWidth = it.size.width.dp }
+    ) {
+        /**** begin LessonNumber | w=55.dp **/
+        LessonNr(
+            value = value.lessonNrAsString(),
+            colorRoles = colorRoles,
+            modifier = Modifier
+                .padding(start = 15.dp,
+                    top = 15.dp,
+                    bottom = 15.dp)
+                .fillMaxHeight()
+        )
+        /** end LessonNumber ****/
+
+        /** begin contentbox **/
         Box(
             contentAlignment = Alignment.CenterStart,
             modifier = Modifier
@@ -325,15 +214,21 @@ private fun SmallContentBox(
                 /** end ContentBox -> Title ****/
 
                 /**** begin ContentBox --> SubBox **/
-                SubBox(
-                    value = value,
-                    colorRoles = colorRoles,
-                    modifier = Modifier.padding(top = 3.dp),
-                    onRoomPositioned = onRoomPositioned,
-                    onTeacherPositioned = onTeacherPositioned,
-                    roomOffsetState = roomOffsetState,
-                    teacherOffsetState = teacherOffsetState
-                )
+                Row {
+                    /* ContentBox -> SubBox -> Room */
+                    LocationItem(
+                        value = value,
+                        tint = Color(colorRoles.onAccentContainer),
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+
+                    /* ContentBox -> SubBox -> Teacher */
+                    TeacherItem(
+                        value = value.substTeacher,
+                        tint = Color(colorRoles.onAccentContainer),
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
                 /** end ContentBox -> SubBox ****/
 
             } /* end ContentBox column */
@@ -348,11 +243,121 @@ private fun SmallContentBox(
                     .defaultMinSize(minWidth = (totalWidth - 55.dp) / 3)
                     .wrapContentSize()
                     .fillMaxHeight(),
-                onPositioned = onNotesPositioned,
-                offsetState = notesOffsetState
             )
         }
+    } /** end Card RowLayout ****/
+}
+
+@Composable
+private fun LargeContentBox(
+    value: Substitution,
+    colorRoles: ColorRoles,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+    ) {
+        Row {
+            Icon(
+                painter = painterResource(MR.images.groups),
+                contentDescription = "Klasse",
+                modifier = Modifier.alignByBaseline().size(24.dp),
+                tint = Color(colorRoles.onAccentContainer)
+            )
+
+            Text(
+                text = value.klass,
+                modifier = Modifier.alignByBaseline().wrapContentWidth(),
+                softWrap = false,
+                color = Color(colorRoles.onAccentContainer)
+            )
+        }
+        Row {
+            Icon(
+                painter = painterResource(MR.images.original_subject),
+                contentDescription = "zu vertretendes Fach",
+                modifier = Modifier.alignByBaseline().size(24.dp),
+                tint = Color(colorRoles.onAccentContainer)
+            )
+            Text(
+                text = value.origSubject.longName,
+                modifier = Modifier.alignByBaseline().wrapContentWidth(),
+                softWrap = false,
+                color = Color(colorRoles.onAccentContainer)
+            )
+        }
+        Row {
+            Icon(
+                painter = painterResource(MR.images.replacement_subject),
+                contentDescription = "Ersatzfach",
+                modifier = Modifier.alignByBaseline().size(24.dp),
+                tint = Color(colorRoles.onAccentContainer)
+            )
+            Text(
+                text = value.substSubject.longName,
+                modifier = Modifier.alignByBaseline().wrapContentWidth(),
+                softWrap = false,
+                color = Color(colorRoles.onAccentContainer)
+            )
+        }
+        Row {
+            Icon(
+                imageVector = Icons.Rounded.LocationOn,
+                contentDescription = "Raum",
+                modifier = Modifier.alignByBaseline().size(24.dp),
+                tint = Color(colorRoles.onAccentContainer),
+            )
+            Text(
+                text = value.substRoom,
+                modifier = Modifier.alignByBaseline().wrapContentWidth(),
+                softWrap = false,
+                color = Color(colorRoles.onAccentContainer)
+            )
+        }
+        if(value.hasSubstTeacher) {
+            Row {
+                Icon(imageVector = Icons.Outlined.Person,
+                    contentDescription = stringResource(MR.strings.subplan_dsc_teacher),
+                    modifier = Modifier.alignByBaseline().size(24.dp),
+                    tint = Color(colorRoles.onAccentContainer))
+
+                Text(text = value.substTeacher.longName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .alignByBaseline(),
+                    softWrap = false,
+                    color = Color(colorRoles.onAccentContainer))
+            }
+        }
+        if(value.shouldDisplayNotes()) {
+            Row {
+                Icon(
+                    imageVector = Icons.Rounded.Info,
+                    contentDescription = "Bemerkungen",
+                    modifier = Modifier.alignByBaseline().size(24.dp),
+                    tint = Color(colorRoles.onAccentContainer)
+                )
+                Text(
+                    text = value.notes,
+                    modifier = Modifier.alignByBaseline().wrapContentWidth(),
+                    softWrap = false,
+                    color = Color(colorRoles.onAccentContainer)
+                )
+            }
+        }
+
     }
+}
+
+@Composable
+private fun SmallContentBox(
+    value: Substitution,
+    totalWidth: Dp,
+    colorRoles: ColorRoles,
+    modifier: Modifier = Modifier
+) {
+
 }
 
 @Composable
@@ -381,69 +386,107 @@ private fun LessonNr(
 }
 
 @Composable
-fun SubBox(
-    value: Substitution,
-    colorRoles: ColorRoles,
-    roomOffsetState: State<IntOffset>,
-    teacherOffsetState: State<IntOffset>,
-    modifier: Modifier = Modifier,
-    onRoomPositioned: (room: Offset) -> Unit = {},
-    onTeacherPositioned: (teacher: Offset) -> Unit = {}
+private fun IconAndText(
+    text: String,
+    icon: ImageVector,
+    tint: Color,
+    spacedBy: Dp = 4.dp,
+    contentDescription: String? = null,
+    fontWeight: FontWeight? = MaterialTheme.typography.bodyMedium.fontWeight,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    softWrap: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier) {
+    IconAndText(
+        text = text,
+        icon = rememberVectorPainter(icon),
+        tint = tint,
+        contentDescription = contentDescription,
+        fontWeight = fontWeight,
+        style = style,
+        softWrap = softWrap,
+        modifier = modifier,
+        spacedBy = spacedBy
+    )
+}
 
-        /* ContentBox -> SubBox -> Room */
-        Icon(imageVector = Icons.Outlined.LocationOn,
-            contentDescription = stringResource(MR.strings.subplan_dsc_location),
+
+@Composable
+private fun IconAndText(
+    text: String,
+    icon: Painter,
+    tint: Color,
+    spacedBy: Dp = 4.dp,
+    contentDescription: String? = null,
+    fontWeight: FontWeight? = MaterialTheme.typography.bodyMedium.fontWeight,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    softWrap: Boolean = false,
+    modifier: Modifier = Modifier
+    ){
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(spacedBy),
+    ) {
+        Icon(painter = icon,
+            contentDescription = contentDescription,
             modifier = Modifier
                 .size(24.dp)
                 .alignByBaseline(),
-            tint = Color(colorRoles.onAccentContainer)
+            tint = tint
         )
-        Text(text = value.substRoom,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = if(value.type == SubstitutionType.ROOMSWAP)
-                FontWeight.ExtraBold
-            else
-                MaterialTheme.typography.bodyMedium.fontWeight,
+        Text(
+            text = text,
+            style = style,
+            fontWeight = fontWeight,
             modifier = Modifier
-                .padding(start = 4.dp,
-                    top = 2.dp)
-                .alignByBaseline()
-                .onGloballyPositioned { coords ->
-                    onRoomPositioned(coords.positionInRoot())
-                }
-                .offset { roomOffsetState.value },
-            softWrap = false,
-            color = Color(colorRoles.onAccentContainer) )
+                .alignByBaseline(),
+            softWrap = softWrap,
+            color = tint
+        )
+    }
+}
 
-        /* ContentBox -> SubBox -> Teacher */
-        if(value.hasSubstTeacher) {
-            Icon(imageVector = Icons.Outlined.Person,
-                contentDescription = stringResource(MR.strings.subplan_dsc_teacher),
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(24.dp)
-                    .alignByBaseline(),
-                tint = Color(colorRoles.onAccentContainer))
+@Composable
+private fun LocationItem(
+    value: Substitution,
+    tint: Color,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    spacedBy: Dp = 4.dp,
+    modifier: Modifier = Modifier
+) {
+    IconAndText(
+        text = value.substRoom,
+        icon = Icons.Outlined.LocationOn,
+        tint = tint,
+        style = style,
+        contentDescription = stringResource(MR.strings.subplan_dsc_location),
+        fontWeight = if (value.type == SubstitutionType.ROOMSWAP)
+            FontWeight.ExtraBold
+        else
+            style.fontWeight,
+        modifier = modifier,
+        spacedBy = spacedBy
+    )
+}
 
-            Text(text = value.substTeacher.longName,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .padding(start = 4.dp,
-                        top = 2.dp,
-                        end = 8.dp)
-                    .wrapContentWidth()
-                    .alignByBaseline()
-                    .onGloballyPositioned { coords ->
-                        onTeacherPositioned(coords.positionInRoot())
-                    }
-                    .offset {
-                            teacherOffsetState.value
-                    },
-                softWrap = false,
-                color = Color(colorRoles.onAccentContainer))
-        }
+@Composable
+private fun TeacherItem(
+    value: Teacher,
+    tint: Color,
+    spacedBy: Dp = 4.dp,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    modifier: Modifier = Modifier
+) {
+    if(value.shortName != "##" && value.shortName.isNotEmpty()) {
+        IconAndText(
+            text = value.longName,
+            icon = Icons.Outlined.Person,
+            tint = tint,
+            style = style,
+            spacedBy = spacedBy,
+            contentDescription = stringResource(MR.strings.subplan_dsc_teacher),
+            modifier = modifier
+        )
     }
 }
 
@@ -451,9 +494,7 @@ fun SubBox(
 fun NotesBox(
     value: Substitution,
     colorRoles: ColorRoles,
-    offsetState: State<IntOffset>,
     modifier: Modifier = Modifier,
-    onPositioned: (notes: Offset) -> Unit = {}
 ) {
     Row(horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
@@ -481,12 +522,6 @@ fun NotesBox(
                         end = 15.dp,
                         bottom = 12.dp)
                     .wrapContentSize()
-                    .onGloballyPositioned { coords ->
-                        onPositioned(coords.positionInRoot())
-                    }
-                    .offset {
-                        offsetState.value
-                    }
             )
         }
     }
@@ -540,12 +575,3 @@ private fun Substitution.shouldDisplayNotes(): Boolean =
             && this.type != SubstitutionType.BREASTFEED
             && this.type != SubstitutionType.WORKORDER
             && this.type != SubstitutionType.CANCELLATION
-
-
-private data class SubOffsets(
-    var origSub: Offset,
-    var substSub: Offset,
-    var room: Offset,
-    var teacher: Offset,
-    var notes: Offset
-)
