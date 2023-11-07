@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ GSApp3 (https://github.com/libf-de/GSApp3)
+  ~ Copyright (C) 2023. Fabian Schillig
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<resources>
+    <!-- Months -->
+    <string name="jan">Січень</string> <!-- January -->
+    <string name="feb">Лютий</string> <!-- February -->
+    <string name="mar">Березень</string> <!-- March -->
+    <string name="apr">Квітень</string> <!-- April -->
+    <string name="may">Травень</string> <!-- May -->
+    <string name="jun">Червень</string> <!-- June -->
+    <string name="jul">Липень</string> <!-- July -->
+    <string name="aug">Серпень</string> <!-- August -->
+    <string name="sep">Вересень</string> <!-- September -->
+    <string name="oct">Жовтень</string> <!-- October -->
+    <string name="nov">Листопад</string> <!-- November -->
+    <string name="dec">Грудень</string> <!-- December -->
+
+    <!-- Weekdays, long form -->
+    <string name="wd_mo_lo">Понеділок</string> <!-- Monday -->
+    <string name="wd_tu_lo">Вівторок</string> <!-- Tuesday -->
+    <string name="wd_we_lo">Середа</string> <!-- Wednesday -->
+    <string name="wd_th_lo">Четвер</string> <!-- Thursday -->
+    <string name="wd_fr_lo">П'ятниця</string> <!-- Friday -->
+    <string name="wd_sa_lo">Субота</string> <!-- Saturday -->
+    <string name="wd_su_lo">Неділя</string> <!-- Sunday -->
+
+    <!-- Weekdays, short form -->
+    <string name="wd_mo_sh">Пн</string> <!-- Mo -->
+    <string name="wd_tu_sh">Вт</string> <!-- Tu -->
+    <string name="wd_we_sh">Ср</string> <!-- We -->
+    <string name="wd_th_sh">Чт</string> <!-- Th -->
+    <string name="wd_fr_sh">Пт</string> <!-- Fr -->
+    <string name="wd_sa_sh">Сб</string> <!-- Sa -->
+    <string name="wd_su_sh">Нд</string> <!-- Su -->
+
+    <!-- relative date strings -->
+    <string name="rel_today">сьогодні</string> <!-- today -->
+    <string name="rel_tomorrow">завтра</string> <!-- tomorrow -->
+    <string name="rel_after_tomorrow">післязавтра</string> <!-- the day after tomorrow -->
+    <string name="rel_next_weekday">наступний %s</string> <!-- next %s -->
+    <string name="rel_absolute">на %s</string> <!-- on %s -->
+
+    <!-- Date format (d=day, m=month, y=year) -->
+    <string name="date_format">д.м.р</string> <!-- m.d.y -->
+
+    <!--~~~~~~ App ~~~~~~-->
+    <string name="app_name">GSApp</string>
+    <string name="tab_substitutions">Заміни</string> <!-- Substitutions -->
+    <string name="tab_foodplan">Харчування</string> <!-- Food plan -->
+    <string name="tab_exams">Екзамени</string> <!-- Exams -->
+
+    <!-- Substitution plan -->
+    <string name="subplan_date_header_fmt">для %w, %d %m, %y</string> <!-- for %w, %m %d, %y -->
+    <string name="subplan_workorder_samesubject">%s робоче завдання</string> <!-- %s work order -->
+    <string name="subplan_workorder">%s ➜ %s робоче завдання</string> <!-- %s ➜ %s work order -->
+    <string name="subplan_cancellation">%s ➜ скасовано</string> <!-- %s ➜ cancelled -->
+    <string name="subplan_breastfeed">%s ➜ тиха діяльність</string> <!-- %s ➜ quiet activity -->
+    <string name="subplan_samesubject">%s</string>
+    <string name="subplan_normal">%s ➜ %s</string>
+    <string name="subplan_dsc_location">Місцезнаходження</string> <!-- Location -->
+    <string name="subplan_dsc_teacher">Вчитель-замінник</string> <!-- Replacement teacher -->
+    <string name="subplan_empty">Немає замін :)</string> <!-- No substitutions :) -->
+
+    <!-- Foodplan -->
+    <string name="foodplan_menu_no">Меню №%d</string> <!-- Menu #%d -->
+    <string name="foodplan_empty">(немає обіду)</string> <!-- (no meal service) -->
+
+    <!-- Exam plan -->
+    <string name="examplan_empty">Немає (більше) екзаменів :)</string> <!-- No (more) exams :) -->
+
+    <!--- Settings -->
+    <string name="settings_title">Налаштування</string> <!-- Settings -->
+    <!-- Settings items -->
+    <string name="pref_filter">Фільтр замін</string> <!-- Substitution plan filter -->
+    <string name="pref_filter_teacher">Код вчителя %s</string> <!-- Teacher code %s -->
+    <string name="pref_filter_student">Клас %s</string> <!-- Class %s -->
+    <string name="pref_filter_all">Жоден (показати все)</string> <!-- None (show all) -->
+    <string name="pref_push">Сповіщення Push</string> <!-- Push notifications -->
+    <string name="pref_subjects">Редагувати предмети</string> <!-- Edit subjects -->
+    <string name="pref_subjects_desc">(довгі назви, кольори)</string> <!-- (long names, colors) -->
+
+    <!-- Filter Dialog -->
+    <string name="filter_dialog_title">Фільтр замін</string> <!-- Filter substitution plan -->
+    <string name="filter_dialog_description">Виберіть свій клас або код вчителя, щоб переглядати тільки заміни, які вас стосуються.</string> <!-- Select your class or teacher code to view only substitutions that affect you. -->
+    <string name="filter_dialog_teacher_short">Скорочення вчителя</string> <!-- Teacher abbreviation -->
+    <!--- Role labels -->
+    <string name="filter_all">Всі</string> <!-- All -->
+    <string name="filter_student">Клас</string> <!-- Class -->
+    <string name="filter_teacher">Вчитель</string> <!-- Teacher -->
+    <!-- Error messages -->
+    <string name="filter_dialog_error_no_teachers">Вчителів не знайдено, будь ласка, введіть ваше скорочення вручну.</string> <!-- No teachers were found, please enter your abbreviation by hand. -->
+    <string name="filter_dialog_error_teachers_failed">Вчителі не могли бути завантажені, будь ласка, введіть їхнє скорочення вручну.</string> <!-- Teachers could not be loaded, please enter their abbreviation by hand. -->
+
+    <!-- Subject management -->
+    <string name="subject_manager_subjects">Предмети</string> <!-- Subjects -->
+    <string name="subject_manager_empty_title">Немає предметів</string> <!-- No subjects -->
+    <string name="subject_manager_empty_text">Натисніть кнопку + внизу, щоб додати предмет.</string> <!-- Click the + button at the bottom to add one. -->
+    <string name="subject_manager_colorpicker_title">Виберіть колір для %s</string> <!-- Choose color for %s -->
+    <string name="subject_manager_colorpicker_nullsubject">предмет</string> <!-- a subject -->
+    <string name="subject_manager_add_title">Додати предмет</string> <!-- Add subject -->
+    <string name="subject_manager_add_desc">Введіть скорочення предмета, як воно вказано в плані замін. Довга назва та колір можуть бути змінені пізніше.</string> <!-- Enter the abbreviation of the subject as it appears in the substitution plan. Long name and color can be changed afterwards. -->
+    <string name="subject_manager_restore_defaults">Відновити стандартні предмети</string> <!-- Restore default subjects -->
+    <string name="subject_manager_reset_dialog_title">Відновити стандартні предмети?</string> <!-- Restore default subjects? -->
+    <string name="subject_manager_reset_dialog_text">Ви бажаєте замінити всі предмети стандартними або лише додати стандартні предмети?</string> <!-- Do you want to replace all subjects with the default ones or just add the default subjects? -->
+    <string name="subject_manager_reset_dialog_replace">Замінити всі</string> <!-- Replace all -->
+    <string name="subject_manager_reset_dialog_adddefault">Додати лише</string> <!-- Only add -->
+
+    <!-- Push settings/service -->
+    <string name="push_disabled">Вимкнено</string> <!-- Disabled -->
+    <string name="push_filter">Лише, якщо це мене стосується</string> <!-- Only if it affects me -->
+    <string name="push_enabled">Завжди повідомляти</string> <!-- Always notify -->
+    <string name="push_dialog_title">Повідомлення Push</string> <!-- Push notifications -->
+    <string name="push_dialog_description">Виберіть, чи бажаєте отримувати жодних повідомлень, повідомлення лише тоді, коли вони стосуються вас, або завжди повідомлення про нові плани замін.</string> <!-- Choose whether you want to receive no notification, notification only when it affects you, or always notification of new substitution plans. -->
+    <string name="push_unavailable">(недоступно на %s)</string> <!-- (not available on %s) -->
+    <string name="push_channel_name">Повідомлення про плани замін</string> <!-- Substitution plan notifications -->
+    <string name="push_channel_desc">Сповіщає вас про наявність нового плану замін.</string> <!-- Notifies you when a new substitution plan is available -->
+    <string name="push_notification_title">Новий план замін!</string> <!-- New substitution plan! -->
+    <string name="push_notification_body">Є новий план замін!</string> <!-- There is a new substitution plan available! -->
+    <string name="push_notification_detail_amount">У вас є %d заміни %s.</string> <!-- You have %d substitutions %s. -->
+    <string name="push_no_permission_title">Відсутній дозвіл</string> <!-- Missing permission -->
+    <string name="push_no_permission_body">Ви увімкнули сповіщення Push, але відмовили в дозволі на сповіщення.\nБудь ласка, перейдіть до налаштувань та увімкніть сповіщення, щоб не пропустити нові плани замін.\nЯкщо ви не хочете цього, ви також можете вимкнути сповіщення Push в налаштуваннях додатку.</string> <!-- You have enabled push notifications, but denied permission for notifications. Please go to settings and enable notifications to not miss new substitution plans. If you don't want this, you can also disable push notifications in the app settings. -->
+    <string name="push_no_permission_fix">Перейти до налаштувань</string><!-- Go to settings -->
+    <string name="push_no_permission_later">Зараз не</string><!-- Not now -->
+    <string name="push_enabled_success">Сповіщення включено</string><!-- Push notifications enabled -->
+    <string name="push_enabled_failure">Не вдалося включити сповіщення про заміни</string><!-- Failed to enable push notifications -->
+    <string name="push_disabled_success">Сповіщення вимкнено</string><!-- Push notifications disabled -->
+    <string name="push_disabled_failure">Не вдалося вимкнути сповіщення про заміни</string><!-- Failed to disable push notifications -->
+
+    <!--~~~~ Generics ~~~~-->
+    <!-- General dialog buttons -->
+    <string name="dialog_save">Зберегти</string><!-- Save -->
+    <string name="dialog_cancel">Скасувати</string><!-- Cancel -->
+    <string name="dialog_color_simple">Простий</string><!-- Simple -->
+    <string name="dialog_color_simple_desc">Виберіть зі списку кольорів</string><!-- Choose from a list of colors -->
+    <string name="dialog_color_advanced">Розширений</string><!-- Advanced -->
+    <string name="dialog_color_advanced_desc">Виберіть за допомогою відтінку, насиченості та яскравості або за допомогою шістнадцяткового рядка</string><!-- Choose using hue, saturation and brightness or using a hex string -->
+    <string name="dialog_color_hex">Шістнадцятковий код:</string><!-- Hex: -->
+    <string name="dialog_delete_title">Видалити предмет?</string><!-- Delete subject? -->
+    <string name="dialog_delete_text">Ви справді бажаєте видалити предмет "%s" ("%s")?</string><!-- Do you really want to delete the subject "%s" ("%s")? -->
+
+    <!-- Generic strings -->
+    <string name="generic_loading">Завантаження, зачекайте…</string><!-- Loading, please wait… -->
+    <string name="generic_error_null">(помилка "нуль")</string><!-- (null-error) -->
+    <string name="empty_local">Не було завантажено жодних %s (поки що).\nЯкщо нічого не відбувається, перевірте підключення до Інтернету.</string><!-- No %s has been downloaded (yet).\nIf nothing happens, check your internet connection. -->
+    <string name="back">Повернутися</string><!-- Go back -->
+    <string name="failed_to_load">Не вдалося завантажити %s</string><!-- Failed to load %s -->
+    <string name="failed_send_dev">Будь ласка, надішліть повідомлення з цією помилкою розробнику:</string><!-- Please send a report with this error to the developer: -->
+    <string name="unknown_cause">Невідома причина</string><!-- Unknown cause -->
+</resources>
