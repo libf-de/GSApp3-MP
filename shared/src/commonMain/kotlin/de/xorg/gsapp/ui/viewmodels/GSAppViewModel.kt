@@ -273,7 +273,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    private fun updateFoodplan() {
+    fun updateFoodplan() {
         uiState = if(uiState.foodplanState == UiState.NORMAL)
             uiState.copy(foodplanState = UiState.NORMAL_LOADING)
         else uiState.copy(foodplanState = UiState.LOADING)
@@ -298,6 +298,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                 } else {
                     if(it.getOrNull() == false) {
                         //TODO: Notify user of "no new data available"
+                        uiState = uiState.copy(foodplanState = UiState.NORMAL)
                         log.d { "No new data available (foodplan)!" }
                     } else {
                         log.d { "New food data available!" }
@@ -307,7 +308,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    private fun updateExams() {
+    fun updateExams() {
         uiState = if(uiState.examState == UiState.NORMAL)
             uiState.copy(examState = UiState.NORMAL_LOADING)
         else uiState.copy(examState = UiState.LOADING)
@@ -332,6 +333,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                 } else {
                     if(it.getOrNull() == false) {
                         //TODO: Notify user of "no new data available"
+                        uiState = uiState.copy(examState = UiState.NORMAL)
                         log.d { "No new data available (exam)!" }
                     } else {
                         log.d { "New exam data available!" }

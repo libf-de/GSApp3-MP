@@ -115,17 +115,17 @@ fun SubstitutionsScreen(
                 },
                 scrollBehavior = scrollBehavior,
                 actions = {
-                    IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
-                        Icon(imageVector = Icons.Filled.Settings,
-                            contentDescription = stringResource(MR.strings.settings_title))
-                    }
-
                     IconButton(onClick = { viewModel.updateSubstitutions() }) {
                         Icon(imageVector = Icons.Rounded.Refresh,
                             contentDescription = null,
                             modifier = Modifier.spinAnimation(
                                 viewModel.uiState.substitutionState.isLoading()
                             ))
+                    }
+
+                    IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
+                        Icon(imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(MR.strings.settings_title))
                     }
                 }
             )

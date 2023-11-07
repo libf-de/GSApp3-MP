@@ -36,6 +36,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,7 +71,9 @@ import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
 import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
+import de.xorg.gsapp.ui.state.isLoading
 import de.xorg.gsapp.ui.tools.DateUtil
+import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
@@ -154,8 +157,18 @@ fun FoodplanScreen(
                         onClick = { navController.navigate(GSAppRoutes.SETTINGS) },
                         modifier = Modifier
                     ) {
-                        Icon(imageVector = Icons.Filled.Settings,
-                             contentDescription = stringResource(MR.strings.settings_title))
+                        IconButton(onClick = { viewModel.updateFoodplan() }) {
+                            Icon(imageVector = Icons.Rounded.Refresh,
+                                contentDescription = null,
+                                modifier = Modifier.spinAnimation(
+                                    viewModel.uiState.foodplanState.isLoading()
+                                ))
+                        }
+
+                        IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
+                            Icon(imageVector = Icons.Filled.Settings,
+                                contentDescription = stringResource(MR.strings.settings_title))
+                        }
                     }
                 }
             )

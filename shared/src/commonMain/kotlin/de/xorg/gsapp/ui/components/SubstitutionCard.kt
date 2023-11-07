@@ -18,27 +18,17 @@
 
 package de.xorg.gsapp.ui.components
 
+import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -46,27 +36,28 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionType
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.materialtools.ColorRoles
 import de.xorg.gsapp.ui.materialtools.MaterialColors
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 
 @ExperimentalMaterial3Api
@@ -82,10 +73,54 @@ fun SubstitutionCard(
         isLightTheme = isSystemInDarkTheme())
 
     var totalWidth by remember { mutableStateOf(64.dp) }
+    var isExpanded by remember { mutableStateOf(false) }
+
+    var smallRoomPosition by remember { mutableStateOf(Offset.Zero) }
+    var largeRoomPosition by remember { mutableStateOf(Offset.Zero) }
+    val roomOffset = animateIntOffsetAsState(
+        targetValue = if (isExpanded && largeRoomPosition.x != 0f) {
+            IntOffset(
+                (largeRoomPosition.x - smallRoomPosition.x).toInt(),
+                (largeRoomPosition.y - smallRoomPosition.y).toInt()
+            )
+        } else {
+            IntOffset.Zero
+        },
+        label = "offset"
+    )
+
+    var smallTeacherPosition by remember { mutableStateOf(Offset.Zero) }
+    var largeTeacherPosition by remember { mutableStateOf(Offset.Zero) }
+    val teacherOffset = animateIntOffsetAsState(
+        targetValue = if (isExpanded && false) {
+            IntOffset(
+                (largeTeacherPosition.x - smallTeacherPosition.x).toInt(),
+                (largeTeacherPosition.y - smallTeacherPosition.y).toInt()
+            )
+        } else {
+            IntOffset.Zero
+        },
+        label = "offset"
+    )
+
+    var smallNotesPosition by remember { mutableStateOf(Offset.Zero) }
+    var largeNotesPosition by remember { mutableStateOf(Offset.Zero) }
+    val notesOffset = animateIntOffsetAsState(
+        targetValue = if (isExpanded && largeNotesPosition.x != 0f) {
+            IntOffset(
+                (largeNotesPosition.x - smallNotesPosition.x).toInt(),
+                (largeNotesPosition.y - smallNotesPosition.y).toInt()
+            )
+        } else {
+            IntOffset.Zero
+        },
+        label = "offset"
+    )
 
     Card(modifier = modifier
         .padding(vertical = 4.dp)
-        .height(70.dp)
+        .height(if(!isExpanded) 70.dp else Dp.Unspecified)
+        .clickable { isExpanded = !isExpanded }
         .onGloballyPositioned { coords -> totalWidth = coords.size.width.dp },
         colors = CardDefaults.cardColors(containerColor = Color(colorRoles.accentContainer))) {
 
@@ -103,49 +138,220 @@ fun SubstitutionCard(
             )
             /** end LessonNumber ****/
 
-            /**** begin ContentBox **/
-            Box(contentAlignment = Alignment.CenterStart,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .maybeReserveNotesSpace(
-                        reserve = value.shouldDisplayNotes(),
-                        totalWidth = totalWidth
-                    )
-            ) {
-                Column(modifier = Modifier.padding(horizontal = 12.dp)) {
+            Box {
+                SmallContentBox(
+                    value = value,
+                    totalWidth = totalWidth,
+                    colorRoles = colorRoles,
+                    onRoomPositioned = { room ->
+                        smallRoomPosition = room
+                    },
+                    onTeacherPositioned = { teacher ->
+                        smallTeacherPosition = teacher
+                    },
+                    onNotesPositioned = { notes ->
+                        smallNotesPosition = notes
+                    },
+                    roomOffsetState = roomOffset,
+                    teacherOffsetState = teacherOffset,
+                    notesOffsetState = notesOffset,
+                    modifier = Modifier.alpha(if(isExpanded) 0.5f else 1f)
+                )
 
-                    /**** begin ContentBox -> Title **/
-                    Text(text = value.getCardTitle(),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(start = 4.dp),
-                        color = Color(colorRoles.onAccentContainer)
-                    ) /** end ContentBox -> Title ****/
-
-                    /**** begin ContentBox --> SubBox **/
-                    SubBox(
-                        value = value,
-                        colorRoles = colorRoles,
-                        modifier = Modifier.padding(top = 3.dp)
-                    )
-                    /** end ContentBox -> SubBox ****/
-
-                } /* end ContentBox column */
-            } /** end ContentBox ****/
-
-            if(value.shouldDisplayNotes()) {
-                NotesBox(
+                LargeContentBox(
                     value = value,
                     colorRoles = colorRoles,
-                    modifier = Modifier
-                        .defaultMinSize(minWidth = (totalWidth - 55.dp) / 3)
-                        .wrapContentSize()
-                        .fillMaxHeight()
+                    modifier = Modifier.alpha(if(isExpanded) 0.2f else 0f),
+                    onRoomPositioned = { room ->
+                        largeRoomPosition = room
+                    },
+                    onTeacherPositioned = { teacher ->
+                        largeTeacherPosition = teacher
+                    },
+                    onNotesPositioned = { notes ->
+                        largeNotesPosition = notes
+                    }
                 )
             }
 
         } /** end Card RowLayout ****/
+    }
+}
+
+@Composable
+private fun LargeContentBox(
+    value: Substitution,
+    colorRoles: ColorRoles,
+    modifier: Modifier = Modifier,
+    onRoomPositioned: (room: Offset) -> Unit = {},
+    onTeacherPositioned: (teacher: Offset) -> Unit = {},
+    onNotesPositioned: (notes: Offset) -> Unit = {}
+) {
+    Column(
+        modifier = modifier
+    ) {
+        Row {
+            Icon(
+                painter = painterResource(MR.images.groups),
+                contentDescription = "Klasse",
+                modifier = Modifier.alignByBaseline().size(24.dp),
+                tint = Color(colorRoles.onAccentContainer)
+            )
+
+            Text(
+                text = value.klass,
+                modifier = Modifier.alignByBaseline(),
+                softWrap = false,
+                color = Color(colorRoles.onAccentContainer)
+            )
+        }
+        Row {
+            Icon(
+                painter = painterResource(MR.images.original_subject),
+                contentDescription = "zu vertretendes Fach",
+                modifier = Modifier.alignByBaseline().size(24.dp),
+                tint = Color(colorRoles.onAccentContainer)
+            )
+            Text(
+                text = value.origSubject.longName,
+                modifier = Modifier.alignByBaseline(),
+                softWrap = false,
+                color = Color(colorRoles.onAccentContainer)
+            )
+        }
+        Row {
+            Icon(
+                painter = painterResource(MR.images.replacement_subject),
+                contentDescription = "Ersatzfach",
+                modifier = Modifier.alignByBaseline().size(24.dp),
+                tint = Color(colorRoles.onAccentContainer)
+            )
+            Text(
+                text = value.substSubject.longName,
+                modifier = Modifier.alignByBaseline(),
+                softWrap = false,
+                color = Color(colorRoles.onAccentContainer)
+            )
+        }
+        Row {
+            Icon(
+                imageVector = Icons.Rounded.LocationOn,
+                contentDescription = "Raum",
+                modifier = Modifier.alignByBaseline().size(24.dp),
+                tint = Color(colorRoles.onAccentContainer),
+            )
+            Text(
+                text = value.substRoom,
+                modifier = Modifier.alignByBaseline().onGloballyPositioned {
+                    onRoomPositioned(it.positionInRoot())
+                },
+                softWrap = false,
+                color = Color(colorRoles.onAccentContainer)
+            )
+        }
+        if(value.hasSubstTeacher) {
+            Row {
+                Icon(imageVector = Icons.Outlined.Person,
+                    contentDescription = stringResource(MR.strings.subplan_dsc_teacher),
+                    modifier = Modifier.alignByBaseline().size(24.dp),
+                    tint = Color(colorRoles.onAccentContainer))
+
+                Text(text = value.substTeacher.longName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .alignByBaseline()
+                        .onGloballyPositioned {
+                                              onTeacherPositioned(it.positionInRoot())
+                        },
+                    softWrap = false,
+                    color = Color(colorRoles.onAccentContainer))
+            }
+        }
+        if(value.shouldDisplayNotes()) {
+            Row {
+                Icon(
+                    imageVector = Icons.Rounded.Info,
+                    contentDescription = "Bemerkungen",
+                    modifier = Modifier.alignByBaseline().size(24.dp),
+                    tint = Color(colorRoles.onAccentContainer)
+                )
+                Text(
+                    text = value.notes,
+                    modifier = Modifier.alignByBaseline().onGloballyPositioned { onNotesPositioned(it.positionInRoot()) },
+                    softWrap = false,
+                    color = Color(colorRoles.onAccentContainer)
+                )
+            }
+        }
+
+    }
+}
+
+@Composable
+private fun SmallContentBox(
+    value: Substitution,
+    totalWidth: Dp,
+    colorRoles: ColorRoles,
+    roomOffsetState: State<IntOffset>,
+    teacherOffsetState: State<IntOffset>,
+    notesOffsetState: State<IntOffset>,
+    modifier: Modifier = Modifier,
+    onRoomPositioned: (room: Offset) -> Unit,
+    onTeacherPositioned: (teacher: Offset) -> Unit,
+    onNotesPositioned: (notes: Offset) -> Unit = {}
+) {
+    Row(modifier = modifier) {
+        Box(
+            contentAlignment = Alignment.CenterStart,
+            modifier = Modifier
+                .fillMaxHeight()
+                .maybeReserveNotesSpace(
+                    reserve = value.shouldDisplayNotes(),
+                    totalWidth = totalWidth
+                )
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 12.dp)) {
+
+                /**** begin ContentBox -> Title **/
+                Text(
+                    text = value.getCardTitle(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 4.dp),
+                    color = Color(colorRoles.onAccentContainer)
+                )
+                /** end ContentBox -> Title ****/
+
+                /**** begin ContentBox --> SubBox **/
+                SubBox(
+                    value = value,
+                    colorRoles = colorRoles,
+                    modifier = Modifier.padding(top = 3.dp),
+                    onRoomPositioned = onRoomPositioned,
+                    onTeacherPositioned = onTeacherPositioned,
+                    roomOffsetState = roomOffsetState,
+                    teacherOffsetState = teacherOffsetState
+                )
+                /** end ContentBox -> SubBox ****/
+
+            } /* end ContentBox column */
+        }
+        /** end ContentBox ****/
+
+        if (value.shouldDisplayNotes()) {
+            NotesBox(
+                value = value,
+                colorRoles = colorRoles,
+                modifier = Modifier
+                    .defaultMinSize(minWidth = (totalWidth - 55.dp) / 3)
+                    .wrapContentSize()
+                    .fillMaxHeight(),
+                onPositioned = onNotesPositioned,
+                offsetState = notesOffsetState
+            )
+        }
     }
 }
 
@@ -178,7 +384,11 @@ private fun LessonNr(
 fun SubBox(
     value: Substitution,
     colorRoles: ColorRoles,
-    modifier: Modifier = Modifier
+    roomOffsetState: State<IntOffset>,
+    teacherOffsetState: State<IntOffset>,
+    modifier: Modifier = Modifier,
+    onRoomPositioned: (room: Offset) -> Unit = {},
+    onTeacherPositioned: (teacher: Offset) -> Unit = {}
 ) {
     Row(modifier = modifier) {
 
@@ -199,7 +409,11 @@ fun SubBox(
             modifier = Modifier
                 .padding(start = 4.dp,
                     top = 2.dp)
-                .alignByBaseline(),
+                .alignByBaseline()
+                .onGloballyPositioned { coords ->
+                    onRoomPositioned(coords.positionInRoot())
+                }
+                .offset { roomOffsetState.value },
             softWrap = false,
             color = Color(colorRoles.onAccentContainer) )
 
@@ -220,7 +434,13 @@ fun SubBox(
                         top = 2.dp,
                         end = 8.dp)
                     .wrapContentWidth()
-                    .alignByBaseline(),
+                    .alignByBaseline()
+                    .onGloballyPositioned { coords ->
+                        onTeacherPositioned(coords.positionInRoot())
+                    }
+                    .offset {
+                            teacherOffsetState.value
+                    },
                 softWrap = false,
                 color = Color(colorRoles.onAccentContainer))
         }
@@ -231,7 +451,9 @@ fun SubBox(
 fun NotesBox(
     value: Substitution,
     colorRoles: ColorRoles,
-    modifier: Modifier = Modifier
+    offsetState: State<IntOffset>,
+    modifier: Modifier = Modifier,
+    onPositioned: (notes: Offset) -> Unit = {}
 ) {
     Row(horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically,
@@ -258,7 +480,14 @@ fun NotesBox(
                         top = 13.dp,
                         end = 15.dp,
                         bottom = 12.dp)
-                    .wrapContentSize() )
+                    .wrapContentSize()
+                    .onGloballyPositioned { coords ->
+                        onPositioned(coords.positionInRoot())
+                    }
+                    .offset {
+                        offsetState.value
+                    }
+            )
         }
     }
 }
@@ -312,3 +541,11 @@ private fun Substitution.shouldDisplayNotes(): Boolean =
             && this.type != SubstitutionType.WORKORDER
             && this.type != SubstitutionType.CANCELLATION
 
+
+private data class SubOffsets(
+    var origSub: Offset,
+    var substSub: Offset,
+    var room: Offset,
+    var teacher: Offset,
+    var notes: Offset
+)
