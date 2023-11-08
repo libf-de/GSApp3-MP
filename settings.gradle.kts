@@ -31,15 +31,19 @@ pluginManagement {
     }
 
     plugins {
-        kotlin("jvm").version(Versions.Kotlin.Language)
-        kotlin("multiplatform").version(Versions.Kotlin.Language)
-        kotlin("android").version(Versions.Kotlin.Language)
-        kotlin("plugin.serialization").version(Versions.Kotlin.Language)
+        val kotlinVersion = extra["kotlin.version"] as String
+        val agpVersion = extra["agp.version"] as String
+        val composeVersion = extra["compose.version"] as String
 
-        id("com.android.application").version(Versions.AndroidGradlePlugin)
-        id("com.android.library").version(Versions.AndroidGradlePlugin)
+        kotlin("jvm").version(kotlinVersion)
+        kotlin("multiplatform").version(kotlinVersion)
+        kotlin("android").version(kotlinVersion)
+        kotlin("plugin.serialization").version(kotlinVersion)
 
-        id("org.jetbrains.compose").version(Versions.Compose)
+        id("com.android.application").version(agpVersion)
+        id("com.android.library").version(agpVersion)
+
+        id("org.jetbrains.compose").version(composeVersion)
     }
 }
 
