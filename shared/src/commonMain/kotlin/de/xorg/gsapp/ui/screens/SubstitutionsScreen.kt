@@ -23,10 +23,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -46,6 +43,7 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
@@ -54,20 +52,28 @@ import androidx.compose.ui.unit.sp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.res.MR
+import de.xorg.gsapp.ui.components.NoteCard
 import de.xorg.gsapp.ui.components.SubstitutionCard
 import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
 import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.state.isLoading
+import de.xorg.gsapp.ui.state.isNormal
+import de.xorg.gsapp.ui.tools.DateUtil
+import de.xorg.gsapp.ui.tools.DateUtil.Companion.getWeekdayLongRes
+import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
+import kotlinx.datetime.LocalDate
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.compose.koinInject
+
+
 
 /**
  * This is the substitution plan-tab composable
@@ -106,12 +112,26 @@ fun SubstitutionsScreen(
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .padding(bottom = 84.dp),
         topBar = {
-            MediumTopAppBar(
+            SupportMediumTopAppBar(
                 title = {
-                    Text(text = stringResource(MR.strings.tab_substitutions),
-                        fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
-                        style = MaterialTheme.typography.headlineMedium
-                    )
+                    Column {
+                        Text(text = stringResource(MR.strings.tab_substitutions),
+                            fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+
+                        if(viewModel.uiState.substitutionState.isNormal() && sds.getOrNull() != null) {
+                            Text(
+                                text = stringResource(
+                                    MR.strings.subplan_date_header_for,
+                                    sds.getOrDefault(SubstitutionSet.EMPTY).dateStr
+                                ),
+                                fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                        }
+                    }
+
                 },
                 scrollBehavior = scrollBehavior,
                 actions = {
@@ -140,6 +160,17 @@ fun SubstitutionsScreen(
                         .padding(innerPadding)
                         .windowSizeMargins(windowSizeClass)
                 ) {
+                    val notes = sds.getOrDefault(SubstitutionSet.EMPTY).notes
+                    if(notes.isNotBlank()) {
+                        item {
+                            NoteCard(
+                                text = notes,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            )
+                        }
+                    }
+
                     sds.getOrDefault(SubstitutionSet.EMPTY)
                         .substitutions
                         .forEach {
@@ -204,6 +235,26 @@ fun SubstitutionsScreen(
     }
 }
 
-private fun Float.isAboutNormal(): Boolean {
-    return this in 355F .. 360F
+@Composable
+private fun getDateAsStringForHeader(date: LocalDate): String {
+    val monthString = when(date.monthNumber) {
+        1 -> stringResource(MR.strings.jan)
+        2 -> stringResource(MR.strings.feb)
+        3 -> stringResource(MR.strings.mar)
+        4 -> stringResource(MR.strings.apr)
+        5 -> stringResource(MR.strings.may)
+        6 -> stringResource(MR.strings.jun)
+        7 -> stringResource(MR.strings.jul)
+        8 -> stringResource(MR.strings.aug)
+        9 -> stringResource(MR.strings.sep)
+        10 -> stringResource(MR.strings.oct)
+        11 -> stringResource(MR.strings.nov)
+        12 -> stringResource(MR.strings.dec)
+        else -> ""
+    }
+    return stringResource(MR.strings.subplan_date_header_fmt)
+        .replace("%w", stringResource(getWeekdayLongRes(date)) )
+        .replace("%d", date.dayOfMonth.toString())
+        .replace("%m", monthString)
+        .replace("%y", date.year.toString())
 }

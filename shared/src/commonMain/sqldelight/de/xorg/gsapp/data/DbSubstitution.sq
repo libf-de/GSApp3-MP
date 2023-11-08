@@ -4,6 +4,7 @@ CREATE TABLE DbSubstitution (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     assSet INTEGER NOT NULL,
     klass TEXT NOT NULL,
+    klassFilter TEXT NOT NULL,
     lessonNr TEXT,
     origSubject TEXT,
     substTeacher TEXT,
@@ -33,6 +34,7 @@ findSubstitutionsBySetId:
 SELECT DbSubstitution.id,
         DbSubstitution.assSet,
         DbSubstitution.klass,
+        DbSubstitution.klassFilter,
         DbSubstitution.lessonNr,
         DbSubstitution.origSubject AS origShortName, oSub.longName AS origLongName, oSub.color AS origColor,
         DbSubstitution.substTeacher AS substTeacherShortName, DbTeacher.longName AS substTeacherLongName,
@@ -53,9 +55,9 @@ JOIN DbSubstitutionSet ON DbSubstitution.assSet = DbSubstitutionSet.id
 WHERE DbSubstitutionSet.date = :date;
 
 insertSubstitution:
-INSERT OR IGNORE INTO DbSubstitution(assSet, klass, lessonNr, origSubject, substTeacher, substRoom, substSubject, notes, isNew)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR IGNORE INTO DbSubstitution(assSet, klass, klassFilter, lessonNr, origSubject, substTeacher, substRoom, substSubject, notes, isNew)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertSubstitutionWithStrings:
-INSERT INTO DbSubstitution(assSet, klass, lessonNr, origSubject, substTeacher, substRoom, substSubject, notes, isNew)
-VALUES ((SELECT id FROM DbSubstitutionSet WHERE date = ?), ?, ?, (SELECT shortName FROM DbSubject WHERE shortName = ?), (SELECT shortName FROM DbTeacher WHERE shortName = ?), ?, (SELECT shortName FROM DbSubject WHERE shortName = ?), ?, ?);
+INSERT INTO DbSubstitution(assSet, klass, klassFilter, lessonNr, origSubject, substTeacher, substRoom, substSubject, notes, isNew)
+VALUES ((SELECT id FROM DbSubstitutionSet WHERE date = ?), ?, ?, ?, (SELECT shortName FROM DbSubject WHERE shortName = ?), (SELECT shortName FROM DbTeacher WHERE shortName = ?), ?, (SELECT shortName FROM DbSubject WHERE shortName = ?), ?, ?);

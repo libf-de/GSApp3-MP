@@ -45,8 +45,8 @@ android {
         applicationId = "de.xorg.gsapp"
         minSdk = (findProperty("android.minSdk") as String).toInt()
         targetSdk = (findProperty("android.targetSdk") as String).toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = BuildConfig.VERSION_CODE
+        versionName = BuildConfig.VERSION
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

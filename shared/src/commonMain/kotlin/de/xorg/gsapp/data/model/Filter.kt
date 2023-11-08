@@ -34,9 +34,7 @@ data class Filter(
         return when(role) {
             Role.ALL -> true
             Role.TEACHER -> substitution.substTeacher.shortName.lowercase() == value.lowercase()
-            Role.STUDENT -> {
-                substitution.klass.lowercase() == value.lowercase()
-            }
+            Role.STUDENT -> substitution.klassFilter.lowercase().contains(value.lowercase())
         }
     }
 

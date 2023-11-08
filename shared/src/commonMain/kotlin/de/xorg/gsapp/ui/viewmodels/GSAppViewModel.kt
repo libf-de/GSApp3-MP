@@ -66,26 +66,12 @@ class GSAppViewModel : ViewModel(), KoinComponent {
 
         subs.mapCatching {
             it.copy(
-                substitutions = when(filter.role) {
-                    Filter.Role.STUDENT -> {
-                        it.substitutions.filterKeys { entry ->
-                            entry.lowercase().contains(filter.value.lowercase())
-                        }
+                substitutions = it.substitutions.mapValues { subsPerClass ->
+                    subsPerClass.value.filter { aSub ->
+                        filter.substitutionMatches(aSub)
                     }
-
-                    Filter.Role.TEACHER -> {
-                        it.substitutions.mapValues { subsPerKlass ->
-                            subsPerKlass.value.filter { aSub ->
-                                aSub.substTeacher.shortName.lowercase() == filter.value.lowercase()
-                            }
-                        }.filter { subsPerKlass ->
-                            subsPerKlass.value.isNotEmpty()
-                        }
-                    }
-
-                    else -> { //TODO: Is returning instantly much faster than this?
-                        it.substitutions
-                    }
+                }.filter {
+                        subsPerClass -> subsPerClass.value.isNotEmpty()
                 }
             )
         }

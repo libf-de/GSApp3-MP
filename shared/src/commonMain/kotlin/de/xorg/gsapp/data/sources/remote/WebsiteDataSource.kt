@@ -50,8 +50,8 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
         val log = logging()
     }
 
-    private val parser = GsWebsiteParser()
-    private val client = HttpClient {
+    protected val parser = GsWebsiteParser()
+    protected val client = HttpClient {
         install(HttpRequestRetry) {
             retryOnException(
                 maxRetries = 3,

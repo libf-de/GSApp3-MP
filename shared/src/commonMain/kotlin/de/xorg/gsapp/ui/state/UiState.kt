@@ -34,3 +34,7 @@ enum class UiState {
 fun UiState.isLoading(): Boolean {
     return this == UiState.LOADING || this == UiState.NORMAL_LOADING
 }
+
+fun UiState.isNormal(): Boolean {
+    return this == UiState.NORMAL || this == UiState.NORMAL_LOADING || this == UiState.NORMAL_FAILED
+}

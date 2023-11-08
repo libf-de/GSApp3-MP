@@ -35,6 +35,7 @@ fun NormalNoNotesPreview() {
     val sampleSubDisp = Substitution(
         type = SubstitutionType.NORMAL,
         klass = "5.3",
+        klassFilter = "5.3",
         lessonNr = "3",
         origSubject = Subject("En", "Englisch", Color.Red),
         substTeacher = Teacher("KOC", "Degner-Engelhard, Fr."),

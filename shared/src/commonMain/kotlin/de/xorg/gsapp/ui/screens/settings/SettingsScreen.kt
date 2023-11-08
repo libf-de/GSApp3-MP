@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -142,6 +143,17 @@ fun SettingsScreen(
                     title = stringResource(MR.strings.pref_subjects),
                     subtitle = stringResource(MR.strings.pref_subjects_desc),
                     onClick = { navController.navigate(GSAppRoutes.SETTINGS_SUBJECTS) }
+                )
+            }
+
+            item {
+                SettingsItem(
+                    icon = { mod, tint -> Icon(Icons.Rounded.Info,
+                        contentDescription = "",
+                        modifier = mod, tint = tint) },
+                    title = "GSApp3 Multiplatform",
+                    subtitle = "Version 1.0.1-dev",
+                    onClick = { }
                 )
             }
 

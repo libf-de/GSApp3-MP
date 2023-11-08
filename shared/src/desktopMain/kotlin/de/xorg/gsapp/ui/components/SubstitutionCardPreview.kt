@@ -33,6 +33,7 @@ import de.xorg.gsapp.data.model.Teacher
 fun normalNoNotesPreview() {
         val sampleSubDisp = Substitution(
         type = SubstitutionType.NORMAL,
+        klassFilter = "5.3",
         klass = "5.3",
         lessonNr = "3",
         origSubject = Subject("En", "Englisch", Color.Red),
@@ -53,6 +54,7 @@ fun normalWithNotesPreview() {
         val sampleSubDisp = Substitution(
         type = SubstitutionType.NORMAL,
         klass = "5.3",
+        klassFilter = "5.3",
         lessonNr = "3",
         origSubject = Subject("Ma", "Mathematik", Color.Blue),
         substTeacher = Teacher("BEY", "Fr. Degner-E."),
@@ -73,6 +75,7 @@ fun cancellationPreview() {
         SubstitutionCard(value = Substitution(
         type = SubstitutionType.CANCELLATION,
         klass = "5.3",
+        klassFilter = "5.3",
         lessonNr = "4",
         origSubject = Subject("Ma", "Mathematik", Color.Red),
         substTeacher = Teacher("##", "nobody"),
@@ -90,6 +93,7 @@ fun workorderPreview() {
         SubstitutionCard(value = Substitution(
         type = SubstitutionType.WORKORDER,
         klass = "5.3",
+        klassFilter = "5.3",
         lessonNr = "4",
         origSubject = Subject("Ma", "Mathematik", Color.Red),
         substTeacher = Teacher("WEL", "Welsch, T."),
@@ -107,6 +111,7 @@ fun roomswapPreview() {
         SubstitutionCard(value = Substitution(
         type = SubstitutionType.ROOMSWAP,
         klass = "5.3",
+        klassFilter = "5.3",
         lessonNr = "4",
         origSubject = Subject("Ma", "Mathematik", Color.Red),
         substTeacher = Teacher("WEL", "Welsch, T."),
@@ -124,6 +129,7 @@ fun breastfeedPreview() {
         SubstitutionCard(value = Substitution(
         type = SubstitutionType.BREASTFEED,
         klass = "5.3",
+        klassFilter = "5.3",
         lessonNr = "4",
         origSubject = Subject("Ma", "Mathematik", Color.Red),
         substTeacher = Teacher("WEL", "Welsch, T."),

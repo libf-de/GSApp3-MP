@@ -126,6 +126,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
 
                                         Substitution(
                                             klass = dbSub.klass,
+                                            klassFilter = dbSub.klassFilter,
                                             lessonNr = dbSub.lessonNr ?: "?",
                                             origSubject = Subject(
                                                 shortName = origSubjShort,
@@ -207,6 +208,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                 database.dbSubstitutionQueries.insertSubstitution(
                     assSet = setId,
                     klass = it.klass,
+                    klassFilter = it.klassFilter,
                     lessonNr = it.lessonNr,
                     origSubject = it.origSubject,
                     substTeacher = it.substTeacher,
@@ -250,6 +252,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                 database.dbSubstitutionQueries.insertSubstitution(
                     assSet = setId,
                     klass = it.klass,
+                    klassFilter = it.klassFilter,
                     lessonNr = it.lessonNr,
                     origSubject = it.origSubject,
                     substTeacher = it.substTeacher,

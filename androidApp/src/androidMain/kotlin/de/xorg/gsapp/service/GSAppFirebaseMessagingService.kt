@@ -142,7 +142,7 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
         println("before repository")
         val appRepository: GSAppRepository by inject()
         appRepository.updateSubstitutions {
-            /*if (it.getOrDefault(false)) {*/
+            if (it.isSuccess) {
                 // Update was successful -> show preview in notification
                 scope.launch {
                     appRepository.getSubstitutions().collectLatest { subSet ->
@@ -153,15 +153,13 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
                         )
                     }
                 }
-
-            /*} else {
+            } else {
                 postSubstitutionNotification(context = this@GSAppFirebaseMessagingService)
-            }*/
+            }
 
 
             Log.d(
-                TAG, "Updated substitution plan " +
-                        (if (it.getOrDefault(false)) "successfully" else "")
+                TAG, "Updated substitution plan " + (if (it.isSuccess) "successfully" else "")
             )
         }
 

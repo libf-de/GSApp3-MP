@@ -24,6 +24,8 @@ const val DEFAULT_BLANK_STRING = "(kein)"
  * Data class to hold a single substitution plan entry
  * @property type whether it's a cancellation, etc.
  * @property klass the affected class (spelled with k, to not interfere with kotlin class)
+ * @property klassFilter klass with expanded multi-classes and abitur levels, for filtering.
+ *           classes like 9.1/2/3 | 20BI3 are expanded here to 9.1 9.2 9.3 | A20 for easy filtering.
  * @property lessonNr
  * @property origSubject the subject to be substituted
  * @property substTeacher the teacher who replaces
@@ -35,6 +37,7 @@ const val DEFAULT_BLANK_STRING = "(kein)"
 data class Substitution(
     val type: SubstitutionType,
     val klass: String,
+    val klassFilter: String,
     val lessonNr: String,
     val origSubject: Subject,
     val substTeacher: Teacher,
@@ -57,6 +60,7 @@ data class Substitution(
      */
     constructor(
         klass: String,
+        klassFilter: String,
         lessonNr: String,
         origSubject: Subject,
         substTeacher: Teacher,
@@ -77,6 +81,7 @@ data class Substitution(
         else
             SubstitutionType.NORMAL,
         klass = klass.ifBlank { DEFAULT_BLANK_STRING },
+        klassFilter = klassFilter.ifBlank { DEFAULT_BLANK_STRING },
         lessonNr = lessonNr.ifBlank { "?" },
         origSubject = origSubject,
         substTeacher = substTeacher,
@@ -93,11 +98,13 @@ data class Substitution(
      * @param substTeacher Teacher resolved from String value in ApiModel
      * @param substSubject Subject resolved from String value in ApiModel
      */
+    @Deprecated("no longer needed")
     constructor(primitive: SubstitutionApiModel,
                 origSubject: Subject,
                 substTeacher: Teacher,
                 substSubject: Subject) : this(
                     klass = primitive.klass.ifBlank { DEFAULT_BLANK_STRING },
+                    klassFilter = primitive.klass.ifBlank { DEFAULT_BLANK_STRING },
                     lessonNr = primitive.lessonNr.ifBlank { "?" },
                     origSubject = origSubject,
                     substTeacher = substTeacher,

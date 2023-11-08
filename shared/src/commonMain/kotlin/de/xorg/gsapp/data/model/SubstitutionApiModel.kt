@@ -34,6 +34,7 @@ package de.xorg.gsapp.data.model
 
 data class SubstitutionApiModel(
     val klass: String,
+    val klassFilter: String,
     val lessonNr: String,
     val origSubject: String,
     val substTeacher: String,

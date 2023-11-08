@@ -46,8 +46,8 @@ kotlin {
     }
 
     cocoapods {
-        version = "1.0.0"
-        summary = "GSApp Multiplatform cocoapod pod"
+        version = BuildConfig.VERSION
+        summary = BuildConfig.APP_NAME
         homepage = "https://libf.de/gsapp"
         ios.deploymentTarget = "14.1" // TODO: Can I go lower?
         podfile = project.file("../iosApp/Podfile")

@@ -18,6 +18,20 @@
   -->
 
 <resources>
+    <!-- Months -->
+    <string name="jan">Januar</string>
+    <string name="feb">Februar</string>
+    <string name="mar">März</string>
+    <string name="apr">April</string>
+    <string name="may">Mai</string>
+    <string name="jun">Juni</string>
+    <string name="jul">Juli</string>
+    <string name="aug">August</string>
+    <string name="sep">September</string>
+    <string name="oct">Oktober</string>
+    <string name="nov">November</string>
+    <string name="dec">Dezember</string>
+
     <!-- Weekdays, long form -->
     <string name="wd_mo_lo">Montag</string>
     <string name="wd_tu_lo">Dienstag</string>
@@ -53,6 +67,9 @@
     <string name="tab_exams">Klausuren</string>
 
     <!-- Substitution plan -->
+    <string name="subplan_date_header_fmt">für %w, den %d. %m %y</string>
+    <string name="subplan_date_header_for">für %s</string>
+    <string name="subplan_date_header_new">NEU</string>
     <string name="subplan_workorder_samesubject">%s Arbeitsauftrag</string>
     <string name="subplan_workorder">%s ➜ %s Arbeitsauftrag</string>
     <string name="subplan_cancellation">%s ➜ Ausfall</string>
@@ -146,4 +163,34 @@
     <string name="failed_to_load">%s konnte nicht geladen werden</string>
     <string name="failed_send_dev">Bitte sende diesen Fehler an den Entwickler:</string>
     <string name="unknown_cause">Unbekannte Ursache</string>
+
+    <!-- Subjects -->
+    <string name="subject_de">Deutsch</string>
+    <string name="subject_ma">Mathe</string>
+    <string name="subject_mu">Musik</string>
+    <string name="subject_ku">Kunst</string>
+    <string name="subject_gg">Geografie</string>
+    <string name="subject_re">Religion</string>
+    <string name="subject_et">Ethik</string>
+    <string name="subject_mnt">MNT</string> <!-- Humans Nature Technology -->
+    <string name="subject_en">Englisch</string>
+    <string name="subject_sp">Sport</string>
+    <string name="subject_spj">Sport Jungen</string>
+    <string name="subject_spm">Sport Mädchen</string>
+    <string name="subject_bi">Biologie</string>
+    <string name="subject_ch">Chemie</string>
+    <string name="subject_ph">Physik</string>
+    <string name="subject_sk">Sozialkunde</string>
+    <string name="subject_if">Informatik</string>
+    <string name="subject_wr">Wirtschaft/Recht</string>
+    <string name="subject_ge">Geschichte</string>
+    <string name="subject_fr">Französisch</string>
+    <string name="subject_ru">Russisch</string>
+    <string name="subject_la">Latein</string>
+    <string name="subject_gewi">Gesellschaftsw.</string>
+    <string name="subject_dg">Darstellen/Gestalten</string>
+    <string name="subject_sn">Spanisch</string>
+    <string name="subject_as">Astronomie</string>
+    <string name="subject_nwut">Naturw. &amp; Technik</string>
+    <string name="subject_none">keine Angabe</string>
 </resources>

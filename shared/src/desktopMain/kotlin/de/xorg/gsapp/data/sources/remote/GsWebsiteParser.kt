@@ -88,6 +88,7 @@ actual class GsWebsiteParser {
                 substitutionApiModels.add(
                     SubstitutionApiModel(
                         klass = data[0],
+                        klassFilter = processKlassForFilter(data[0]),
                         lessonNr = data[1],
                         origSubject = data[2],
                         substTeacher = data[3],

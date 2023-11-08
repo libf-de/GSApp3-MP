@@ -86,5 +86,14 @@ fun parseSubstitutionDate(dateStr: String?): LocalDate {
         logging().e { ex.stackTraceToString() }
         return LocalDate.fromEpochDays(0)
     }
+}
 
+fun processKlassForFilter(klassInp: String): String {
+    //get the grade, so 9.1 -> 9, 20BI3 -> 20
+    val grade = Regex("\\d+").find(klassInp)?.value ?: 0
+
+    //Expand multi-classes, so 9.1/2/3 -> 9.1 9.2 9.3
+    return klassInp
+        .replace(Regex("/(\\d)"), " ${grade}.$1") // 9.1/2/3 -> 9.1 9.2 9.3
+        .replace(Regex("([0-9]+)[A-Za-z]+[0-9]{0,1}"), "A$1") // 25bi4 -> A25
 }

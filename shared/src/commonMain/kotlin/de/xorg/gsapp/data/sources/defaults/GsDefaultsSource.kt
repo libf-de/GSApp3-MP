@@ -52,6 +52,8 @@ override fun getDefaultSubjects(): List<Subject> {
             Subject("Gewi", "Gesellschaftsw.", Color(0xFF795548)),
             Subject("Dg", "Darstellen/Gestalten", Color(0xFF795548)),
             Subject("Sn", "Spanisch", Color(0xFF558B2F)),
+            Subject("As", "Astronomie", Color(0xFF1166E3)),
+            Subject("NWuT", "Naturw. & Technik", Color(0xff388958)),
             Subject("&nbsp;", "keine Angabe", Color.DarkGray)
         )
     }

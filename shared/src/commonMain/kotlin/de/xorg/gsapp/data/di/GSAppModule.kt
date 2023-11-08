@@ -31,6 +31,7 @@ import de.xorg.gsapp.data.sources.defaults.DefaultsDataSource
 import de.xorg.gsapp.data.sources.defaults.GsDefaultsSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
 import de.xorg.gsapp.data.sources.local.SqldelightDataSource
+import de.xorg.gsapp.data.sources.remote.DebugDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
 import de.xorg.gsapp.data.sources.remote.WebsiteDataSource
 import de.xorg.gsapp.data.sql.GsAppDatabase
@@ -70,6 +71,7 @@ val dataRepositoryModule = module {
 
     single<LocalDataSource> { SqldelightDataSource() }
     single<RemoteDataSource> { WebsiteDataSource() }
+    //single<RemoteDataSource> { DebugDataSource() }
     single<DefaultsDataSource> { GsDefaultsSource() }
     single<GSAppRepository> { AppRepository() }
 }

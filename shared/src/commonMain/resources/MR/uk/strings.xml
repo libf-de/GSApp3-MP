@@ -37,7 +37,7 @@
     <string name="wd_tu_lo">Вівторок</string> <!-- Tuesday -->
     <string name="wd_we_lo">Середа</string> <!-- Wednesday -->
     <string name="wd_th_lo">Четвер</string> <!-- Thursday -->
-    <string name="wd_fr_lo">П'ятниця</string> <!-- Friday -->
+    <string name="wd_fr_lo">П\'ятниця</string> <!-- Friday -->
     <string name="wd_sa_lo">Субота</string> <!-- Saturday -->
     <string name="wd_su_lo">Неділя</string> <!-- Sunday -->
 
@@ -68,6 +68,8 @@
 
     <!-- Substitution plan -->
     <string name="subplan_date_header_fmt">для %w, %d %m, %y</string> <!-- for %w, %m %d, %y -->
+    <string name="subplan_date_header_for">за %s</string> <!-- for %s -->
+    <string name="subplan_date_header_new">НОВИНКА</string> <!-- NEW -->
     <string name="subplan_workorder_samesubject">%s робоче завдання</string> <!-- %s work order -->
     <string name="subplan_workorder">%s ➜ %s робоче завдання</string> <!-- %s ➜ %s work order -->
     <string name="subplan_cancellation">%s ➜ скасовано</string> <!-- %s ➜ cancelled -->
@@ -163,4 +165,34 @@
     <string name="failed_to_load">Не вдалося завантажити %s</string><!-- Failed to load %s -->
     <string name="failed_send_dev">Будь ласка, надішліть повідомлення з цією помилкою розробнику:</string><!-- Please send a report with this error to the developer: -->
     <string name="unknown_cause">Невідома причина</string><!-- Unknown cause -->
+
+    <!-- Subjects -->
+    <string name="subject_de">Німецька</string><!-- German -->
+    <string name="subject_ma">Математика</string><!-- Maths -->
+    <string name="subject_mu">Музика</string><!-- Music -->
+    <string name="subject_ku">Мистецтво</string><!-- Art -->
+    <string name="subject_gg">Географія</string><!-- Geography -->
+    <string name="subject_re">Релігія</string><!-- Religion -->
+    <string name="subject_et">Етика</string><!-- Ethics -->
+    <string name="subject_mnt">Людина, Природа, Техніка</string><!-- Humans Nature Technology -->
+    <string name="subject_en">Англійська</string><!-- English -->
+    <string name="subject_sp">Фізична культура</string><!-- Sports -->
+    <string name="subject_spj">Фізична культура (Хлопці)</string><!-- Sports (Boys) -->
+    <string name="subject_spm">Фізична культура (Дівчата)</string><!-- Sports (Girls) -->
+    <string name="subject_bi">Біологія</string><!-- Biology -->
+    <string name="subject_ch">Хімія</string><!-- Chemistry -->
+    <string name="subject_ph">Фізика</string><!-- Physics -->
+    <string name="subject_sk">Суспільні науки</string><!-- Social Studies -->
+    <string name="subject_if">Інформатика</string><!-- Computer Science -->
+    <string name="subject_wr">Економіка/Право</string><!-- Economics/Law -->
+    <string name="subject_ge">Історія</string><!-- History -->
+    <string name="subject_fr">Французька</string><!-- French -->
+    <string name="subject_ru">Російська</string><!-- Russian -->
+    <string name="subject_la">Латинська</string><!-- Latin -->
+    <string name="subject_gewi">Соціальні науки</string><!-- Social sciences -->
+    <string name="subject_dg">Виконавське мистецтво</string><!-- Performing Arts -->
+    <string name="subject_sn">Іспанська</string><!-- Spanish -->
+    <string name="subject_as">Астрономія</string><!-- Astronomy -->
+    <string name="subject_nwut">Наука та Технологія</string><!-- Science & Technology -->
+    <string name="subject_none">Без предмета</string><!-- No subject -->
 </resources>
