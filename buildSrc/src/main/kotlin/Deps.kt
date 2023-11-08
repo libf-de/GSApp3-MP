@@ -17,6 +17,7 @@
  */
 
 object Deps {
+
     object AndroidX {
         const val ActivityCompose = "androidx.activity:activity-compose:${Versions.AndroidX.ActivityCompose}"
         const val AppCompat = "androidx.appcompat:appcompat:${Versions.AndroidX.AppCompat}"
@@ -94,6 +95,8 @@ object Deps {
 }
 
 object Versions {
+    const val AndroidGradlePlugin = "8.1.1"
+
     object AndroidX {
         const val ActivityCompose = "1.7.2"
         const val AppCompat = "1.6.1"
@@ -101,11 +104,14 @@ object Versions {
         const val DatastorePreferences = "1.0.0"
     }
 
+    const val Compose = "1.5.1"
+
     const val FirebaseMessaging = "23.2.1"
     const val GoogleServices = "4.3.5"
 
     object Kotlin {
         const val CompilerExtension = "1.5.3"
+        const val Language = "1.9.10"
     }
 
     object KotlinX {

@@ -225,6 +225,7 @@ sqldelight {
     databases {
         create("GsAppDatabase") {
             packageName.set("de.xorg.gsapp.data.sql")
+            version = BuildConfig.DATABASE_VERSION
         }
     }
     linkSqlite.set(true)
