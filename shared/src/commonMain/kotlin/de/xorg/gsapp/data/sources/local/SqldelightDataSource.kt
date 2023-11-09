@@ -31,6 +31,7 @@ import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sql.GsAppDatabase
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
@@ -44,7 +45,6 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.todayIn
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.lighthousegames.logging.logging
 
 
 /**
@@ -59,10 +59,6 @@ import org.lighthousegames.logging.logging
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SqldelightDataSource : LocalDataSource, KoinComponent {
-
-    companion object {
-        val log = logging()
-    }
 
     private val database: GsAppDatabase by inject()
 
@@ -221,14 +217,14 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
 
             val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
             val oldSets = database.dbSubstitutionSetQueries.getLegacyIds(today).executeAsList()
-            log.d { "cleanupSubstitutionPlan(): Found ${oldSets.size} old plans..." }
+            Napier.d { "cleanupSubstitutionPlan(): Found ${oldSets.size} old plans..." }
 
             oldSets.forEach { cSetId -> database.dbSubstitutionQueries.deleteBySetId(cSetId) }
             oldSets.forEach { cSetId ->
                 database.dbSubstitutionSetQueries.deleteSubstitutionSet(cSetId)
             }
 
-            log.d { "cleanupSubstitutionPlan(): Cleanup done!" }
+            Napier.d { "cleanupSubstitutionPlan(): Cleanup done!" }
         }
     }
 
@@ -271,7 +267,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
     override suspend fun cleanupSubstitutionPlan() {
         val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
         val oldSets = database.dbSubstitutionSetQueries.getLegacyIds(today).executeAsList()
-        log.d { "cleanupSubstitutionPlan(): Found ${oldSets.size} old plans..." }
+        Napier.d { "cleanupSubstitutionPlan(): Found ${oldSets.size} old plans..." }
 
         database.dbSubstitutionQueries.transaction {
             oldSets.forEach { setId -> database.dbSubstitutionQueries.deleteBySetId(setId) }
@@ -283,7 +279,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
             }
         }
 
-        log.d { "cleanupSubstitutionPlan(): Cleanup done!" }
+        Napier.d { "cleanupSubstitutionPlan(): Cleanup done!" }
     }
 
     /**
@@ -357,7 +353,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         return try {
             database.dbSubjectQueries.countByShort(shortName).executeAsOne() > 0
         } catch(ex: Exception) {
-            log.w { "Exception while checking subject existence: ${ex.stackTraceToString()}"}
+            Napier.w { "Exception while checking subject existence: ${ex.stackTraceToString()}"}
             false
         }
     }

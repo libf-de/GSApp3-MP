@@ -35,6 +35,8 @@ import kotlin.math.roundToInt
  * to remove clipToPadding from the bottom/second TopAppBarLayout, but because
  * most of the stuff is private/internal, I have to copy it here -.-"
  *
+ * EDIT: Also using this for exposing background color!
+ *
  * TODO: Remove when this is possible in a more elegant way!
  */
 
@@ -50,7 +52,7 @@ object SupportTopAppBarDefaults {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun mediumSupportTopAppBarColors(
+    fun supportMediumTopAppBarColors(
         containerColor: Color = MaterialTheme.colorScheme.surface,
         scrolledContainerColor: Color = MaterialTheme.colorScheme.applyTonalElevation(
             backgroundColor = containerColor,
@@ -77,8 +79,9 @@ fun SupportMediumTopAppBar(
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
-    colors: SupportTopAppBarColors = SupportTopAppBarDefaults.mediumSupportTopAppBarColors(),
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    colors: SupportTopAppBarColors = SupportTopAppBarDefaults.supportMediumTopAppBarColors(),
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    onBackgroundColorChanged: (Color) -> Unit = {}
 ) {
     SupportTwoRowsTopAppBar(
         modifier = modifier,
@@ -93,7 +96,8 @@ fun SupportMediumTopAppBar(
         windowInsets = windowInsets,
         maxHeight = SupportTopAppBarMediumTokens.ContainerHeight,
         pinnedHeight = SupportTopAppBarSmallTokens.ContainerHeight,
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
+        onBackgroundColorChanged = onBackgroundColorChanged
     )
 }
 
@@ -112,7 +116,8 @@ private fun SupportTwoRowsTopAppBar(
     colors: SupportTopAppBarColors,
     maxHeight: Dp,
     pinnedHeight: Dp,
-    scrollBehavior: TopAppBarScrollBehavior?
+    scrollBehavior: TopAppBarScrollBehavior?,
+    onBackgroundColorChanged: (Color) -> Unit
 ) {
     if (maxHeight <= pinnedHeight) {
         throw IllegalArgumentException(
@@ -143,6 +148,10 @@ private fun SupportTwoRowsTopAppBar(
     // container's scrolled color according to the app bar's scroll state.
     val colorTransitionFraction = scrollBehavior?.state?.collapsedFraction ?: 0f
     val appBarContainerColor by rememberUpdatedState(colors.containerColor(colorTransitionFraction))
+
+    LaunchedEffect(appBarContainerColor) {
+        onBackgroundColorChanged(appBarContainerColor)
+    }
 
     // Wrap the given actions in a Row.
     val actionsRow = @Composable {
@@ -311,7 +320,7 @@ private fun SupportTopAppBarLayout(
                 0
             }
 
-        val layoutHeight = heightPx.roundToInt()
+        val layoutHeight = if(!heightPx.isNaN()) heightPx.roundToInt() else 0
 
         layout(constraints.maxWidth, layoutHeight) {
             // Navigation icon

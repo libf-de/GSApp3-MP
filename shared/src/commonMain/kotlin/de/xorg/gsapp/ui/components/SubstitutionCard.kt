@@ -219,14 +219,16 @@ private fun SmallCardContent(
                     LocationItem(
                         value = value,
                         tint = Color(colorRoles.onAccentContainer),
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
+                        isSmall = true
                     )
 
                     /* ContentBox -> SubBox -> Teacher */
                     TeacherItem(
                         value = value.substTeacher,
                         tint = Color(colorRoles.onAccentContainer),
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
+                        isSmall = true
                     )
                 }
                 /** end ContentBox -> SubBox ****/
@@ -395,7 +397,8 @@ private fun IconAndText(
     fontWeight: FontWeight? = MaterialTheme.typography.bodyMedium.fontWeight,
     style: TextStyle = MaterialTheme.typography.bodyMedium,
     softWrap: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSmall: Boolean = false
 ) {
     IconAndText(
         text = text,
@@ -406,7 +409,8 @@ private fun IconAndText(
         style = style,
         softWrap = softWrap,
         modifier = modifier,
-        spacedBy = spacedBy
+        spacedBy = spacedBy,
+        isSmall = isSmall
     )
 }
 
@@ -421,7 +425,8 @@ private fun IconAndText(
     fontWeight: FontWeight? = MaterialTheme.typography.bodyMedium.fontWeight,
     style: TextStyle = MaterialTheme.typography.bodyMedium,
     softWrap: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSmall: Boolean = false
     ){
     Row(
         modifier = modifier,
@@ -439,6 +444,7 @@ private fun IconAndText(
             style = style,
             fontWeight = fontWeight,
             modifier = Modifier
+                .padding(top = if(isSmall) 2.dp else 0.dp)
                 .alignByBaseline(),
             softWrap = softWrap,
             color = tint
@@ -450,6 +456,7 @@ private fun IconAndText(
 private fun LocationItem(
     value: Substitution,
     tint: Color,
+    isSmall: Boolean = false,
     style: TextStyle = MaterialTheme.typography.bodyMedium,
     spacedBy: Dp = 4.dp,
     modifier: Modifier = Modifier
@@ -465,7 +472,8 @@ private fun LocationItem(
         else
             style.fontWeight,
         modifier = modifier,
-        spacedBy = spacedBy
+        spacedBy = spacedBy,
+        isSmall = isSmall
     )
 }
 
@@ -473,6 +481,7 @@ private fun LocationItem(
 private fun TeacherItem(
     value: Teacher,
     tint: Color,
+    isSmall: Boolean = false,
     spacedBy: Dp = 4.dp,
     style: TextStyle = MaterialTheme.typography.bodyMedium,
     modifier: Modifier = Modifier
@@ -485,7 +494,8 @@ private fun TeacherItem(
             style = style,
             spacedBy = spacedBy,
             contentDescription = stringResource(MR.strings.subplan_dsc_teacher),
-            modifier = modifier
+            modifier = modifier,
+            isSmall = isSmall
         )
     }
 }

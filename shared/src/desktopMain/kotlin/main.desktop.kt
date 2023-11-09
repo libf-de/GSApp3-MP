@@ -21,6 +21,8 @@ import de.xorg.gsapp.GSApp
 
 actual fun getPlatformName(): String = "Desktop"
 
+actual val runtimePlatform: Platform = Platform.Desktop
+
 @Composable fun MainView() {
     GSApp()
 }

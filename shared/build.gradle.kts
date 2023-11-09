@@ -28,8 +28,7 @@ plugins {
 }
 
 kotlin {
-    @Suppress("OPT_IN_USAGE")
-    targetHierarchy.default()
+    //kotlin.applyDefaultHierarchyTemplate()
 
     androidTarget()
 
@@ -72,9 +71,27 @@ kotlin {
     sourceSets {
         val commonTest by getting {
             dependencies {
-                implementation(Deps.Moko.Resources.Test)
+                implementation(kotlin("test"))
+                implementation(kotlin("test-common"))
+                implementation(kotlin("test-annotations-common"))
+
+                implementation(TestDeps.KotlinX.CoroutinesTest)
+                implementation(TestDeps.Kotest.AssertionsCore)
+                implementation(TestDeps.Kotest.Property)
+                implementation(TestDeps.Ktor.Test)
+
+                // Compose
+                implementation(TestDeps.Moko.Resources.Test)
             }
         }
+
+        /*val androidTest by getting {
+            dependencies {
+                implementation(TestDeps.Junit.ComposeUi4)
+                implementation(TestDeps.Junit.Jupiter)
+                implementation(TestDeps.Junit.VintageEngine)
+            }
+        }*/
 
         val commonMain by getting {
             dependencies {
@@ -128,11 +145,21 @@ kotlin {
                 api(Deps.Precompose.Core)
                 api(Deps.Precompose.ViewModel)
                 api(Deps.Precompose.Koin)
-
             }
         }
+
+        val javaMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(Deps.SkrapeIt)
+            }
+        }
+
+
+
         val androidMain by getting {
             dependsOn(commonMain)
+            dependsOn(javaMain)
             dependencies {
                 // Compose Multiplatform
                 api(Deps.AndroidX.ActivityCompose)
@@ -156,10 +183,17 @@ kotlin {
                 implementation(compose.preview)
             }
         }
-        val iosMain by getting {
-            dependencies {
-                dependsOn(commonMain)
 
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+        val iosMain by creating {
+            dependsOn(commonMain)
+            iosX64Main.dependsOn(this)
+            iosArm64Main.dependsOn(this)
+            iosSimulatorArm64Main.dependsOn(this)
+
+            dependencies {
                 // Sqldelight iOS database driver
                 implementation(Deps.Sqldelight.NativeDriver)
 
@@ -168,9 +202,9 @@ kotlin {
             }
         }
         val desktopMain by getting {
+            dependsOn(commonMain)
+            dependsOn(javaMain)
             dependencies {
-                dependsOn(commonMain)
-
                 //Compose Multiplatform dependencies
                 implementation(compose.desktop.common)
                 implementation(compose.desktop.macos_x64)

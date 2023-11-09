@@ -21,6 +21,7 @@ import de.xorg.gsapp.GSApp
 import de.xorg.gsapp.ui.components.NotificationPermissionAlertDialog
 
 actual fun getPlatformName(): String = "Android"
+actual val runtimePlatform: Platform = Platform.Android
 
 @Composable fun MainView() {
     NotificationPermissionAlertDialog()

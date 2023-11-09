@@ -28,22 +28,19 @@ import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.SubstitutionApiModel
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
+import io.github.aakira.napier.Napier
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
-import org.lighthousegames.logging.logging
 import platform.Foundation.allKeys
 import platform.Foundation.allValues
 import platform.Foundation.array
 
 
-actual class GsWebsiteParser {
-
-    companion object {
-        val log = logging()
-    }
-
-    actual suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet> {
+@OptIn(ExperimentalForeignApi::class)
+class IosWebsiteParser : GsWebsiteParser() {
+    override suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet> {
         val doc = HTMLDocument.documentWithString(result)
 
         val dateHead: HTMLElement? = doc.querySelector("td[class*=vpUeberschr]")
@@ -52,7 +49,7 @@ actual class GsWebsiteParser {
             if(!dateHead.isEmpty())
                 dateText = dateHead.textContent
         if(dateText == "Beschilderung beachten!") {
-            log.d { "HolidayException()" }
+            Napier.d { "HolidayException()" }
             return Result.failure(HolidayException())
         }
 
@@ -60,7 +57,7 @@ actual class GsWebsiteParser {
         var noteText = ""
         if(noteHead != null)
             if(!noteHead.isEmpty())
-                noteText = noteHead.textContent
+                noteText = noteHead.textContent.removePrefix("Hinweis:").trim()
 
         val substitutionApiModels = ArrayList<SubstitutionApiModel>()
         var colNum: Int
@@ -74,7 +71,7 @@ actual class GsWebsiteParser {
                     ?.setElementId("firstSubstitution")
                 doc.querySelectorAll("#firstSubstitution, #firstSubstitution ~ tr")
             }.ifEmpty {
-                log.d { "element not found tr[id=Svertretungen] or #firstSubstitution"}
+                Napier.d { "element not found tr[id=Svertretungen] or #firstSubstitution"}
                 return Result.failure(
                     ElementNotFoundException("tr[id=Svertretungen] or #firstSubstitution")
                 )
@@ -115,7 +112,7 @@ actual class GsWebsiteParser {
         )
     }
 
-    actual suspend fun parseTeachersNumPages(html: String): Int {
+    override suspend fun parseTeachersNumPages(html: String): Int {
         val doc = HTMLDocument.documentWithString(html)
         return try {
             val lastRow = doc.querySelectorAll("table[class=\"eAusgeben\"] > tbody > tr")
@@ -124,13 +121,13 @@ actual class GsWebsiteParser {
             val hrefAttr = attrMap.allValues[attrMap.allKeys.indexOf("href")] as String
             hrefAttr.substringAfter("seite=").toInt()
         } catch(ex: Exception) {
-            log.w { ex.stackTraceToString() }
+            Napier.w { ex.stackTraceToString() }
             0
         }
 
     }
 
-    actual suspend fun parseTeachers(
+    override suspend fun parseTeachers(
         html: String,
         list: MutableList<Teacher>
     ) {
@@ -153,7 +150,7 @@ actual class GsWebsiteParser {
         }
     }
 
-    actual suspend fun parseFoodOffers(html: String): Result<Map<LocalDate, List<Food>>> {
+    override suspend fun parseFoodOffers(html: String): Result<Map<LocalDate, List<Food>>> {
         val foods = mutableMapOf<LocalDate, MutableList<Food>>()
         val doc = HTMLDocument.documentWithString(html)
         val mealTbl = doc.querySelectorAll("table#menu-table_KW td[mealid]")
@@ -182,7 +179,7 @@ actual class GsWebsiteParser {
                     )
                 )
             } catch(e: Exception) {
-                log.w { e.stackTraceToString() }
+                Napier.w { e.stackTraceToString() }
                 return Result.failure(e)
             }
         }
@@ -190,7 +187,7 @@ actual class GsWebsiteParser {
         return Result.success(foods.entries.associate { it.key to it.value.toList() })
     }
 
-    actual suspend fun parseAdditives(html: String): Result<Map<String, String>> {
+    override suspend fun parseAdditives(html: String): Result<Map<String, String>> {
         val additiveMap = mutableMapOf<String, String>()
         return try {
             val doc = HTMLDocument.documentWithString(html)
@@ -205,13 +202,13 @@ actual class GsWebsiteParser {
                     if (!item.textContent.trim().endsWith(")") && item.textContent.trim().length > 3) {
                         //probably not the shortcode
                         if (isShort) {
-                            log.w { "[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT " +
+                            Napier.w { "[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT " +
                                     "(upper): ${item.outerHTML}" }
                             return@forEach
                         }
                     } else {
                         if (!isShort) {
-                            log.w { "[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT " +
+                            Napier.w { "[ParseAdditives]: MISSMATCH BETWEEN isShort AND TEXT " +
                                     "(lower): ${item.outerHTML}" }
                             return@forEach
                         }
@@ -230,12 +227,12 @@ actual class GsWebsiteParser {
 
             Result.success(additiveMap)
         } catch(ex: Exception) {
-            log.w { ex.stackTraceToString() }
+            Napier.w { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }
 
-    actual suspend fun parseExams(html: String, course: ExamCourse): Result<List<Exam>> {
+    override suspend fun parseExams(html: String, course: ExamCourse): Result<List<Exam>> {
         val exams: MutableList<Exam> = mutableListOf()
         val germanDateWithoutYearRegex = Regex("([0-3]?[0-9])\\.([0-1]?[0-9])\\.")
 
@@ -247,12 +244,12 @@ actual class GsWebsiteParser {
             if(mHeader != null)
                 header = mHeader
             else {
-                log.w { "Header not found :(" }
+                Napier.w { "Header not found :(" }
                 return Result.failure(ElementNotFoundException("header not found :("))
             }
 
             val years = Regex("([0-9]{4})/([0-9]{4})").find(header.innerHTML)?.groupValues ?: emptyList()
-            if (years.size != 3) log.w { "Years array size != 3!!" }
+            if (years.size != 3) Napier.w { "Years array size != 3!!" }
 
             var dates: List<LocalDate>? = null
 
@@ -292,7 +289,7 @@ actual class GsWebsiteParser {
                     }
 
                     if (tableRow.querySelector("td[class*=\"ferien\"]") != null) {
-                        //This is actually the second table, below the exam plan.
+                        //This is overridely the second table, below the exam plan.
                         //Theoretically, we could now end table parsing, but for the sake of it
                         //continue. TODO: Stop.
                         return@forRow
@@ -303,7 +300,7 @@ actual class GsWebsiteParser {
                         .filterIsInstance<HTMLElement>()
                         .forEach forCell@{ cell ->
                             if (dates == null) {
-                                log.w { "dates array does not exist, this should not happen -> " +
+                                Napier.w { "dates array does not exist, this should not happen -> " +
                                         "dateHeader was not found!" }
                                 return Result.failure(ElementNotFoundException(
                                     "dates array does not exist, this should not happen -> " +
@@ -334,7 +331,7 @@ actual class GsWebsiteParser {
                                     )
                                 } else {
                                     //This is an exam(s) cell, add them/it to the list!
-                                    log.d { "got an exam: \"${cell.textContent}\""}
+                                    Napier.d { "got an exam: \"${cell.textContent}\""}
 
                                     cell.innerHTML
                                         .trim()
@@ -374,10 +371,10 @@ actual class GsWebsiteParser {
                     }
 
             exams.sortBy { it.date }
-            log.d { "sukzess, got ${exams.size} exams" }
+            Napier.d { "sukzess, got ${exams.size} exams" }
             Result.success(exams)
         } catch(ex: Exception) {
-            log.w { ex.stackTraceToString() }
+            Napier.w { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }

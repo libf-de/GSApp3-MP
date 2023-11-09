@@ -7,6 +7,8 @@ import com.russhwolf.settings.NSUserDefaultsSettings
 import com.russhwolf.settings.coroutines.toFlowSettings
 import de.xorg.gsapp.data.push.PushNotificationUtil
 import de.xorg.gsapp.data.push.iosPushUtilStub
+import de.xorg.gsapp.data.sources.remote.GsWebsiteParser
+import de.xorg.gsapp.data.sources.remote.IosWebsiteParser
 import de.xorg.gsapp.data.sql.GsAppDatabase
 import org.koin.dsl.module
 import platform.Foundation.NSUserDefaults.Companion.standardUserDefaults
@@ -23,5 +25,9 @@ actual val platformModule = module {
 
     single<PushNotificationUtil> {
         iosPushUtilStub()
+    }
+
+    single<GsWebsiteParser> {
+        IosWebsiteParser()
     }
 }

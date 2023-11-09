@@ -7,7 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import de.xorg.gsapp.data.platform.PlatformInterface
+import de.xorg.gsapp.ui.tools.PlatformInterface
 import de.xorg.gsapp.res.MR
 import dev.icerock.moko.resources.StringResource
 import dev.icerock.moko.resources.compose.stringResource

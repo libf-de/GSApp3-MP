@@ -27,12 +27,12 @@ import de.xorg.gsapp.data.model.Teacher
 import de.xorg.gsapp.data.sources.defaults.DefaultsDataSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.datetime.LocalDate
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.lighthousegames.logging.logging
 
 /**
  * This combines all data sources (local cache and remote apis), as well as app settings into a
@@ -85,11 +85,6 @@ import org.lighthousegames.logging.logging
  */
 
 class AppRepository : GSAppRepository, KoinComponent {
-
-    companion object {
-        val log = logging()
-    }
-
     //Get data sources from DI
     private val apiDataSource: RemoteDataSource by inject()
     private val localDataSource: LocalDataSource by inject()
@@ -99,13 +94,13 @@ class AppRepository : GSAppRepository, KoinComponent {
         = localDataSource.getSubstitutionPlanFlow()
 
     override suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit) {
-        log.d { "updateSubstitutions in AppRepository" }
+        Napier.d { "updateSubstitutions in AppRepository" }
         try {
-            log.d { "updateSubstitutions in try" }
+            Napier.d { "updateSubstitutions in try" }
             with(apiDataSource.getSubstitutionPlan()) {
-                log.d { "updateSubstitutions in with" }
+                Napier.d { "updateSubstitutions in with" }
                 if(this.isFailure) {
-                    log.w { "getSubstitutionPlan failed :/" }
+                    Napier.w { "getSubstitutionPlan failed :/" }
                     callback(
                         Result.failure(
                             this.exceptionOrNull() ?: Exception("unknown cause (api) :(")
@@ -117,7 +112,7 @@ class AppRepository : GSAppRepository, KoinComponent {
                 //TODO: Compare remote vs. local by hash AND DATE? (https://github.com/libf-de/GSApp3-MP/issues/8)
                 val localLatestHash = localDataSource.getLatestSubstitutionHashAndDate()
                 if(localLatestHash.isFailure) {
-                    log.w { "getLocalHash failed :/" }
+                    Napier.w { "getLocalHash failed :/" }
                     callback(
                         Result.failure(
                             this.exceptionOrNull() ?: Exception("unknown cause (dbLatest) :(")
@@ -128,19 +123,17 @@ class AppRepository : GSAppRepository, KoinComponent {
 
                 //If remote plan is different from latest local -> store it!
                 if(localLatestHash.getOrNull()!!.first != this.getOrNull()!!.hashCode()) {
-                    log.d { "got new plan!" }
+                    Napier.d { "got new plan!" }
                     localDataSource.addSubstitutionPlanAndCleanup(this.getOrNull()!!)
-                    /*localDataSource.addSubstitutionPlan(this.getOrNull()!!)
-                    localDataSource.cleanupSubstitutionPlan()*/
                     callback(Result.success(true))
                 } else {
-                    log.d { "no new plan!" }
+                    Napier.d { "no new plan!" }
                     localDataSource.cleanupSubstitutionPlan()
                     callback(Result.success(false))
                 }
             }
         } catch (ex: Exception) {
-            log.w { ex.stackTraceToString() }
+            Napier.w { ex.stackTraceToString() }
             callback(Result.failure(ex))
         }
     }
@@ -348,7 +341,7 @@ class AppRepository : GSAppRepository, KoinComponent {
             )
             Result.success(true)
         } catch (ex: Exception) {
-            log.w { ex.stackTraceToString() }
+            Napier.w { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }

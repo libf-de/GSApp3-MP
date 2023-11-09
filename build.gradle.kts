@@ -29,12 +29,15 @@ plugins {
 }
 
 buildscript {
+    val kotlin_version by extra("1.9.20")
     repositories {
         gradlePluginPortal()
+        mavenCentral()
     }
 
     dependencies {
         classpath(Deps.Moko.Resources.Generator)
         classpath(Deps.GoogleServices.Core)
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     }
 }

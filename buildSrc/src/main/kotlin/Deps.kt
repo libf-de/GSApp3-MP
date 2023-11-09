@@ -16,6 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+object TestDeps {
+    object Junit {
+        const val ComposeUi4 = "org.jetbrains.compose.ui:ui-test-junit4:${Versions.JunitCompose}"
+        const val Jupiter = "org.junit.jupiter:junit-jupiter:${Versions.Junit}"
+        const val VintageEngine = "org.junit.vintage:junit-vintage-engine:${Versions.Junit}"
+    }
+
+    object Kotest {
+        const val RunnerJunit5 = "io.kotest:kotest-runner-junit5:${Versions.Kotest}"
+        const val AssertionsCore = "io.kotest:kotest-assertions-core:${Versions.Kotest}"
+        const val Property = "io.kotest:kotest-property:${Versions.Kotest}"
+    }
+
+    object KotlinX {
+        const val CoroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.KotlinX.coroutines}"
+    }
+
+    object Ktor {
+        const val Test = "io.ktor:ktor-client-mock:${Versions.Ktor}"
+    }
+
+    const val Mockk = "io.mockk:mockk:${Versions.Mockk}"
+
+    object Moko {
+        object Resources {
+            const val Test = "dev.icerock.moko:resources-test:${Versions.Moko.Resources}"
+        }
+    }
+
+
+}
+
 object Deps {
     object AndroidX {
         const val ActivityCompose = "androidx.activity:activity-compose:${Versions.AndroidX.ActivityCompose}"
@@ -54,7 +86,6 @@ object Deps {
             const val Core = "dev.icerock.moko:resources:${Versions.Moko.Resources}"
             const val Compose = "dev.icerock.moko:resources-compose:${Versions.Moko.Resources}"
             const val Generator = "dev.icerock.moko:resources-generator:${Versions.Moko.Resources}"
-            const val Test = "dev.icerock.moko:resources-test:${Versions.Moko.Resources}"
             const val _plugin = "dev.icerock.mobile.multiplatform-resources"
         }
 
@@ -88,7 +119,7 @@ object Deps {
         const val Koin = "moe.tlaster:precompose-koin:${Versions.Precompose}"
     }
 
-    const val Logging = "org.lighthousegames:logging:${Versions.Logging}"
+    const val Logging = "io.github.aakira:napier:${Versions.Logging}"
     const val WindowSizeClass = "dev.chrisbanes.material3:material3-window-size-class-multiplatform:${Versions.WindowSizeClass}"
 
 }
@@ -103,6 +134,8 @@ object Versions {
 
     const val FirebaseMessaging = "23.2.1"
     const val GoogleServices = "4.3.5"
+    const val Junit = "5.10.1"
+    const val JunitCompose = "1.5.10" //Sync with compose version!
 
     object Kotlin {
         const val CompilerExtension = "1.5.3"
@@ -119,17 +152,20 @@ object Versions {
         const val compose = "1.1.0"
     }
 
+    const val Kotest = "5.8.0"
+
     const val Ktor = "2.3.4"
     object Moko {
         const val Resources = "0.23.0"
         const val Graphics = "0.9.0"
     }
 
+    const val Mockk = "1.13.8"
     const val MultiplatformSettings = "1.1.0"
     const val SkrapeIt = "1.2.2"
     const val SonarQube = "4.4.1.3373"
     const val Sqldelight = "2.0.0"
     const val WindowSizeClass = "0.3.1"
     const val Precompose = "1.5.1"
-    const val Logging = "1.3.0"
+    const val Logging = "2.6.1"
 }

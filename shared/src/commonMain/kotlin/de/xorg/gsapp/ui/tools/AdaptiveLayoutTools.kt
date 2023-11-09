@@ -22,8 +22,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import getPlatformName
+import runtimePlatform
 
 val WindowSizeClass.horizontalMargin: Dp
     get() = when(this.widthSizeClass) {
@@ -34,4 +38,12 @@ val WindowSizeClass.horizontalMargin: Dp
 
 fun Modifier.windowSizeMargins(windowSizeClass: WindowSizeClass): Modifier {
     return this.padding(horizontal = windowSizeClass.horizontalMargin)
+}
+
+@OptIn(kotlin.experimental.ExperimentalNativeApi::class)
+fun Modifier.Companion.platformSpecificScrollBehavior(nestedScrollConnection: NestedScrollConnection): Modifier {
+    return when(getPlatformName()) {
+        "Android" -> this.nestedScroll(nestedScrollConnection)
+        else -> this
+    }
 }

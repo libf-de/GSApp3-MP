@@ -73,12 +73,16 @@ import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.state.isLoading
 import de.xorg.gsapp.ui.tools.DateUtil
+import de.xorg.gsapp.ui.tools.PlatformInterface
+import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
+import de.xorg.gsapp.ui.tools.SupportTopAppBarDefaults
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -88,7 +92,6 @@ import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.compose.koinInject
-import org.lighthousegames.logging.logging
 
 /**
  * The foodplan-tab composable
@@ -100,10 +103,9 @@ import org.lighthousegames.logging.logging
 fun FoodplanScreen(
     navController: Navigator
 ) {
-    val log = logging()
-
     //val viewModel: GSAppViewModel = koinViewModel(vmClass = GSAppViewModel::class)
     val viewModel: GSAppViewModel = koinInject()
+
     val windowSizeClass = calculateWindowSizeClass()
 
     val listState = rememberLazyListState()
@@ -119,6 +121,8 @@ fun FoodplanScreen(
     val todayIndex = if(foodplan.keys.contains(today)) foodplan.keys.indexOf(today) else 0
     val pagerState = rememberPagerState(initialPage = todayIndex) { foodplan.size }
     var currentPageIndex by remember { mutableStateOf(todayIndex) }
+
+    var appBarColor by remember { mutableStateOf(Color.Transparent) }
 
     with(pagerState) {
         LaunchedEffect(currentPageIndex) {
@@ -136,7 +140,7 @@ fun FoodplanScreen(
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .padding(bottom = 84.dp),
         topBar = {
-            MediumTopAppBar(
+            SupportMediumTopAppBar(
                 title = {
                     Text(text = stringResource(MR.strings.tab_foodplan),
                         fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
@@ -144,13 +148,13 @@ fun FoodplanScreen(
                     )
                 },
                 scrollBehavior = scrollBehavior,
-                colors = if(getPlatformName() != "Android") //TopAppBar currently does not color correctly on desktop/ios TODO: Remove when fixed
-                            TopAppBarDefaults.mediumTopAppBarColors(
+                colors = /*if(getPlatformName() != "Android") //TopAppBar currently does not color correctly on desktop/ios TODO: Remove when fixed
+                            SupportTopAppBarDefaults.supportMediumTopAppBarColors(
                                 containerColor = if (listState.firstVisibleItemIndex == 0)
                                     MaterialTheme.colorScheme.background
                                 else
                                     MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
-                         else TopAppBarDefaults.mediumTopAppBarColors(),
+                         else */SupportTopAppBarDefaults.supportMediumTopAppBarColors(),
                 actions = {
                     /** Settings button **/
                     IconButton(
@@ -170,7 +174,8 @@ fun FoodplanScreen(
                                 contentDescription = stringResource(MR.strings.settings_title))
                         }
                     }
-                }
+                },
+                onBackgroundColorChanged = { color -> appBarColor = color }
             )
         }
     ) { innerPadding ->
@@ -180,8 +185,7 @@ fun FoodplanScreen(
             UiState.NORMAL_LOADING -> {
                 LazyColumn(
                     modifier = Modifier
-                        .padding(innerPadding)
-                        .windowSizeMargins(windowSizeClass),
+                        .padding(innerPadding),
                     state = listState,
                     verticalArrangement = Arrangement.spacedBy(16.dp) ) {
                     // Tabs
@@ -189,10 +193,10 @@ fun FoodplanScreen(
                         Column {
                             ScrollableTabRow(
                                 edgePadding = 20.dp,
-                                containerColor = if (listState.firstVisibleItemIndex == 0)
+                                containerColor = appBarColor/*if (listState.firstVisibleItemIndex == 0)
                                     MaterialTheme.colorScheme.background
                                 else
-                                    MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                                    MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),*/,
                                 contentColor = MaterialTheme.colorScheme.onBackground,
                                 selectedTabIndex = pagerState.currentPage,
                                 indicator = { tabPos ->
@@ -229,7 +233,8 @@ fun FoodplanScreen(
                         ) { page ->
                             Column(
                                 modifier = Modifier
-                                    .padding(horizontal = 20.dp)
+                                    .windowSizeMargins(windowSizeClass)
+                                    /*.padding(horizontal = 20.dp)*/
                                     .verticalScroll(
                                         rememberScrollState(),
                                         /*enabled = isScrolledDownState.currentState*/
@@ -249,7 +254,7 @@ fun FoodplanScreen(
                                         (240 / todayFoods.size) * foodNum.toFloat(),
                                         0.6f, 0.5f
                                     )
-                                    log.d { "on page $foodNum -> " +
+                                    Napier.d { "on page $foodNum -> " +
                                             (240 / todayFoods.size) * foodNum.toFloat() }
 
                                     FoodplanCard(

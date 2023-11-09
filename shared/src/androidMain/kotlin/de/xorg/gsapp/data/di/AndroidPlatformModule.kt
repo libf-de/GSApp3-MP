@@ -14,6 +14,8 @@ import com.russhwolf.settings.coroutines.FlowSettings
 import com.russhwolf.settings.datastore.DataStoreSettings
 import de.xorg.gsapp.data.push.AndroidPushUtil
 import de.xorg.gsapp.data.push.PushNotificationUtil
+import de.xorg.gsapp.data.sources.remote.GsWebsiteParser
+import de.xorg.gsapp.data.sources.remote.JavaWebsiteParser
 import de.xorg.gsapp.data.sql.GsAppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +37,10 @@ actual val platformModule = module {
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
             produceFile = { get<Context>().preferencesDataStoreFile("GSApp") }
         )
+    }
+
+    single<GsWebsiteParser> {
+        JavaWebsiteParser()
     }
 
     single<FlowSettings> {

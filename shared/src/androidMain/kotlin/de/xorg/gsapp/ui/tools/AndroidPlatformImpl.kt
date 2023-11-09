@@ -1,15 +1,16 @@
-package de.xorg.gsapp.ui.components
+package de.xorg.gsapp.ui.tools
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import de.xorg.gsapp.data.platform.PlatformInterface
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class AndroidPlatformImpl : PlatformInterface, KoinComponent {
+class AndroidPlatformImpl : PlatformInterface(), KoinComponent {
     @Composable
     override fun SendErrorReportButton(ex: Throwable) {
         val context = LocalContext.current
@@ -31,5 +32,11 @@ class AndroidPlatformImpl : PlatformInterface, KoinComponent {
         ) {
             Text("Send mail")
         }
+    }
+
+    override fun openUrl(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val context: Context by inject()
+        context.startActivity(intent)
     }
 }

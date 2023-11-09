@@ -18,7 +18,7 @@
 
 import androidx.compose.ui.window.application
 import de.xorg.gsapp.data.di.appModule
-import de.xorg.gsapp.data.platform.PlatformInterface
+import de.xorg.gsapp.ui.tools.PlatformInterface
 import de.xorg.gsapp.res.MR
 import dev.icerock.moko.resources.compose.stringResource
 import moe.tlaster.precompose.PreComposeWindow

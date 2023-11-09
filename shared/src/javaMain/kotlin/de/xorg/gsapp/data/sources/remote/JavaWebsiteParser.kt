@@ -26,6 +26,7 @@ import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.SubstitutionApiModel
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
+import io.github.aakira.napier.Napier
 import it.skrape.core.htmlDocument
 import it.skrape.matchers.toBePresentTimes
 import it.skrape.selects.DocElement
@@ -33,16 +34,11 @@ import it.skrape.selects.ElementNotFoundException
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
-import org.lighthousegames.logging.logging
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+@Suppress("EXPECT_override_CLASSIFIERS_ARE_IN_BETA_WARNING")
 @NoLiveLiterals
-actual class GsWebsiteParser {
-    companion object {
-        val log = logging()
-    }
-
-    actual suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet>  {
+class JavaWebsiteParser : GsWebsiteParser() {
+    override suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet>  {
         return htmlDocument(result) {
             var dateText: String? = null
             findFirst("td[class*=vpUeberschr]") {
@@ -58,7 +54,7 @@ actual class GsWebsiteParser {
             var noteText = ""
             findFirst("td[class=vpTextLinks]") {
                 if(this.text.isNotEmpty())
-                    noteText = this.text.replace("Hinweis:", "").trim()
+                    noteText = this.text.removePrefix("Hinweis:").trim()
             }
 
             val substitutionApiModels = ArrayList<SubstitutionApiModel>()
@@ -110,7 +106,7 @@ actual class GsWebsiteParser {
         }
     }
 
-    actual suspend fun parseTeachersNumPages(html: String): Int {
+    override suspend fun parseTeachersNumPages(html: String): Int {
         return htmlDocument(html) {
             findFirst("table[class=\"eAusgeben\"] > tbody > tr:last-child > td > a:nth-last-child(2)") {
                 this.attribute("href")
@@ -120,7 +116,7 @@ actual class GsWebsiteParser {
         }
     }
 
-    actual suspend fun parseTeachers(
+    override suspend fun parseTeachers(
         html: String,
         list: MutableList<Teacher>
     ) {
@@ -141,7 +137,7 @@ actual class GsWebsiteParser {
         }
     }
 
-    actual suspend fun parseFoodOffers(html: String): Result<Map<LocalDate, List<Food>>> {
+    override suspend fun parseFoodOffers(html: String): Result<Map<LocalDate, List<Food>>> {
         val foods = mutableMapOf<LocalDate, MutableList<Food>>()
         return htmlDocument(html) {
             findAll("table#menu-table_KW td[mealid]") .forEach { meal ->
@@ -158,13 +154,17 @@ actual class GsWebsiteParser {
                                 true //<- We've got mealtxt
                             } else {
                                 //TODO: This happens in holidays!
-                                log.w { "[loadFoodPlan]: Got food with empty name, on html: ${meal.html}" }
+                                Napier.w { "[loadFoodPlan]: Got food with empty name, on html: ${meal.html}" }
                                 false //<- No mealtxt, continue with next meal
                             }
                         }) return@forEach //Continue with next meal if no mealtxt
 
                     meal.findFirst("sub") {
-                        mealAdditives = this.text.replace("\\s".toRegex(), "").split(",").toList()
+                        mealAdditives = this
+                            .text
+                            .replace("\\s".toRegex(), "")
+                            .split(",")
+                            .toList()
                     }
 
                     if(!foods.containsKey(mealDate)) foods[mealDate] = mutableListOf()
@@ -176,7 +176,7 @@ actual class GsWebsiteParser {
                         )
                     )
                 } catch(e: Exception) {
-                    log.w { e.stackTraceToString() }
+                    Napier.w { e.stackTraceToString() }
                     return@htmlDocument Result.failure(e)
                 }
             }
@@ -187,17 +187,17 @@ actual class GsWebsiteParser {
 
     private fun additiveShortLongOrderMismatched(text: String, shouldBeShort: Boolean): Boolean {
         return if (text.trim().endsWith(")").not() &&
-                   text.trim().length > 3) {
+            text.trim().length > 3) {
             //probably not the shortcode
             if (shouldBeShort) { //but should be -> mismatch
-                log.w { "[ParseAdditives]: MISMATCH BETWEEN isShort AND TEXT " +
+                Napier.w { "[ParseAdditives]: MISMATCH BETWEEN isShort AND TEXT " +
                         "(upper): $text" }
                 true
             } else
                 false
         } else {
             if (!shouldBeShort) {
-                log.w { "[ParseAdditives]: MISMATCH BETWEEN isShort AND TEXT " +
+                Napier.w { "[ParseAdditives]: MISMATCH BETWEEN isShort AND TEXT " +
                         "(lower): $text" }
                 true
             } else
@@ -205,7 +205,7 @@ actual class GsWebsiteParser {
         }
     }
 
-    actual suspend fun parseAdditives(html: String): Result<Map<String, String>> {
+    override suspend fun parseAdditives(html: String): Result<Map<String, String>> {
         val additiveMap = mutableMapOf<String, String>()
         return try {
             htmlDocument(html) {
@@ -229,7 +229,7 @@ actual class GsWebsiteParser {
                 Result.success(additiveMap)
             }
         } catch(ex: Exception) {
-            log.w { ex.stackTraceToString() }
+            Napier.w { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }
@@ -336,7 +336,7 @@ actual class GsWebsiteParser {
      * @param course The course of the exam table
      * @return List of parsed exams or Exception
      */
-    actual suspend fun parseExams(
+    override suspend fun parseExams(
         html: String,
         course: ExamCourse
     ): Result<List<Exam>> {
@@ -372,7 +372,7 @@ actual class GsWebsiteParser {
                     }
 
                     if (it.hasElement("td[class*=\"ferien\"]")) {
-                        //This is actually the second table, below the exam plan.
+                        //This is overridely the second table, below the exam plan.
                         //We can now stop parsing the table.
                         return@forRow
                     }
@@ -409,7 +409,7 @@ actual class GsWebsiteParser {
                 Result.success(exams)
             }
         } catch (ex: Exception) {
-            log.w { ex.stackTraceToString() }
+            Napier.w { ex.stackTraceToString() }
             Result.failure(ex)
         }
     }

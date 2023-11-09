@@ -3,13 +3,19 @@ import SwiftUI
 import shared
 
 
+//struct ContentView: View {
+//    var body: some View {
+//        ZStack {
+//            Color.white.ignoresSafeArea(.all) // status bar color
+//            ComposeView()
+//                .ignoresSafeArea(.all, edges: .bottom) // Compose has own keyboard handler
+//        }.preferredColorScheme(.dark)
+//    }
+//}
 struct ContentView: View {
     var body: some View {
-        ZStack {
-            Color.white.ignoresSafeArea(.all) // status bar color
-            ComposeView()
-                .ignoresSafeArea(.all, edges: .bottom) // Compose has own keyboard handler
-        }.preferredColorScheme(.dark)
+        ComposeView()
+                .ignoresSafeArea(.all) // Compose has own keyboard handler
     }
 }
 

@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -62,7 +63,9 @@ import de.xorg.gsapp.ui.state.isLoading
 import de.xorg.gsapp.ui.state.isNormal
 import de.xorg.gsapp.ui.tools.DateUtil
 import de.xorg.gsapp.ui.tools.DateUtil.Companion.getWeekdayLongRes
+import de.xorg.gsapp.ui.tools.PlatformInterface
 import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
+import de.xorg.gsapp.ui.tools.platformSpecificScrollBehavior
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
@@ -135,6 +138,8 @@ fun SubstitutionsScreen(
                 },
                 scrollBehavior = scrollBehavior,
                 actions = {
+                    koinInject<PlatformInterface>().FeedbackButton()
+
                     IconButton(onClick = { viewModel.updateSubstitutions() }) {
                         Icon(imageVector = Icons.Rounded.Refresh,
                             contentDescription = null,

@@ -18,21 +18,20 @@
 
 package de.xorg.gsapp.ui.viewmodels
 
-import androidx.compose.runtime.MutableState
+//import com.hoc081098.kmp.viewmodel.ViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import de.xorg.gsapp.data.exceptions.NoLocalDataException
 import de.xorg.gsapp.data.model.Filter
-//import com.hoc081098.kmp.viewmodel.ViewModel
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.AppState
 import de.xorg.gsapp.ui.state.UiState
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.shareIn
@@ -41,17 +40,11 @@ import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.lighthousegames.logging.logging
 
 /**
  * View model for the main app tabs
  */
 class GSAppViewModel : ViewModel(), KoinComponent {
-
-    companion object {
-        val log = logging()
-    }
-
     private val appRepo: GSAppRepository by inject()
     private val prefsRepo: PreferencesRepository by inject()
     private val repoScope = CoroutineScope(Dispatchers.IO)
@@ -95,11 +88,11 @@ class GSAppViewModel : ViewModel(), KoinComponent {
     )
 
     init {
-        log.d { "GSAppViewModel init" }
+        Napier.d { "GSAppViewModel init" }
 
         initStateFromFlows()
 
-        log.d { "updating data..." }
+        Napier.d { "updating data..." }
         updateExams()
         updateFoodplan()
         updateSubstitutions()
@@ -224,7 +217,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
     }
 
     fun updateSubstitutions() {
-        log.d { "updating substitutions started" }
+        Napier.d { "updating substitutions started" }
         uiState = if(uiState.substitutionState == UiState.NORMAL)
             uiState.copy(substitutionState = UiState.NORMAL_LOADING)
         else uiState.copy(substitutionState = UiState.LOADING)
@@ -232,7 +225,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         repoScope.launch {
             appRepo.updateSubstitutions {
                 if(it.isFailure) {
-                    log.w { "failed to update substitution plan: ${it.exceptionOrNull()}"}
+                    Napier.w { "failed to update substitution plan: ${it.exceptionOrNull()}"}
                     uiState = if (uiState.substitutionState == UiState.NORMAL_LOADING ||
                         uiState.substitutionState == UiState.NORMAL
                     ) {
@@ -250,9 +243,9 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                     if(it.getOrNull() == false) {
                         //TODO: Notify user of "no new data available"
                         uiState = uiState.copy(substitutionState = UiState.NORMAL)
-                        log.d { "No new data available (substitution plan)!" }
+                        Napier.d { "No new data available (substitution plan)!" }
                     } else {
-                        log.d { "New substitution data available!" }
+                        Napier.d { "New substitution data available!" }
                     }
                 }
             }
@@ -267,7 +260,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         repoScope.launch {
             appRepo.updateFoodplan {
                 if(it.isFailure) {
-                    log.w { "failed to update foodplan: ${it.exceptionOrNull()}"}
+                    Napier.w { "failed to update foodplan: ${it.exceptionOrNull()}"}
                     uiState = if (uiState.foodplanState == UiState.NORMAL_LOADING ||
                         uiState.foodplanState == UiState.NORMAL
                     ) {
@@ -285,9 +278,9 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                     if(it.getOrNull() == false) {
                         //TODO: Notify user of "no new data available"
                         uiState = uiState.copy(foodplanState = UiState.NORMAL)
-                        log.d { "No new data available (foodplan)!" }
+                        Napier.d { "No new data available (foodplan)!" }
                     } else {
-                        log.d { "New food data available!" }
+                        Napier.d { "New food data available!" }
                     }
                 }
             }
@@ -302,7 +295,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         repoScope.launch {
             appRepo.updateExams {
                 if(it.isFailure) {
-                    log.w { "failed to update exams: ${it.exceptionOrNull()}"}
+                    Napier.w { "failed to update exams: ${it.exceptionOrNull()}"}
                     uiState = if (uiState.examState == UiState.NORMAL_LOADING ||
                         uiState.examState == UiState.NORMAL
                     ) {
@@ -320,9 +313,9 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                     if(it.getOrNull() == false) {
                         //TODO: Notify user of "no new data available"
                         uiState = uiState.copy(examState = UiState.NORMAL)
-                        log.d { "No new data available (exam)!" }
+                        Napier.d { "No new data available (exam)!" }
                     } else {
-                        log.d { "New exam data available!" }
+                        Napier.d { "New exam data available!" }
                     }
                 }
             }

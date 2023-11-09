@@ -23,77 +23,71 @@ import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
+import io.github.aakira.napier.Napier
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
-import org.lighthousegames.logging.logging
 
 /**
  * This is the platform-specific parser that parses html for all data types.
  * Get's called from GsWebsiteDataSource.
  */
-expect class GsWebsiteParser() {
-    suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet>
+abstract class GsWebsiteParser {
+    abstract suspend fun parseSubstitutionTable(result: String): Result<SubstitutionApiModelSet>
+    abstract suspend fun parseTeachersNumPages(html: String): Int
+    abstract suspend fun parseTeachers(html: String, list: MutableList<Teacher>)
+    abstract suspend fun parseFoodOffers(html: String): Result<Map<LocalDate, List<Food>>>
+    abstract suspend fun parseAdditives(html: String): Result<Map<String, String>>
+    abstract suspend fun parseExams(html: String, course: ExamCourse): Result<List<Exam>>
 
-    suspend fun parseTeachersNumPages(html: String): Int
-
-    suspend fun parseTeachers(html: String, list: MutableList<Teacher>)
-
-    suspend fun parseFoodOffers(html: String): Result<Map<LocalDate, List<Food>>>
-
-    suspend fun parseAdditives(html: String): Result<Map<String, String>>
-
-    suspend fun parseExams(html: String, course: ExamCourse): Result<List<Exam>>
-
-}
-
-private val germanMonthsMap = mapOf(
-    "januar" to Month.JANUARY,
-    "februar" to Month.FEBRUARY,
-    "märz" to Month.MARCH,
-    "april" to Month.APRIL,
-    "mai" to Month.MAY,
-    "juni" to Month.JUNE,
-    "juli" to Month.JULY,
-    "august" to Month.AUGUST,
-    "september" to Month.SEPTEMBER,
-    "oktober" to Month.OCTOBER,
-    "november" to Month.NOVEMBER,
-    "dezember" to Month.DECEMBER
-)
-
-fun parseSubstitutionDate(dateStr: String?): LocalDate {
-    if(dateStr == null) return LocalDate.fromEpochDays(0)
-
-    val titleDateRegex = Regex("[a-zA-Z]+,\\s+den\\s+([0-9]+).\\s+([a-zA-Z]+)\\s+([0-9]+)")
-    val dateParts = titleDateRegex.find(dateStr)?.groupValues ?: listOf(
-        "",
-        "01",
-        "Januar",
-        "2000"
+    private val germanMonthsMap = mapOf(
+        "januar" to Month.JANUARY,
+        "februar" to Month.FEBRUARY,
+        "märz" to Month.MARCH,
+        "april" to Month.APRIL,
+        "mai" to Month.MAY,
+        "juni" to Month.JUNE,
+        "juli" to Month.JULY,
+        "august" to Month.AUGUST,
+        "september" to Month.SEPTEMBER,
+        "oktober" to Month.OCTOBER,
+        "november" to Month.NOVEMBER,
+        "dezember" to Month.DECEMBER
     )
-    if(dateParts.size != 4) {
-        logging().e { "parseSubstitutionDate(): dateParts size != 4!" }
-        return LocalDate.fromEpochDays(0)
-    }
 
-    return try {
-        LocalDate(
-            year = dateParts[3].toInt(),
-            month = germanMonthsMap[dateParts[2].lowercase()]!!,
-            dayOfMonth = dateParts[1].toInt()
+    fun parseSubstitutionDate(dateStr: String?): LocalDate {
+        if(dateStr == null) return LocalDate.fromEpochDays(0)
+
+        val titleDateRegex = Regex("[a-zA-Z]+,\\s+den\\s+([0-9]+).\\s+([a-zA-Z]+)\\s+([0-9]+)")
+        val dateParts = titleDateRegex.find(dateStr)?.groupValues ?: listOf(
+            "",
+            "01",
+            "Januar",
+            "2000"
         )
-    } catch (ex: Exception) {
-        logging().e { ex.stackTraceToString() }
-        return LocalDate.fromEpochDays(0)
+        if(dateParts.size != 4) {
+            Napier.e { "parseSubstitutionDate(): dateParts size != 4!" }
+            return LocalDate.fromEpochDays(0)
+        }
+
+        return try {
+            LocalDate(
+                year = dateParts[3].toInt(),
+                month = germanMonthsMap[dateParts[2].lowercase()]!!,
+                dayOfMonth = dateParts[1].toInt()
+            )
+        } catch (ex: Exception) {
+            Napier.e { ex.stackTraceToString() }
+            return LocalDate.fromEpochDays(0)
+        }
     }
-}
 
-fun processKlassForFilter(klassInp: String): String {
-    //get the grade, so 9.1 -> 9, 20BI3 -> 20
-    val grade = Regex("\\d+").find(klassInp)?.value ?: 0
+    fun processKlassForFilter(klassInp: String): String {
+        //get the grade, so 9.1 -> 9, 20BI3 -> 20
+        val grade = Regex("\\d+").find(klassInp)?.value ?: 0
 
-    //Expand multi-classes, so 9.1/2/3 -> 9.1 9.2 9.3
-    return klassInp
-        .replace(Regex("/(\\d)"), " ${grade}.$1") // 9.1/2/3 -> 9.1 9.2 9.3
-        .replace(Regex("([0-9]+)[A-Za-z]+[0-9]{0,1}"), "A$1") // 25bi4 -> A25
+        //Expand multi-classes, so 9.1/2/3 -> 9.1 9.2 9.3
+        return klassInp
+            .replace(Regex("/(\\d)"), " ${grade}.$1") // 9.1/2/3 -> 9.1 9.2 9.3
+            .replace(Regex("([0-9]+)[A-Za-z]+[0-9]{0,1}"), "A$1") // 25bi4 -> A25
+    }
 }

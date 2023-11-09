@@ -44,6 +44,8 @@ import de.xorg.gsapp.ui.screens.settings.SubjectManager
 import de.xorg.gsapp.ui.theme.GSAppTheme
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Napier
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.PopUpTo
@@ -59,6 +61,8 @@ import org.koin.compose.KoinContext
 
 @Composable
 fun GSApp() {
+    Napier.base(DebugAntilog())
+
     KoinContext {
         GSAppTheme {
             val navigator = rememberNavigator()

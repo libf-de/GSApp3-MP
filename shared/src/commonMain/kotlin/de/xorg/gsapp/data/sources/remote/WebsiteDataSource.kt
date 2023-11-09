@@ -24,6 +24,7 @@ import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.SubstitutionApiModelSet
 import de.xorg.gsapp.data.model.Teacher
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpRequestRetry
@@ -31,7 +32,7 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import kotlinx.datetime.LocalDate
 import org.koin.core.component.KoinComponent
-import org.lighthousegames.logging.logging
+import org.koin.core.component.inject
 
 
 /**
@@ -46,11 +47,8 @@ import org.lighthousegames.logging.logging
  */
 
 open class WebsiteDataSource : RemoteDataSource, KoinComponent {
-    companion object {
-        val log = logging()
-    }
+    protected val parser: GsWebsiteParser by inject()
 
-    protected val parser = GsWebsiteParser()
     protected val client = HttpClient {
         install(HttpRequestRetry) {
             retryOnException(
@@ -71,20 +69,20 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
             val response: HttpResponse =
                 client.get("https://www.gymnasium-sonneberg.de/Informationen/vp.php5")
             if (response.status.value !in 200..299) {
-                log.e { "loadSubstitutionPlan(): Unexpected code: $response" }
+                Napier.e { "loadSubstitutionPlan(): Unexpected code: $response" }
                 return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
             }
 
-            log.d { "got substitution plan" }
+            Napier.d { "got substitution plan" }
 
             return try {
                 parser.parseSubstitutionTable(response.body())
             } catch (ex: Exception) {
-                log.e { "inner ex: ${ex.stackTraceToString()}" }
+                Napier.e { "inner ex: ${ex.stackTraceToString()}" }
                 Result.failure(ex)
             }
         } catch(ex2: Exception) {
-            log.e { "outer ex2: ${ex2.stackTraceToString()}" }
+            Napier.e { "outer ex2: ${ex2.stackTraceToString()}" }
             return Result.failure(ex2)
         }
     }
@@ -96,7 +94,7 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
             )
 
             if (response.status.value !in 200..299) {
-                log.e { "loadTeachers(): Unexpected code: $response" }
+                Napier.e { "loadTeachers(): Unexpected code: $response" }
                 return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
             }
 
@@ -110,7 +108,7 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
                 )
 
                 if (response.status.value !in 200..299) {
-                    log.e { "loadTeachers(): (subpage) Unexpected code: $response" }
+                    Napier.e { "loadTeachers(): (subpage) Unexpected code: $response" }
                     return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
                 }
 
@@ -119,7 +117,7 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
 
             return Result.success(teachers)
         } catch(ex: Exception) {
-            log.e { ex.stackTraceToString() }
+            Napier.e { ex.stackTraceToString() }
             return Result.failure(ex)
         }
     }
@@ -129,7 +127,7 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
             val response: HttpResponse = client.get("https://schulkueche-bestellung.de/de/menu/14")
 
             if (response.status.value !in 200..299) {
-                log.e { "loadFoodPlan(): Unexpected code: $response" }
+                Napier.e { "loadFoodPlan(): Unexpected code: $response" }
                 return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
             }
 
@@ -145,7 +143,7 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
 
             return Result.success(Pair(foodPlan.getOrNull()!!, additives.getOrNull()!!))
         } catch (e: Exception) {
-            log.e { e.stackTraceToString() }
+            Napier.e { e.stackTraceToString() }
             return Result.failure(e)
         }
     }
@@ -157,7 +155,7 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
             if(subExams.isSuccess)
                 examList.addAll(subExams.getOrNull()!!)
             else
-                log.w { "Failed to load exams for course ${it.name}: ${subExams.exceptionOrNull()}" }
+                Napier.w { "Failed to load exams for course ${it.name}: ${subExams.exceptionOrNull()}" }
         }
         return Result.success(examList)
     }
@@ -167,13 +165,13 @@ open class WebsiteDataSource : RemoteDataSource, KoinComponent {
                 "https://www.gymnasium-sonneberg.de/Schueler/KursArb/ka.php5?seite=${course.ordinal}")
 
             if (response.status.value !in 200..299) {
-                log.e { "loadExams(): Unexpected code: $response" }
+                Napier.e { "loadExams(): Unexpected code: $response" }
                 return Result.failure(UnexpectedStatusCodeException("Unexpected code $response"))
             }
 
             return parser.parseExams(response.body(), course)
         } catch (e: Exception) {
-            log.e { e.stackTraceToString() }
+            Napier.e { e.stackTraceToString() }
             return Result.failure(e)
         }
     }

@@ -18,3 +18,11 @@
 
 // Dunno why, but Android Studio wants this somewhere :S
 expect fun getPlatformName(): String
+expect val runtimePlatform: Platform
+
+enum class Platform {
+    Android,
+    Ios,
+    Desktop,
+    Web
+}
