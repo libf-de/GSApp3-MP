@@ -18,6 +18,7 @@
 
 package de.xorg.gsapp.ui.state
 
+import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.NoException
 import de.xorg.gsapp.data.model.Filter
 
@@ -40,5 +41,6 @@ data class AppState(
     val examState: UiState = UiState.LOADING,
     val examReloading: Boolean = false,
     val examError: Throwable = NoException(),
+    val examCourse: ExamCourse = ExamCourse.COURSE_11
 )
 

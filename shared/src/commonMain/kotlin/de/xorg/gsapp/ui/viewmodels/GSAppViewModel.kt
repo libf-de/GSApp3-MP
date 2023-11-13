@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import de.xorg.gsapp.data.exceptions.NoLocalDataException
+import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
@@ -34,8 +35,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
@@ -81,11 +87,24 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         replay = 1
     )
 
-    val examFlow = appRepo.getExams().shareIn(
-        viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        replay = 1
-    )
+    val examFlow = appRepo
+        .getExams()
+        .mapLatest {
+            if(it.isFailure) return@mapLatest it
+
+            // Filter by set course AND only show future exams
+            val today: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
+            return@mapLatest Result.success(
+                it.getOrNull()!!.filter { exam ->
+                    exam.course == uiState.examCourse && exam.date >= today
+                }
+            )
+        }
+        .shareIn(
+            viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            replay = 1
+        )
 
     init {
         Napier.d { "GSAppViewModel init" }
