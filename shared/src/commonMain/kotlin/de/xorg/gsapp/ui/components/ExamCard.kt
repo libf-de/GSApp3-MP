@@ -18,11 +18,14 @@
 
 package de.xorg.gsapp.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
@@ -31,10 +34,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Exam
+import de.xorg.gsapp.ui.materialtools.ColorRoles
 import de.xorg.gsapp.ui.materialtools.MaterialColors
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
@@ -60,7 +66,14 @@ fun ExamCard(
     ) {
         Row(modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            SuggestionChip(
+
+            SubjectCircle(
+                value = exam.label,
+                colorRoles = colorRoles,
+                modifier = Modifier.padding(end = 8.dp).alignByBaseline()
+            )
+
+            /*SuggestionChip(
                 onClick = {},
                 label = {
                     Text(text = exam.label,
@@ -70,7 +83,7 @@ fun ExamCard(
                     labelColor = Color(colorRoles.onAccentContainer)
                 ),
                 modifier = Modifier.alignByBaseline()
-            )
+            )*/
 
             Box(modifier = Modifier.weight(1f).alignByBaseline()) {
                 Text(text = (exam.subject?.longName ?: exam.label.filter { it.isLetter() }) + " " +
@@ -85,6 +98,31 @@ fun ExamCard(
 
     }
 
+}
+
+@Composable
+private fun SubjectCircle(
+    value: String,
+    colorRoles: ColorRoles,
+    modifier: Modifier = Modifier
+) {
+    Box(contentAlignment = Alignment.CenterStart,
+        modifier = modifier ) {
+
+        /* LessonNumber -> Circle Background */
+        Box(contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color(colorRoles.accent))
+        ) {
+            Text(text = value,
+                style = MaterialTheme.typography.titleMedium,
+                color = Color(colorRoles.onAccent),
+                overflow = TextOverflow.Clip,
+                modifier = Modifier.padding(bottom = 1.5f.dp))
+        }
+    }
 }
 
 private fun LocalDate.todayUntilString(): String {

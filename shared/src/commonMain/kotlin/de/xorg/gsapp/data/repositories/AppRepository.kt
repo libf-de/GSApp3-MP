@@ -19,6 +19,8 @@
 package de.xorg.gsapp.data.repositories
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.Subject
@@ -228,7 +230,21 @@ class AppRepository : GSAppRepository, KoinComponent {
                 }
 
                 if(localLatest.getOrNull() != this.getOrNull()!!) {
-                    localDataSource.clearAndAddAllExams(this.getOrNull()!!)
+                    val subjectRegex = Regex("[A-Za-z]+")
+                    val examsWithSubjects = this.getOrNull()!!.map { exam ->
+                        exam.copy(
+                            // Extract the Subject shorts from the label
+                            subject = subjectRegex
+                                .find(exam.label)
+                                ?.value
+                                ?.lowercase()
+                                ?.capitalize(Locale.current)
+                                ?.let {
+                                    Subject(it)
+                                }
+                        )
+                    }
+                    localDataSource.clearAndAddAllExams(examsWithSubjects)
                     callback(Result.success(true))
                 } else {
                     localDataSource.cleanupExams()
