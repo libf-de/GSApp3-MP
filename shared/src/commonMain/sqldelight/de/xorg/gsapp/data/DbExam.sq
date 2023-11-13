@@ -20,14 +20,14 @@ selectAllWithSubjects:
 SELECT DbExam.id, DbExam.label, DbExam.course, DbExam.date, DbExam.isCoursework, DbExam.subject,
        dSub.longName AS subjectLongName, dSub.color AS subjectColor
 FROM DbExam
-LEFT JOIN DbSubject dSub ON DbExam.subject = dSub.shortName;
+LEFT JOIN DbSubject dSub ON DbExam.subject = dSub.shortName COLLATE NOCASE;
 
 selectByCourseWithSubjects:
 SELECT DbExam.id, DbExam.label, DbExam.course, DbExam.date, DbExam.isCoursework, DbExam.subject,
        dSub.longName AS subjectLongName, dSub.color AS subjectColor
 FROM DbExam
 LEFT JOIN DbSubject dSub ON DbExam.subject = dSub.shortName
-WHERE DbExam.course = :course;
+WHERE DbExam.course = :course COLLATE NOCASE;
 
 clearAll:
 DELETE FROM DbExam;

@@ -46,7 +46,7 @@ FROM DbSubstitution
 LEFT JOIN DbSubject oSub ON oSub.shortName = DbSubstitution.origSubject
 LEFT JOIN DbSubject sSub ON sSub.shortName = DbSubstitution.substSubject
 LEFT JOIN DbTeacher ON DbSubstitution.substTeacher = DbTeacher.shortName
-WHERE assSet == :id;
+WHERE assSet == :id COLLATE NOCASE;
 
 selectByDate:
 SELECT *
@@ -60,4 +60,4 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertSubstitutionWithStrings:
 INSERT INTO DbSubstitution(assSet, klass, klassFilter, lessonNr, origSubject, substTeacher, substRoom, substSubject, notes, isNew)
-VALUES ((SELECT id FROM DbSubstitutionSet WHERE date = ?), ?, ?, ?, (SELECT shortName FROM DbSubject WHERE shortName = ?), (SELECT shortName FROM DbTeacher WHERE shortName = ?), ?, (SELECT shortName FROM DbSubject WHERE shortName = ?), ?, ?);
+VALUES ((SELECT id FROM DbSubstitutionSet WHERE date = ?), ?, ?, ?, (SELECT shortName FROM DbSubject WHERE shortName = ? COLLATE NOCASE), (SELECT shortName FROM DbTeacher WHERE shortName = ? COLLATE NOCASE), ?, (SELECT shortName FROM DbSubject WHERE shortName = ? COLLATE NOCASE), ?, ?);

@@ -17,7 +17,7 @@ FROM DbSubject;
 countByShort:
 SELECT COUNT()
 FROM DbSubject
-WHERE shortName = :shortName;
+WHERE shortName = :shortName COLLATE NOCASE;
 
 insertSubject:
 INSERT OR IGNORE INTO DbSubject(shortName, longName, color)
@@ -26,11 +26,11 @@ VALUES (?, ?, ?);
 updateSubject:
 UPDATE DbSubject
 SET longName = :longName, color = :color
-WHERE shortName = :shortName;
+WHERE shortName = :shortName COLLATE NOCASE;
 
 deleteSubject:
 DELETE FROM DbSubject
-WHERE shortName = :shortName;
+WHERE shortName = :shortName COLLATE NOCASE;
 
 deleteAllSubjects:
 DELETE FROM DbSubject;
