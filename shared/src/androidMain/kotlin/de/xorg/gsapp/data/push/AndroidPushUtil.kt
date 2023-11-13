@@ -60,6 +60,9 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
     }
 
     override fun disablePushService(callback: (success: Boolean) -> Unit) {
+        // Delete Firebase Instance ID
+        Firebase.messaging.deleteToken()
+
         // Disable FCM auto-init
         Firebase.messaging.isAutoInitEnabled = false
 
