@@ -86,6 +86,8 @@
 
     <!-- Exam plan -->
     <string name="examplan_empty">No (more) exams :)</string>
+    <string name="examplan_course_eleven">Course 11</string>
+    <string name="examplan_course_twelve">Course 12</string>
 
 
     <!--- Settings -->

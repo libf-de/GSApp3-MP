@@ -22,6 +22,7 @@ package de.xorg.gsapp.ui.viewmodels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.NoLocalDataException
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Filter
@@ -339,5 +340,14 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                 }
             }
         }
+    }
+
+    fun toggleCourse() {
+        uiState = uiState.copy(
+            examCourse = when(uiState.examCourse) {
+                ExamCourse.COURSE_11 -> ExamCourse.COURSE_12
+                ExamCourse.COURSE_12 -> ExamCourse.COURSE_11
+            }
+        )
     }
 }

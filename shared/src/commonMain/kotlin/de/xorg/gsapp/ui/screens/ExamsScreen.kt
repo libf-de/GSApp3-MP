@@ -18,16 +18,19 @@
 
 package de.xorg.gsapp.ui.screens
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.xorg.gsapp.GSAppRoutes
+import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.ExamCard
 import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
@@ -59,6 +63,7 @@ import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
@@ -115,6 +120,15 @@ fun ExamsScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { viewModel.toggleCourse() },
+            ) {
+                Crossfade(targetState = viewModel.uiState.examCourse) {
+                    ExamCourseIcon(it)
+                }
+            }
         }
     ) { innerPadding ->
         when(viewModel.uiState.substitutionState) {
@@ -184,4 +198,13 @@ fun ExamsScreen(
             }
         }
     }
+}
+
+@Composable
+private fun ExamCourseIcon(course: ExamCourse) {
+    Icon(
+        painter = painterResource(course.iconResource),
+        contentDescription = stringResource(course.descriptiveResource),
+        modifier = Modifier.size(24.dp)
+    )
 }

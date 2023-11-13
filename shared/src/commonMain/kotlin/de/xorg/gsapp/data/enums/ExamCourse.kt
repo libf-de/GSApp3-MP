@@ -18,7 +18,25 @@
 
 package de.xorg.gsapp.data.enums
 
-enum class ExamCourse {
-    COURSE_11,
+import dev.icerock.moko.resources.ImageResource
+import dev.icerock.moko.resources.StringResource
+import de.xorg.gsapp.res.MR
+
+enum class ExamCourse : ExamEnum {
+    COURSE_11 {
+        override val iconResource = MR.images.course_eleven
+        override val descriptiveResource = MR.strings.examplan_course_eleven
+    },
+
     COURSE_12
+    {
+        override val iconResource = MR.images.course_twelve
+        override val descriptiveResource = MR.strings.examplan_course_twelve
+    }
+
+}
+
+private interface ExamEnum {
+    val iconResource: ImageResource
+    val descriptiveResource: StringResource
 }
