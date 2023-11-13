@@ -15,3 +15,4 @@ iosApp/iosApp.xcodeproj/*
 shared/shared.podspec
 GoogleService-Info.plist
 google-services.json
+*.db
