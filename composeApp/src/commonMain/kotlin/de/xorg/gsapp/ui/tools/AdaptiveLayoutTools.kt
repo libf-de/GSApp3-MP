@@ -27,7 +27,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import getPlatformName
-import runtimePlatform
 
 val WindowSizeClass.horizontalMargin: Dp
     get() = when(this.widthSizeClass) {

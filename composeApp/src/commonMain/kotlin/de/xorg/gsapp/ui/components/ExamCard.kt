@@ -67,23 +67,12 @@ fun ExamCard(
         Row(modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically) {
 
-            SubjectCircle(
+            //=== SubjectCircle ===
+            EncircledText(
                 value = exam.label,
                 colorRoles = colorRoles,
                 modifier = Modifier.padding(end = 8.dp).alignByBaseline()
             )
-
-            /*SuggestionChip(
-                onClick = {},
-                label = {
-                    Text(text = exam.label,
-                         style = MaterialTheme.typography.titleMedium) },
-                colors = SuggestionChipDefaults.suggestionChipColors(
-                    containerColor = Color(colorRoles.accentContainer),
-                    labelColor = Color(colorRoles.onAccentContainer)
-                ),
-                modifier = Modifier.alignByBaseline()
-            )*/
 
             Box(modifier = Modifier.weight(1f).alignByBaseline()) {
                 Text(text = (exam.subject?.longName ?: exam.label.filter { it.isLetter() }) + " " +
@@ -98,31 +87,6 @@ fun ExamCard(
 
     }
 
-}
-
-@Composable
-private fun SubjectCircle(
-    value: String,
-    colorRoles: ColorRoles,
-    modifier: Modifier = Modifier
-) {
-    Box(contentAlignment = Alignment.CenterStart,
-        modifier = modifier ) {
-
-        /* LessonNumber -> Circle Background */
-        Box(contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(Color(colorRoles.accent))
-        ) {
-            Text(text = value,
-                style = MaterialTheme.typography.titleMedium,
-                color = Color(colorRoles.onAccent),
-                overflow = TextOverflow.Clip,
-                modifier = Modifier.padding(bottom = 1.5f.dp))
-        }
-    }
 }
 
 private fun LocalDate.todayUntilString(): String {

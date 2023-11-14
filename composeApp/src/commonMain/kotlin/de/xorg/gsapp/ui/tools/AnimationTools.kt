@@ -10,14 +10,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 
 @Composable
 fun Modifier.spinAnimation(enabled: Boolean): Modifier {
-    /*val infiniteTransition = rememberInfiniteTransition()
-    val angle by infiniteTransition.animateFloat(
-        initialValue = 0F,
-        targetValue = 360F,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing)
-        )
-    )*/
     // Create an Animatable for rotation
     val angle = remember { Animatable(0f) }
     val rotationSpec = remember { infiniteRepeatable<Float>(

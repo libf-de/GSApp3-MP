@@ -179,7 +179,7 @@ private fun SmallCardContent(
             .onGloballyPositioned {totalWidth = it.size.width.dp }
     ) {
         /**** begin LessonNumber | w=55.dp **/
-        LessonNr(
+        EncircledText(
             value = value.lessonNrAsString(),
             colorRoles = colorRoles,
             modifier = Modifier
@@ -360,31 +360,6 @@ private fun SmallContentBox(
     modifier: Modifier = Modifier
 ) {
 
-}
-
-@Composable
-private fun LessonNr(
-    value: String,
-    colorRoles: ColorRoles,
-    modifier: Modifier = Modifier
-) {
-    Box(contentAlignment = Alignment.CenterStart,
-        modifier = modifier ) {
-
-        /* LessonNumber -> Circle Background */
-        Box(contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(Color(colorRoles.accent))
-        ) {
-            Text(text = value,
-                style = MaterialTheme.typography.titleMedium,
-                color = Color(colorRoles.onAccent),
-                overflow = TextOverflow.Clip,
-                modifier = Modifier.padding(bottom = 1.5f.dp))
-        }
-    }
 }
 
 @Composable
