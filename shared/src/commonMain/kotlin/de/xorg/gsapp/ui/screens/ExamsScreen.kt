@@ -84,6 +84,10 @@ fun ExamsScreen(
         Result.success(emptyList())
     )
 
+    val course by viewModel.examState.collectAsStateWithLifecycle(
+        ExamCourse.default
+    )
+
     var isFirst = false
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -125,13 +129,13 @@ fun ExamsScreen(
             FloatingActionButton(
                 onClick = { viewModel.toggleCourse() },
             ) {
-                Crossfade(targetState = viewModel.uiState.examCourse) {
+                Crossfade(targetState = course) {
                     ExamCourseIcon(it)
                 }
             }
         }
     ) { innerPadding ->
-        when(viewModel.uiState.substitutionState) {
+        when(viewModel.uiState.examState) {
             UiState.NORMAL,
             UiState.NORMAL_LOADING,
             UiState.NORMAL_FAILED -> {
@@ -156,8 +160,8 @@ fun ExamsScreen(
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
-                            items(it.value) { substitution ->
-                                ExamCard(exam = substitution)
+                            items(it.value) { exam ->
+                                ExamCard(exam = exam)
                             }
                             isFirst = false
                         }

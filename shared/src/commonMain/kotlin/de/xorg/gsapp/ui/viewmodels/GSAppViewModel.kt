@@ -34,6 +34,7 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
@@ -59,6 +60,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
     var uiState by mutableStateOf(AppState())
         private set
 
+    var examState = MutableStateFlow(ExamCourse.COURSE_11)
 
     val subFlow = combine(appRepo.getSubstitutions(),
                           prefsRepo.getFilterFlow()) { subs, filter ->
@@ -88,24 +90,25 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         replay = 1
     )
 
-    val examFlow = appRepo
-        .getExams()
-        .mapLatest {
-            if(it.isFailure) return@mapLatest it
 
-            // Filter by set course AND only show future exams
-            val today: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
-            return@mapLatest Result.success(
-                it.getOrNull()!!.filter { exam ->
-                    exam.course == uiState.examCourse && exam.date >= today
-                }
-            )
-        }
-        .shareIn(
-            viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            replay = 1
+
+    val examFlow = combine(
+        appRepo.getExams(),
+        examState
+    ) { exams, course ->
+        if(exams.isFailure) return@combine exams
+
+        val today: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
+        return@combine Result.success(
+            exams.getOrNull()!!.filter { exam ->
+                exam.course == course && exam.date >= today
+            }
         )
+    }.shareIn(
+        viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        replay = 1
+    )
 
     init {
         Napier.d { "GSAppViewModel init" }
@@ -343,11 +346,9 @@ class GSAppViewModel : ViewModel(), KoinComponent {
     }
 
     fun toggleCourse() {
-        uiState = uiState.copy(
-            examCourse = when(uiState.examCourse) {
-                ExamCourse.COURSE_11 -> ExamCourse.COURSE_12
-                ExamCourse.COURSE_12 -> ExamCourse.COURSE_11
-            }
-        )
+        examState.value = when(examState.value) {
+            ExamCourse.COURSE_11 -> ExamCourse.COURSE_12
+            ExamCourse.COURSE_12 -> ExamCourse.COURSE_11
+        }
     }
 }

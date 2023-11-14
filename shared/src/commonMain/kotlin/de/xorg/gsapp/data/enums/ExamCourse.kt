@@ -32,8 +32,11 @@ enum class ExamCourse : ExamEnum {
     {
         override val iconResource = MR.images.course_twelve
         override val descriptiveResource = MR.strings.examplan_course_twelve
-    }
+    };
 
+    companion object {
+        val default = COURSE_11
+    }
 }
 
 private interface ExamEnum {
