@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ GSApp3 (https://github.com/libf-de/GSApp3)
+  ~ Copyright (C) 2023. Fabian Schillig
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<resources>
+    <!-- Months -->
+    <string name="jan">Januar</string>
+    <string name="feb">Februar</string>
+    <string name="mar">März</string>
+    <string name="apr">April</string>
+    <string name="may">Mai</string>
+    <string name="jun">Juni</string>
+    <string name="jul">Juli</string>
+    <string name="aug">August</string>
+    <string name="sep">September</string>
+    <string name="oct">Oktober</string>
+    <string name="nov">November</string>
+    <string name="dec">Dezember</string>
+
+    <!-- Weekdays, long form -->
+    <string name="wd_mo_lo">Montag</string>
+    <string name="wd_tu_lo">Dienstag</string>
+    <string name="wd_we_lo">Mittwoch</string>
+    <string name="wd_th_lo">Donnerstag</string>
+    <string name="wd_fr_lo">Freitag</string>
+    <string name="wd_sa_lo">Samstag</string>
+    <string name="wd_su_lo">Sonntag</string>
+
+    <!-- Weekdays, short form -->
+    <string name="wd_mo_sh">Mo</string>
+    <string name="wd_tu_sh">Di</string>
+    <string name="wd_we_sh">Mi</string>
+    <string name="wd_th_sh">Do</string>
+    <string name="wd_fr_sh">Fr</string>
+    <string name="wd_sa_sh">Sa</string>
+    <string name="wd_su_sh">So</string>
+
+    <!-- relative date strings -->
+    <string name="rel_today">heute</string>
+    <string name="rel_tomorrow">morgen</string>
+    <string name="rel_after_tomorrow">übermorgen</string>
+    <string name="rel_next_weekday">nächsten %s</string>
+    <string name="rel_absolute">am %s</string>
+
+    <!-- Date format (d=day, m=month, y=year) -->
+    <string name="date_format">d.m.y</string>
+
+    <!--~~~~~~ App ~~~~~~-->
+    <string name="app_name">GSApp</string>
+    <string name="tab_substitutions">Vertretungsplan</string>
+    <string name="tab_foodplan">Speiseplan</string>
+    <string name="tab_exams">Klausuren</string>
+
+    <!-- Substitution plan -->
+    <string name="subplan_date_header_fmt">für %w, den %d. %m %y</string>
+    <string name="subplan_date_header_for">für %s</string>
+    <string name="subplan_date_header_new">NEU</string>
+    <string name="subplan_workorder_samesubject">%s Arbeitsauftrag</string>
+    <string name="subplan_workorder">%s ➜ %s Arbeitsauftrag</string>
+    <string name="subplan_cancellation">%s ➜ Ausfall</string>
+    <string name="subplan_breastfeed">%s ➜ Stillbeschäftigung</string>
+    <string name="subplan_samesubject">%s</string>
+    <string name="subplan_normal">%s ➜ %s</string>
+    <string name="subplan_dsc_location">Ort</string>
+    <string name="subplan_dsc_teacher">Vertretender Lehrer:in</string>
+    <string name="subplan_empty">Keine Vertretungen :)</string>
+
+    <!-- Foodplan -->
+    <string name="foodplan_menu_no">%d. Menü</string>
+    <string name="foodplan_empty">(keine Essensversorgung)</string>
+
+    <!-- Exam plan -->
+    <string name="examplan_empty">Keine Klausuren (mehr) :)</string>
+
+    <string name="settings_title">Einstellungen</string>
+    <!-- Settings items -->
+    <string name="pref_filter">Vertretungsplan-Filter</string>
+    <string name="pref_filter_teacher">Lehrerkürzel %s</string>
+    <string name="pref_filter_student">Klasse %s</string>
+    <string name="pref_filter_all">Keiner (alle anzeigen)</string>
+    <string name="pref_push">Push-Benachrichtigung</string>
+    <string name="pref_subjects">Fächer bearbeiten</string>
+    <string name="pref_subjects_desc">(Namen und Farben)</string>
+
+    <!-- Filter Dialog -->
+    <string name="filter_dialog_title">Vertretungplan-Filter</string>
+    <string name="filter_dialog_description">Wähle deine Klasse oder dein Lehrerkürzel aus, um nur Vertretungen anzuzeigen, die dich betreffen.</string>
+    <string name="filter_dialog_teacher_short">Lehrerkürzel</string>
+    <!-- Error messages -->
+    <string name="filter_dialog_error_no_teachers">Es wurden keine Lehrer:innen gefunden, bitte gib dein Kürzel von Hand ein.</string>
+    <string name="filter_dialog_error_teachers_failed">Lehrer:innen konnten nicht geladen werden, bitte gib dein Kürzel von Hand ein.</string>
+    <!-- Role labels -->
+    <string name="filter_all">Alle</string>
+    <string name="filter_student">Schüler:in</string>
+    <string name="filter_teacher">Lehrer:in</string>
+
+    <!-- Subject management -->
+    <string name="subject_manager_subjects">Fächer</string>
+    <string name="subject_manager_empty_title">Keine Fächer</string>
+    <string name="subject_manager_empty_text">Verwende den "+"-Knopf unten um Fächer zu erstellen.</string>
+    <string name="subject_manager_colorpicker_title">Wähle Farbe für %s</string>
+    <string name="subject_manager_colorpicker_nullsubject">ein Fach</string>
+    <string name="subject_manager_add_title">Fach hinzufügen</string>
+    <string name="subject_manager_add_desc">Gib das Kürzel des Fachs ein, wie es im Vertretungsplan steht.\nLanger Name und Farbe können anschließend geändert werden.</string>
+    <string name="subject_manager_restore_defaults">Standardfächer wiederherstellen</string>
+    <string name="subject_manager_reset_dialog_title">Standardfächer wiederherstellen?</string>
+    <string name="subject_manager_reset_dialog_text">Möchten Sie alle Fächer durch die Standardfächer ersetzen oder nur die Standardfächer hinzufügen?</string>
+    <string name="subject_manager_reset_dialog_replace">Alle ersetzen</string>
+    <string name="subject_manager_reset_dialog_adddefault">Nur hinzufügen</string>
+
+    <!-- Push settings/service -->
+    <string name="push_disabled">Deaktiviert</string>
+    <string name="push_filter">Nur wenn es mich betrifft</string>
+    <string name="push_enabled">Immer benachrichtigen</string>
+    <string name="push_dialog_title">Push-Nachrichten</string>
+    <string name="push_dialog_description">Wähle aus ob du keine, nur wenn es dich betrifft oder immer über neue Vertretungspläne benachrichtigt werden möchtest.</string>
+    <string name="push_unavailable">(Nicht verfügbar auf %s)</string>
+    <string name="push_channel_name">Vertretungsplan-Nachrichten</string>
+    <string name="push_channel_desc">Benachrichtigt dich sobald ein neuer Vertretungsplan verfügbar ist</string>
+    <string name="push_notification_title">Neuer Vertretungsplan!</string>
+    <string name="push_notification_body">Es ist ein neuer Vertretungsplan verfügbar!</string>
+    <string name="push_notification_detail_amount">Du hast %s %d Vertretungen.</string>
+    <string name="push_no_permission_title">Fehlende Berechtigung</string>
+    <string name="push_no_permission_body">Du hast Push-Benachrichtigungen aktiviert, aber die Berechtigung für Benachrichtigungen verweigert.\nBitte gehe zu den Einstellungen und aktiviere Benachrichtigungen, um keinen neuen Vertretungsplan zu verpassen.\nFalls du dies nicht möchtest, kannst du Push-Benachrichtigungen auch in den App-Einstellungen deaktivieren.</string>
+    <string name="push_no_permission_fix">Zu den Einstellungen</string>
+    <string name="push_no_permission_later">Nicht jetzt</string>
+    <string name="push_enabled_success">Push-Benachrichtigungen aktiviert</string>
+    <string name="push_enabled_failure">Push-Benachrichtigungen konnten nicht aktiviert werden</string>
+    <string name="push_disabled_success">Push-Benachrichtigungen deaktiviert</string>
+    <string name="push_disabled_failure">Push-Benachrichtigungen konnten nicht deaktiviert werden</string>
+
+    <!--~~~~ Generics ~~~~-->
+    <!-- General dialog buttons -->
+    <string name="dialog_save">Speichern</string>
+    <string name="dialog_cancel">Abbrechen</string>
+    <string name="dialog_color_simple">Einfach</string>
+    <string name="dialog_color_simple_desc">Wähle aus einer Liste von Farben</string>
+    <string name="dialog_color_advanced">Erweitert</string>
+    <string name="dialog_color_advanced_desc">Wähle mittels Farbton, Sättigung und Helligkeit oder Hex-Code</string>
+    <string name="dialog_delete_title">Fach löschen?</string>
+    <string name="dialog_delete_text">Möchtest du das Fach "%s" ("%s") wirklich löschen?</string>
+    <string name="dialog_delete_confirm">Löschen</string>
+
+    <!-- Generic strings -->
+    <string name="generic_loading">Wird geladen…</string>
+    <string name="back">Zurück gehen</string>
+    <string name="empty_local">Es wurde (noch) kein(e) %s heruntergeladen.\nFalls nichts passiert, überprüfe deine Internetverbindung.</string>
+    <string name="failed_to_load">%s konnte nicht geladen werden</string>
+    <string name="failed_send_dev">Bitte sende diesen Fehler an den Entwickler:</string>
+    <string name="unknown_cause">Unbekannte Ursache</string>
+
+    <!-- Subjects -->
+    <string name="subject_de">Deutsch</string>
+    <string name="subject_ma">Mathe</string>
+    <string name="subject_mu">Musik</string>
+    <string name="subject_ku">Kunst</string>
+    <string name="subject_gg">Geografie</string>
+    <string name="subject_re">Religion</string>
+    <string name="subject_et">Ethik</string>
+    <string name="subject_mnt">MNT</string> <!-- Humans Nature Technology -->
+    <string name="subject_en">Englisch</string>
+    <string name="subject_sp">Sport</string>
+    <string name="subject_spj">Sport Jungen</string>
+    <string name="subject_spm">Sport Mädchen</string>
+    <string name="subject_bi">Biologie</string>
+    <string name="subject_ch">Chemie</string>
+    <string name="subject_ph">Physik</string>
+    <string name="subject_sk">Sozialkunde</string>
+    <string name="subject_if">Informatik</string>
+    <string name="subject_wr">Wirtschaft/Recht</string>
+    <string name="subject_ge">Geschichte</string>
+    <string name="subject_fr">Französisch</string>
+    <string name="subject_ru">Russisch</string>
+    <string name="subject_la">Latein</string>
+    <string name="subject_gewi">Gesellschaftsw.</string>
+    <string name="subject_dg">Darstellen/Gestalten</string>
+    <string name="subject_sn">Spanisch</string>
+    <string name="subject_as">Astronomie</string>
+    <string name="subject_nwut">Naturw. &amp; Technik</string>
+    <string name="subject_none">keine Angabe</string>
+</resources>

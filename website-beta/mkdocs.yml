@@ -2,6 +2,9 @@ site_name: GSApp
 nav:
   - Startseite: index.md
   - Neue Version: multiplatform.md
+  - Feedback: feedback.md
+  - Hilfe: newhelp.md
+  - Impressum: 'https://libf.de/impressum.html'
 theme:
   name: material
   language: de

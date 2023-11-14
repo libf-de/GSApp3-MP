@@ -1,0 +1,25 @@
+CREATE TABLE DbTeacher (
+    shortName TEXT NOT NULL PRIMARY KEY,
+    longName TEXT NOT NULL);
+
+selectAll:
+SELECT * FROM DbTeacher;
+
+selectByShort:
+SELECT * FROM DbTeacher WHERE shortName = ? COLLATE NOCASE;
+
+selectLongFromShort:
+SELECT longName FROM DbTeacher WHERE shortName = ? COLLATE NOCASE;
+
+insertTeacher:
+INSERT OR IGNORE INTO DbTeacher(shortName, longName)
+VALUES (?, ?);
+
+updateTeacher:
+UPDATE DbTeacher
+SET longName = :longName
+WHERE shortName = :shortName COLLATE NOCASE;
+
+deleteTeacher:
+DELETE FROM DbTeacher
+WHERE shortName = :shortName COLLATE NOCASE;

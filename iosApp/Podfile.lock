@@ -1,0 +1,29 @@
+PODS:
+  - composeApp (1.0.0):
+    - HTMLKit
+    - sqlite3
+  - HTMLKit (4.2.0)
+  - sqlite3 (3.43.1):
+    - sqlite3/common (= 3.43.1)
+  - sqlite3/common (3.43.1)
+
+DEPENDENCIES:
+  - composeApp (from `../composeApp`)
+
+SPEC REPOS:
+  trunk:
+    - HTMLKit
+    - sqlite3
+
+EXTERNAL SOURCES:
+  composeApp:
+    :path: "../composeApp"
+
+SPEC CHECKSUMS:
+  composeApp: 9477c7d4a24191a0994adca4956d945dab6c094b
+  HTMLKit: e11ec9ed1a9be779e7dd65acdea5757fb113030e
+  sqlite3: e0a0623a33a20a47cb5921552aebc6e9e437dc91
+
+PODFILE CHECKSUM: 477e9aa3b7ff54e40e206c0409b7ebe872d98ef3
+
+COCOAPODS: 1.12.1

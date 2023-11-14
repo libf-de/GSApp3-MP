@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "122656232080",
+    "project_id": "gsapp3-mp",
+    "storage_bucket": "gsapp3-mp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:122656232080:android:3172e309da8bc34249be15",
+        "android_client_info": {
+          "package_name": "de.xorg.gsapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAK_-Vu-ph8I1PjdCFNCjQqVx5Uie2KWkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:122656232080:android:2bc288f215b1d2a149be15",
+        "android_client_info": {
+          "package_name": "de.xorg.gsapp.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAK_-Vu-ph8I1PjdCFNCjQqVx5Uie2KWkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
