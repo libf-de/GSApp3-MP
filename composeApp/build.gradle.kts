@@ -243,7 +243,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "de.xorg.gsapp"
+            packageName = "GSApp"
             packageVersion = libs.versions.gsapp.versionName.get()
         }
     }

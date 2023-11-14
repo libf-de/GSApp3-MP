@@ -18,7 +18,6 @@
 
 package de.xorg.gsapp
 
-import MainView
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Activity
 import android.content.pm.PackageManager
@@ -81,7 +80,7 @@ class MainActivity : PreComposeActivity() {
         loadKoinModules(activityModule)
 
         setContent {
-            MainView()
+            GSApp()
         }
     }
 

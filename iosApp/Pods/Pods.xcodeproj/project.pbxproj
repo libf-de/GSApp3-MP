@@ -14,8 +14,8 @@
 				827AFF5AFB3CFF89F09DE22576213BAB /* [CP-User] Build composeApp */,
 			);
 			dependencies = (
-				DD3E82E6CF29CDB52FF4CF1B87622408 /* PBXTargetDependency */,
-				BE9DD73C05EBD8B0F32A89693EEFCC30 /* PBXTargetDependency */,
+				DBCF7EE6077BC60B26AEC3C96893D66F /* PBXTargetDependency */,
+				6ADECFE3577F1FD32F54C9004090D6F4 /* PBXTargetDependency */,
 			);
 			name = composeApp;
 		};
@@ -34,10 +34,12 @@
 		225B12C588524C42B699D9156284BA2E /* CSSSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = DC65B33E327495535FA3BE6E88AB45B2 /* CSSSelector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		232FEE251B961AD380891057D9847D06 /* HTMLNode.h in Headers */ = {isa = PBXBuildFile; fileRef = FB214A0CEE824B470895A9A78B3BC1B4 /* HTMLNode.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2386C72A5F1FF10FBEAB86B2AD61A786 /* HTMLCommentToken.h in Headers */ = {isa = PBXBuildFile; fileRef = 7AD1956BC3F9036281D6ED1FB85FAE2F /* HTMLCommentToken.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		24DB01A8D0EA6D2CC4F4F6B520168B5E /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = 2749F743592908EF02228A8D69CAC1A6 /* sqlite3.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		2682DC13ABBA576E13B67C380C698A45 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */; };
 		27E07B33122FD5667B15158C0EA34B28 /* HTMLRange.h in Headers */ = {isa = PBXBuildFile; fileRef = 273CD3D84D4ACCB66657B11EECB5D953 /* HTMLRange.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27F2D351B770F5360FC3E6CAE5C644CA /* HTMLSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4826A4647E0345C5DFFB51C0C65EF30B /* HTMLSerializer.m */; };
 		2851C3DDA89BA1930DFA4728E994CF65 /* HTMLOrderedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = C105C8A23CD283E34B1B4FE84F0E64F7 /* HTMLOrderedDictionary.m */; };
+		28EC6F31F3E0AA4C3A6272F05AFD6515 /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A8340CD1A8BD5E6C1D6B74A8CC363EC /* sqlite3.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		28FC311DAC8B174F4976219493F27A11 /* HTMLParseErrorToken.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C6B76F907B558FD3C78BF489AE52CBE /* HTMLParseErrorToken.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2B3409FA28E9DECE7134BF8B54A8EA2D /* HTMLDOMTokenList.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AE6C6C9A080A3C6FDB48E93DB87F0CF /* HTMLDOMTokenList.m */; };
 		2C72711AE0A97524677D5833361DDF70 /* HTMLMarker.h in Headers */ = {isa = PBXBuildFile; fileRef = DAF1F9022560BDC96DC50D5B57FC4C92 /* HTMLMarker.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -62,12 +64,14 @@
 		4ABD17F75F2C5C0DFFD3DC206FEBEE7A /* CSSNthExpressionSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = 097304795D9876331C7A9048B7DBE14F /* CSSNthExpressionSelector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4CE7CE9B93A3D7B2A210E21F81ED248F /* HTMLTagToken.m in Sources */ = {isa = PBXBuildFile; fileRef = 956B793CE044BA0355238FF05A21027C /* HTMLTagToken.m */; };
 		4D04F415B9FC9D78E10B41D4E200E364 /* CSSCombinatorSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D348EC7E28D27715811450D5BA0EED2 /* CSSCombinatorSelector.m */; };
+		4DD0BF7E11C98255811432812C032DEF /* sqlite3-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = DAF1D630DBCBF0B6E53D12D4601E5E14 /* sqlite3-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4EAF8366B6BDB9773B9E2A2971E45060 /* HTMLTokenizerStates.h in Headers */ = {isa = PBXBuildFile; fileRef = B2A2D7E08AAE0E56EDB528BFE7B91FB4 /* HTMLTokenizerStates.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4F7EDD038DEB6B3B9074BD5703C6B56E /* HTMLDocumentFragment.h in Headers */ = {isa = PBXBuildFile; fileRef = BC8494AB4245E32DF9DBCB3BDE80BA0D /* HTMLDocumentFragment.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4FC29CE0C01E24E90935E815E07B18CB /* HTMLCharacterToken.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C2DA52A0FC5FD69E942D9A4C5D60EA8 /* HTMLCharacterToken.m */; };
 		507D8832E8E6E4B2CB3973CDE2648548 /* HTMLDOMUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 804EAA928B5F27EAB57E01CA83CE8FF5 /* HTMLDOMUtils.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		50E2C3D15B6502E36977B1033E6EDAFC /* HTMLTokenizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7632B6820766F1064E8563A58198FD5B /* HTMLTokenizer.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		55DC450865CE86A870725069D1B193F5 /* CSSSelectorBlock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CF91E8B696E85427A1B60965396AD91 /* CSSSelectorBlock.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58952B95FC7BE700EE6292A370905ABF /* sqlite3session.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B17208C5DD191F0774926DD35725232 /* sqlite3session.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		58A360E9C6FA6D11A4391E8BCEEB3CA4 /* HTMLDocument+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 384A983425D8F59D83A0D5D0FAF70923 /* HTMLDocument+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		597FBBF89D498A8A9EE27992FD205023 /* HTMLNode+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = E0E68EE46EC31F179D908C61AA7504DF /* HTMLNode+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		5ABCF5B252D814BFC14131BA6A54B4FE /* HTMLNodeTraversal.m in Sources */ = {isa = PBXBuildFile; fileRef = 858ACA6C8A4C105EA8E5A924783EE37D /* HTMLNodeTraversal.m */; };
@@ -76,9 +80,9 @@
 		5EA3E889E266C84F9C4005D1D1E009BA /* HTMLDOCTYPEToken.h in Headers */ = {isa = PBXBuildFile; fileRef = B8F182CAAABCEA2B0DD255A5F59DD0C3 /* HTMLDOCTYPEToken.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		6019983C2B20865BD2FA8677ADAF0527 /* HTMLMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = 5845157FCEE3FB491454F4B6C7B27566 /* HTMLMarker.m */; };
 		60C1043A1EEAC982BB7B091C132B6E9D /* CSSPseudoFunctionSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FEC644A4461BBA770DF7CDA808C0D59 /* CSSPseudoFunctionSelector.m */; };
+		6637196A131ED1BCC0CDA3AD53429A5B /* sqlite_cfg.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F88FFED0AA86FF004F9DE597BDE7946 /* sqlite_cfg.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		664E8B7B85EB940F9A2F9ECC059D66FB /* HTMLNodeVisitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 096DA7D67B77B82770200896B0A7F3C3 /* HTMLNodeVisitor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6A5BA447A166A2DD774D61CB10427D91 /* HTMLKit-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D6E3BC89B0DF3353C558232327E9055 /* HTMLKit-dummy.m */; };
-		6B6F51F6EEAA1B26F1B4EBF161E8B523 /* sqlite3session.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B17208C5DD191F0774926DD35725232 /* sqlite3session.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6BFA5EBBAF4D2A53D7D357BCFB15108D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */; };
 		6DBD672FD704AC84B38921A5198B9B0F /* CSSPseudoClassSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = C5753C88584A4F5F6B0CC6B3618AABC5 /* CSSPseudoClassSelector.m */; };
 		721AE75C3619C8424B4BDF285E4BFE50 /* HTMLDOM.h in Headers */ = {isa = PBXBuildFile; fileRef = AA9B04126D4580F5B4BFBEE1125FD4CA /* HTMLDOM.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -87,11 +91,10 @@
 		7687C7FFCDC2CBBD3A92CA86F651882D /* CSSSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = 3B0268D56BE3EFD7453C8B6515BDAE4B /* CSSSelector.m */; };
 		76D24E5623D45263D00E9B2766C7DFE4 /* Pods-iosApp-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 015E0D7EA7331961AB63E5AFECA86BB5 /* Pods-iosApp-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		77274A046155090D8FF90B6EEBA68A95 /* HTMLListOfActiveFormattingElements.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DAA069ED999B67B1AD0BD034CD8ADF5 /* HTMLListOfActiveFormattingElements.m */; };
-		792B8E800FFF9B2AC9C18A5B0FBCB37D /* sqlite3.c in Sources */ = {isa = PBXBuildFile; fileRef = 2749F743592908EF02228A8D69CAC1A6 /* sqlite3.c */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		795D32D1103D5E195087E6501B9CA05E /* HTMLTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5492AF236B7130F3E97DC988470CED8D /* HTMLTemplate.m */; };
 		7BEEDA6B3C1F9F8EBF6375E87EB7F1F0 /* CSSPseudoFunctionSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = 7DFDA34D3DCEDBB7CA443158642D1114 /* CSSPseudoFunctionSelector.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7D257A444D8FB79FBBB49FA9AF35BA74 /* sqlite3-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = D6EBCA53316E255E1857DB3F86597841 /* sqlite3-dummy.m */; };
 		7F2EAC837BF9CFE5FD6038DE4BAC68DA /* CSSSelectors.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EC2509EB2370729F5D6613501A3B15A /* CSSSelectors.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		8267D3C6E01F0199A17D85F0BB3E1ACB /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A8340CD1A8BD5E6C1D6B74A8CC363EC /* sqlite3.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		82A109D513EB629A699CA71ACE65C3A2 /* HTMLSerializer.h in Headers */ = {isa = PBXBuildFile; fileRef = 9FC77B9C3AF454C6A01DA930FDD9EF25 /* HTMLSerializer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		83FFC57B7AE8AD34F824851730FB4DE9 /* CSSTypeSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = FEA52612D0CAB696DB193DF115B74BD5 /* CSSTypeSelector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		84B690C0247318CD2C934F78AD8F742E /* HTMLElement.m in Sources */ = {isa = PBXBuildFile; fileRef = B569A944201F519348265CF783FDA18D /* HTMLElement.m */; };
@@ -116,12 +119,10 @@
 		AEB8EB071D0B10291EDB48CB29B14417 /* CSSNthExpressionParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 2352F692B029DC64EDB5C2CE124AB8D1 /* CSSNthExpressionParser.m */; };
 		AECC2ECB7E6F791B92A1E1D4E254459D /* HTMLNodeIterator.m in Sources */ = {isa = PBXBuildFile; fileRef = D886413FF1532F2908E746DDA0371BA8 /* HTMLNodeIterator.m */; };
 		AF845A63064E02DB4F6B9B283BC2AD57 /* HTMLQuirksMode.h in Headers */ = {isa = PBXBuildFile; fileRef = 82554ABBE44D40171F7F30EACF99F5E2 /* HTMLQuirksMode.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		AFADD983E4849BCB4A12120DD7B63D28 /* sqlite_cfg.h in Headers */ = {isa = PBXBuildFile; fileRef = 0F88FFED0AA86FF004F9DE597BDE7946 /* sqlite_cfg.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B0C03E853D981238A8DA51F68A866730 /* HTMLDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 01359A4929A7B660EDD10DD03DA3FB3A /* HTMLDocument.m */; };
 		B2BF4B55BB62EDE7E14536EE637A281B /* HTMLTokenizerCharacters.h in Headers */ = {isa = PBXBuildFile; fileRef = 697C8C2C6FAC901A4BE24663CAC76BE2 /* HTMLTokenizerCharacters.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		B2FDECE28A7ACF43B569AB1AEEA94961 /* HTMLDOMUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B482A146604326E89F33FDDE9098A97 /* HTMLDOMUtils.m */; };
 		B35D7EC80EECE4FE4D61F29DDAC7DFC3 /* HTMLText.m in Sources */ = {isa = PBXBuildFile; fileRef = 78D9FF1D10D9E48F98C5892BFAEF3F75 /* HTMLText.m */; };
-		B564342D07AABA21066798E23B6DDAEC /* sqlite3-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = D6EBCA53316E255E1857DB3F86597841 /* sqlite3-dummy.m */; };
 		B5DE34071776D8B7B9F048E8576D00E9 /* HTMLNodeIterator.h in Headers */ = {isa = PBXBuildFile; fileRef = 9D94C9109969F49630228ED3DE995B3B /* HTMLNodeIterator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B707A4FE46F6637865D177832026F027 /* HTMLNode.m in Sources */ = {isa = PBXBuildFile; fileRef = FB85FB0D09DE770FCCFFD193BCCDC06C /* HTMLNode.m */; };
 		BA29CDBB312621BC2F1F091D3BD0F7DA /* CSSCombinatorSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = 2B4D214D0A7247685A57C29A9CBF930D /* CSSCombinatorSelector.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -131,19 +132,17 @@
 		C143713853D75F822FB1D37080F664B0 /* HTMLNodeTraversal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DFF25DBB7FA83C8DC543918324CC9FC /* HTMLNodeTraversal.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		C2730AF894E532FD11C5C45AAAFC3842 /* HTMLTokens.h in Headers */ = {isa = PBXBuildFile; fileRef = 90047815FFF30161B59415EA5224BEE3 /* HTMLTokens.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		C2F98687EBB2681826328166599F6BC9 /* HTMLToken.h in Headers */ = {isa = PBXBuildFile; fileRef = 75092BE325199B4B8D38E266A3A830AA /* HTMLToken.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		C5B801E8429083F405877D3221F9A110 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */; };
 		C5FA1A88E62707F5E01CD0429FC56D61 /* HTMLOrderedDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 35749C7583CBF3FE7F36AD4D140BF632 /* HTMLOrderedDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C7F03332060501AEE6E734FD146B12EF /* HTMLTreeVisitor.m in Sources */ = {isa = PBXBuildFile; fileRef = 924BB69DF60A13B5FCA9623A82671541 /* HTMLTreeVisitor.m */; };
-		C82A98025E50D8F9AA255B7A707BDEF3 /* sqlite3ext.h in Headers */ = {isa = PBXBuildFile; fileRef = 94ABE571408258A3743CAFAD8D81B4FD /* sqlite3ext.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C97456333E8C85AD5B1FBAD8484C05E4 /* HTMLElement.h in Headers */ = {isa = PBXBuildFile; fileRef = 762E3DC3B28D86E3B5D37F0E703809F6 /* HTMLElement.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9CE06830E5151E3C0ADB1CA37101B4D /* HTMLCharacterData+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 16482A2AE428CDCFFA7C2DE2E5DFAC09 /* HTMLCharacterData+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		CC49177B694AACCAF1883C66EC2BB32F /* sqlite3-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = DAF1D630DBCBF0B6E53D12D4601E5E14 /* sqlite3-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D1D7A6A45A6B6F2BC6C197951F95020F /* HTMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 31E26E3BAA322E36BDD2A6197127AD4B /* HTMLParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D32B43DB290B93BDA2B8834DE08F5ED1 /* CSSNthExpressionSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = B23DE908E123A0FB1F333DBC4E5A58B6 /* CSSNthExpressionSelector.m */; };
 		D4D5A5C9093ADCF355A692092849F41B /* HTMLDOMTokenList.h in Headers */ = {isa = PBXBuildFile; fileRef = BFCE432CEF70EA46DB1222EED13682F3 /* HTMLDOMTokenList.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D5129DD91440ED5C7C9CE8EC44587648 /* HTMLRange.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2AEC66104994777D3BE27C82C28B85 /* HTMLRange.m */; };
 		D85A85B54184BF11EF1C07507905B953 /* HTMLNodeIterator+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = A5A4AEF976EA579A16BAF2DFF997F2C3 /* HTMLNodeIterator+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		DC408FD604774FE08333AA9269BEAAFD /* HTMLTreeVisitor.h in Headers */ = {isa = PBXBuildFile; fileRef = 895C5AAF251563B1E3D926D05600855E /* HTMLTreeVisitor.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DF18069A638AC64EA614DE59D1419CA6 /* sqlite3ext.h in Headers */ = {isa = PBXBuildFile; fileRef = 94ABE571408258A3743CAFAD8D81B4FD /* sqlite3ext.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E60C22DBB9DBB93483CB636A15BEB05C /* NSString+HTMLKit.m in Sources */ = {isa = PBXBuildFile; fileRef = F32B74B9AB3BA917F1C3D9A4736626A5 /* NSString+HTMLKit.m */; };
 		E628A334D850EA9F6383BEB48C866EED /* CSSAttributeSelector.h in Headers */ = {isa = PBXBuildFile; fileRef = E973AABC52CE0AD69E2C85045FCEE941 /* CSSAttributeSelector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E886940BE96C25B173EEBF056539E063 /* NSCharacterSet+HTMLKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 0D0B7634781B40CFCF1E5447951FCB8B /* NSCharacterSet+HTMLKit.m */; };
@@ -158,44 +157,45 @@
 		FB88C44E4B1B72BD4440E351BB2B5FF0 /* HTMLToken.m in Sources */ = {isa = PBXBuildFile; fileRef = 4BF452F69DA6564411D9E42EC78366E8 /* HTMLToken.m */; };
 		FBD4AE9CE8BB72D23D0365E6C8A4A99C /* HTMLKitErrorDomain.h in Headers */ = {isa = PBXBuildFile; fileRef = 9C1911EDEC77C8CDC49D6938DD71F701 /* HTMLKitErrorDomain.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FC984E8FC91C718C7E9E184B91BE13F4 /* HTMLNodeFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E7434C0EFBDCDF12039AB9F2AD972CF /* HTMLNodeFilter.m */; };
+		FE9461D1A17F2F75D00F2EDBB8FE5CB6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73010CC983E3809BECEE5348DA1BB8C6 /* Foundation.framework */; };
 		FECDABF7350A8DBAC3FA5883A75CE541 /* HTMLDOCTYPEToken.m in Sources */ = {isa = PBXBuildFile; fileRef = 121C8D38B5C2A15460023EBCEFF58B82 /* HTMLDOCTYPEToken.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		167054ACC2AB6FCA2123870301A5CCD1 /* PBXContainerItemProxy */ = {
+		042B53D6D7D0695E90A939BB4F8508A2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = D6807B82082F2598A4BABD0A6B657D10;
 			remoteInfo = HTMLKit;
 		};
-		2049CA5200493B0FDEFD7CE407B95033 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7578477CA77D98D8282C395822C4A93C;
-			remoteInfo = sqlite3;
-		};
-		40BC87510A368EA98526A733BF4E3A07 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D6807B82082F2598A4BABD0A6B657D10;
-			remoteInfo = HTMLKit;
-		};
-		B9419AFAC6F98CB0E8553F0EF0F18738 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7578477CA77D98D8282C395822C4A93C;
-			remoteInfo = sqlite3;
-		};
-		E4874641832684384F37706954AD9C93 /* PBXContainerItemProxy */ = {
+		45A736DB793457D5734C471F9250308F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = B96E9866C2872A8B63836A92F517CD48;
 			remoteInfo = composeApp;
+		};
+		4D334BB81000A9A68E33981479249680 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D6807B82082F2598A4BABD0A6B657D10;
+			remoteInfo = HTMLKit;
+		};
+		8A5502427F2FC89BD9A2408AD3E5ACF0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7578477CA77D98D8282C395822C4A93C;
+			remoteInfo = sqlite3;
+		};
+		97AE9154598742D3DFD8C04B5C975F1E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7578477CA77D98D8282C395822C4A93C;
+			remoteInfo = sqlite3;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -238,8 +238,8 @@
 		3458C85107D8440FB2E7A366EB550011 /* HTMLNamespaces.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLNamespaces.h; path = Sources/include/HTMLNamespaces.h; sourceTree = "<group>"; };
 		35749C7583CBF3FE7F36AD4D140BF632 /* HTMLOrderedDictionary.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLOrderedDictionary.h; path = Sources/include/HTMLOrderedDictionary.h; sourceTree = "<group>"; };
 		384A983425D8F59D83A0D5D0FAF70923 /* HTMLDocument+Private.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "HTMLDocument+Private.h"; path = "Sources/include/HTMLDocument+Private.h"; sourceTree = "<group>"; };
-		3A9E98C4260492E3716A72DFF364391B /* compose-multiplatform.xml */ = {isa = PBXFileReference; includeInIndex = 1; name = "compose-multiplatform.xml"; path = "src/commonMain/resources/compose-multiplatform.xml"; sourceTree = "<group>"; };
 		3B0268D56BE3EFD7453C8B6515BDAE4B /* CSSSelector.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = CSSSelector.m; path = Sources/CSSSelector.m; sourceTree = "<group>"; };
+		3BF2B3D9254134B21F48CA3F69A0BF8E /* composeApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = composeApp.debug.xcconfig; sourceTree = "<group>"; };
 		3C2DA52A0FC5FD69E942D9A4C5D60EA8 /* HTMLCharacterToken.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLCharacterToken.m; path = Sources/HTMLCharacterToken.m; sourceTree = "<group>"; };
 		3D6E3BC89B0DF3353C558232327E9055 /* HTMLKit-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "HTMLKit-dummy.m"; sourceTree = "<group>"; };
 		3DDB10AA358478CE0FFCC1FA0B97D1DB /* HTMLNodeFilter.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLNodeFilter.h; path = Sources/include/HTMLNodeFilter.h; sourceTree = "<group>"; };
@@ -248,17 +248,18 @@
 		3F3654836364A19BAFCC357A53356711 /* HTMLParser+Private.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "HTMLParser+Private.h"; path = "Sources/include/HTMLParser+Private.h"; sourceTree = "<group>"; };
 		42483A8B9AE1D1E401FF0B7C3F1B5CD0 /* HTMLNodeVisitor.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLNodeVisitor.m; path = Sources/HTMLNodeVisitor.m; sourceTree = "<group>"; };
 		42EA9989B70EDA9097A96A459013245B /* sqlite3.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = sqlite3.release.xcconfig; sourceTree = "<group>"; };
+		45453E16D5CCDB0E174E0E2D5CE33DC1 /* composeApp.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = composeApp.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		4826A4647E0345C5DFFB51C0C65EF30B /* HTMLSerializer.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLSerializer.m; path = Sources/HTMLSerializer.m; sourceTree = "<group>"; };
 		4BF452F69DA6564411D9E42EC78366E8 /* HTMLToken.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLToken.m; path = Sources/HTMLToken.m; sourceTree = "<group>"; };
 		4C32FAA7F3CF4B3ED4FF67B761E4D489 /* NSString+HTMLKit.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "NSString+HTMLKit.h"; path = "Sources/include/NSString+HTMLKit.h"; sourceTree = "<group>"; };
 		4CF91E8B696E85427A1B60965396AD91 /* CSSSelectorBlock.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = CSSSelectorBlock.h; path = Sources/include/CSSSelectorBlock.h; sourceTree = "<group>"; };
-		4D445754DC256ED64A477E2FF2D5427D /* composeApp.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = composeApp.podspec; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		4DAA069ED999B67B1AD0BD034CD8ADF5 /* HTMLListOfActiveFormattingElements.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLListOfActiveFormattingElements.m; path = Sources/HTMLListOfActiveFormattingElements.m; sourceTree = "<group>"; };
 		4FB5036F94A79CFD4B76FDD89D752160 /* HTMLKitDOMExceptions.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLKitDOMExceptions.h; path = Sources/include/HTMLKitDOMExceptions.h; sourceTree = "<group>"; };
 		523DA3258FFA610A58F1408378D1EE29 /* HTMLDocument.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLDocument.h; path = Sources/include/HTMLDocument.h; sourceTree = "<group>"; };
 		5492AF236B7130F3E97DC988470CED8D /* HTMLTemplate.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLTemplate.m; path = Sources/HTMLTemplate.m; sourceTree = "<group>"; };
 		55ABB06C8A1800962A74E007E7733796 /* Pods-iosApp-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-iosApp-frameworks.sh"; sourceTree = "<group>"; };
 		56D503DE2BDEF98F0E1C7C3EF7FB1605 /* HTMLEOFToken.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLEOFToken.h; path = Sources/include/HTMLEOFToken.h; sourceTree = "<group>"; };
+		574C97AD1DFE88C71B62F1348F49F061 /* GSApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GSApp.framework; path = build/cocoapods/framework/GSApp.framework; sourceTree = "<group>"; };
 		5845157FCEE3FB491454F4B6C7B27566 /* HTMLMarker.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLMarker.m; path = Sources/HTMLMarker.m; sourceTree = "<group>"; };
 		5AE7D23572F2A2290447F0E148140565 /* HTMLInputStreamReader.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLInputStreamReader.h; path = Sources/include/HTMLInputStreamReader.h; sourceTree = "<group>"; };
 		5B482A146604326E89F33FDDE9098A97 /* HTMLDOMUtils.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLDOMUtils.m; path = Sources/HTMLDOMUtils.m; sourceTree = "<group>"; };
@@ -322,7 +323,6 @@
 		B8F182CAAABCEA2B0DD255A5F59DD0C3 /* HTMLDOCTYPEToken.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLDOCTYPEToken.h; path = Sources/include/HTMLDOCTYPEToken.h; sourceTree = "<group>"; };
 		BA21E4E978F801E9E961E5A6AE0E7BA2 /* CSSCompoundSelector.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = CSSCompoundSelector.h; path = Sources/include/CSSCompoundSelector.h; sourceTree = "<group>"; };
 		BC8494AB4245E32DF9DBCB3BDE80BA0D /* HTMLDocumentFragment.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLDocumentFragment.h; path = Sources/include/HTMLDocumentFragment.h; sourceTree = "<group>"; };
-		BEE23C6768C715D2A9C563CAA07BF5B4 /* GSApp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GSApp.framework; path = build/cocoapods/framework/GSApp.framework; sourceTree = "<group>"; };
 		BFCE432CEF70EA46DB1222EED13682F3 /* HTMLDOMTokenList.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLDOMTokenList.h; path = Sources/include/HTMLDOMTokenList.h; sourceTree = "<group>"; };
 		C0BC4AD64397DDD21CDE87FD3285CC47 /* HTMLDocumentType.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLDocumentType.m; path = Sources/HTMLDocumentType.m; sourceTree = "<group>"; };
 		C105C8A23CD283E34B1B4FE84F0E64F7 /* HTMLOrderedDictionary.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLOrderedDictionary.m; path = Sources/HTMLOrderedDictionary.m; sourceTree = "<group>"; };
@@ -341,9 +341,11 @@
 		DAF1F9022560BDC96DC50D5B57FC4C92 /* HTMLMarker.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLMarker.h; path = Sources/include/HTMLMarker.h; sourceTree = "<group>"; };
 		DBEF5FB0D54916FFF82FFB6AD8F81232 /* HTMLTreeWalker.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLTreeWalker.m; path = Sources/HTMLTreeWalker.m; sourceTree = "<group>"; };
 		DC65B33E327495535FA3BE6E88AB45B2 /* CSSSelector.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = CSSSelector.h; path = Sources/include/CSSSelector.h; sourceTree = "<group>"; };
+		DDB44B4A913D8AE0C8C07910D68E262A /* compose-multiplatform.xml */ = {isa = PBXFileReference; includeInIndex = 1; name = "compose-multiplatform.xml"; path = "src/commonMain/resources/compose-multiplatform.xml"; sourceTree = "<group>"; };
 		DE0DCD447284AB9F8408E251597DD3BB /* HTMLKit.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = HTMLKit.modulemap; sourceTree = "<group>"; };
+		E05BFBEB4191270372B632B9834DE5A5 /* MR */ = {isa = PBXFileReference; includeInIndex = 1; name = MR; path = src/commonMain/resources/MR; sourceTree = "<group>"; };
 		E0E68EE46EC31F179D908C61AA7504DF /* HTMLNode+Private.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "HTMLNode+Private.h"; path = "Sources/include/HTMLNode+Private.h"; sourceTree = "<group>"; };
-		E37DF7C23044E4A1522AA6D5CD2F8AE5 /* composeApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = composeApp.debug.xcconfig; sourceTree = "<group>"; };
+		E2275A92B7A893E2903CA5DD9ED05B3B /* composeApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = composeApp.release.xcconfig; sourceTree = "<group>"; };
 		E462E23B3674BF94EAB1504D506F2803 /* Pods-iosApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-iosApp.debug.xcconfig"; sourceTree = "<group>"; };
 		E4C923318724794E3CC670804C2D6A6B /* Pods-iosApp-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-iosApp-acknowledgements.markdown"; sourceTree = "<group>"; };
 		E6DB2A5F5DADA1DDE45F36B1A2D6AC16 /* Pods-iosApp-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-iosApp-dummy.m"; sourceTree = "<group>"; };
@@ -360,7 +362,6 @@
 		FD7B0DE52AB57D4E7FFE36CFF63096A2 /* HTMLDocumentFragment.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = HTMLDocumentFragment.m; path = Sources/HTMLDocumentFragment.m; sourceTree = "<group>"; };
 		FDCA3FF9ED380FEFE652EA8E0C31AE79 /* CSSStructuralPseudoSelectors.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = CSSStructuralPseudoSelectors.m; path = Sources/CSSStructuralPseudoSelectors.m; sourceTree = "<group>"; };
 		FDCFB6B1ABB2E3F892CE82FF94FE6699 /* HTMLText.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = HTMLText.h; path = Sources/include/HTMLText.h; sourceTree = "<group>"; };
-		FE4EEDDCDB04F846BB28398CFB0938BE /* composeApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = composeApp.release.xcconfig; sourceTree = "<group>"; };
 		FEA52612D0CAB696DB193DF115B74BD5 /* CSSTypeSelector.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = CSSTypeSelector.h; path = Sources/include/CSSTypeSelector.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -373,6 +374,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ABE1A835D387DFBD5E392384066B1B94 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE9461D1A17F2F75D00F2EDBB8FE5CB6 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C1725B2279FCE57AEB8BCDF27BB43F4D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -381,33 +390,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D8BA8FAE6A2224DE422E2130CB2A199B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C5B801E8429083F405877D3221F9A110 /* Foundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0326741577B9B5CF487E706488C5F3D2 /* Support Files */ = {
+		39A3298AD23283453ACFB95B767C2818 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				E37DF7C23044E4A1522AA6D5CD2F8AE5 /* composeApp.debug.xcconfig */,
-				FE4EEDDCDB04F846BB28398CFB0938BE /* composeApp.release.xcconfig */,
+				3BF2B3D9254134B21F48CA3F69A0BF8E /* composeApp.debug.xcconfig */,
+				E2275A92B7A893E2903CA5DD9ED05B3B /* composeApp.release.xcconfig */,
 			);
 			name = "Support Files";
 			path = "../iosApp/Pods/Target Support Files/composeApp";
 			sourceTree = "<group>";
 		};
-		19DBC0A201418E4E6D170C3B69915214 /* Pod */ = {
+		4CBEA88A7389207D1731268D5CD68C73 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				4D445754DC256ED64A477E2FF2D5427D /* composeApp.podspec */,
+				574C97AD1DFE88C71B62F1348F49F061 /* GSApp.framework */,
 			);
-			name = Pod;
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		4EFFF105F9831CDD2A7F834CA7879D55 /* Pods */ = {
@@ -569,6 +570,27 @@
 			path = HTMLKit;
 			sourceTree = "<group>";
 		};
+		7BEABF0877CE2DEAED04A10C35C25B74 /* composeApp */ = {
+			isa = PBXGroup;
+			children = (
+				DDB44B4A913D8AE0C8C07910D68E262A /* compose-multiplatform.xml */,
+				E05BFBEB4191270372B632B9834DE5A5 /* MR */,
+				4CBEA88A7389207D1731268D5CD68C73 /* Frameworks */,
+				FB15522B5AB039A719E6DBB7064B92D2 /* Pod */,
+				39A3298AD23283453ACFB95B767C2818 /* Support Files */,
+			);
+			name = composeApp;
+			path = ../../composeApp;
+			sourceTree = "<group>";
+		};
+		8601F518A3E1910EE99F3EEA43368F58 /* Development Pods */ = {
+			isa = PBXGroup;
+			children = (
+				7BEABF0877CE2DEAED04A10C35C25B74 /* composeApp */,
+			);
+			name = "Development Pods";
+			sourceTree = "<group>";
+		};
 		974B0D7AAACC4460D3031654AB3A4A4F /* common */ = {
 			isa = PBXGroup;
 			children = (
@@ -579,14 +601,6 @@
 				0F88FFED0AA86FF004F9DE597BDE7946 /* sqlite_cfg.h */,
 			);
 			name = common;
-			sourceTree = "<group>";
-		};
-		AD222A7E61FECD37B221553E59AF9EFF /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				BEE23C6768C715D2A9C563CAA07BF5B4 /* GSApp.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		B62076C4701461DDA337B44FC71A2E16 /* sqlite3 */ = {
@@ -621,7 +635,7 @@
 			isa = PBXGroup;
 			children = (
 				9D940727FF8FB9C785EB98E56350EF41 /* Podfile */,
-				DB2D0B7CE4B9F3DF4C66009F5A5495A4 /* Development Pods */,
+				8601F518A3E1910EE99F3EEA43368F58 /* Development Pods */,
 				D210D550F4EA176C3123ED886F8F87F5 /* Frameworks */,
 				4EFFF105F9831CDD2A7F834CA7879D55 /* Pods */,
 				509AE4622B5C5BA4229090175D9A2F36 /* Products */,
@@ -660,14 +674,6 @@
 			path = "../Target Support Files/sqlite3";
 			sourceTree = "<group>";
 		};
-		DB2D0B7CE4B9F3DF4C66009F5A5495A4 /* Development Pods */ = {
-			isa = PBXGroup;
-			children = (
-				FA0C80266434BC43915CB6BDC8ACCC49 /* composeApp */,
-			);
-			name = "Development Pods";
-			sourceTree = "<group>";
-		};
 		EB50D2CF2D6D4A3EA5BD48E0FD7CB83E /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
@@ -683,16 +689,12 @@
 			path = "../Target Support Files/HTMLKit";
 			sourceTree = "<group>";
 		};
-		FA0C80266434BC43915CB6BDC8ACCC49 /* composeApp */ = {
+		FB15522B5AB039A719E6DBB7064B92D2 /* Pod */ = {
 			isa = PBXGroup;
 			children = (
-				3A9E98C4260492E3716A72DFF364391B /* compose-multiplatform.xml */,
-				AD222A7E61FECD37B221553E59AF9EFF /* Frameworks */,
-				19DBC0A201418E4E6D170C3B69915214 /* Pod */,
-				0326741577B9B5CF487E706488C5F3D2 /* Support Files */,
+				45453E16D5CCDB0E174E0E2D5CE33DC1 /* composeApp.podspec */,
 			);
-			name = composeApp;
-			path = ../../composeApp;
+			name = Pod;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -784,15 +786,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		383D2A4B2C53F698F9EF9AEDFC161F40 /* Headers */ = {
+		535DD4045B1E09BDD12100BEC4650B4F /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8267D3C6E01F0199A17D85F0BB3E1ACB /* sqlite3.h in Headers */,
-				CC49177B694AACCAF1883C66EC2BB32F /* sqlite3-umbrella.h in Headers */,
-				C82A98025E50D8F9AA255B7A707BDEF3 /* sqlite3ext.h in Headers */,
-				6B6F51F6EEAA1B26F1B4EBF161E8B523 /* sqlite3session.h in Headers */,
-				AFADD983E4849BCB4A12120DD7B63D28 /* sqlite_cfg.h in Headers */,
+				28EC6F31F3E0AA4C3A6272F05AFD6515 /* sqlite3.h in Headers */,
+				4DD0BF7E11C98255811432812C032DEF /* sqlite3-umbrella.h in Headers */,
+				DF18069A638AC64EA614DE59D1419CA6 /* sqlite3ext.h in Headers */,
+				58952B95FC7BE700EE6292A370905ABF /* sqlite3session.h in Headers */,
+				6637196A131ED1BCC0CDA3AD53429A5B /* sqlite_cfg.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -801,12 +803,12 @@
 /* Begin PBXNativeTarget section */
 		7578477CA77D98D8282C395822C4A93C /* sqlite3 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E93C67E0FACAC965A60F301FFB2DC5AB /* Build configuration list for PBXNativeTarget "sqlite3" */;
+			buildConfigurationList = 00AD38DA72BFBA44DFBFD5906BFC1E75 /* Build configuration list for PBXNativeTarget "sqlite3" */;
 			buildPhases = (
-				383D2A4B2C53F698F9EF9AEDFC161F40 /* Headers */,
-				DED8B26E191A4FD097C6CE4A259D190B /* Sources */,
-				D8BA8FAE6A2224DE422E2130CB2A199B /* Frameworks */,
-				5A503DF56A72C4FB885621BD17363A46 /* Resources */,
+				535DD4045B1E09BDD12100BEC4650B4F /* Headers */,
+				8D00C643768A538CE3C5A17CBFE84866 /* Sources */,
+				ABE1A835D387DFBD5E392384066B1B94 /* Frameworks */,
+				727267E3834A4B6270696D132F432FCF /* Resources */,
 			);
 			buildRules = (
 			);
@@ -847,9 +849,9 @@
 			buildRules = (
 			);
 			dependencies = (
-				BCF426A46DF6298F5274F828FFE1C440 /* PBXTargetDependency */,
-				E39D77944FDE4AD7087755195EA99F18 /* PBXTargetDependency */,
-				F23BF598735A5C1AEAF9BCF349EA47A6 /* PBXTargetDependency */,
+				403FC23E307BE3790D612618E2978BE6 /* PBXTargetDependency */,
+				469CDEBEBF94612819C3106ABB53A094 /* PBXTargetDependency */,
+				F10BD7760A2832C1A29CDDC73DBE9059 /* PBXTargetDependency */,
 			);
 			name = "Pods-iosApp";
 			productName = Pods_iosApp;
@@ -887,14 +889,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		5A503DF56A72C4FB885621BD17363A46 /* Resources */ = {
+		5BC6E09C4A4EA911603D226946166BEA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		5BC6E09C4A4EA911603D226946166BEA /* Resources */ = {
+		727267E3834A4B6270696D132F432FCF /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -993,86 +995,51 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DED8B26E191A4FD097C6CE4A259D190B /* Sources */ = {
+		8D00C643768A538CE3C5A17CBFE84866 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				792B8E800FFF9B2AC9C18A5B0FBCB37D /* sqlite3.c in Sources */,
-				B564342D07AABA21066798E23B6DDAEC /* sqlite3-dummy.m in Sources */,
+				24DB01A8D0EA6D2CC4F4F6B520168B5E /* sqlite3.c in Sources */,
+				7D257A444D8FB79FBBB49FA9AF35BA74 /* sqlite3-dummy.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		BCF426A46DF6298F5274F828FFE1C440 /* PBXTargetDependency */ = {
+		403FC23E307BE3790D612618E2978BE6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = HTMLKit;
 			target = D6807B82082F2598A4BABD0A6B657D10 /* HTMLKit */;
-			targetProxy = 40BC87510A368EA98526A733BF4E3A07 /* PBXContainerItemProxy */;
+			targetProxy = 042B53D6D7D0695E90A939BB4F8508A2 /* PBXContainerItemProxy */;
 		};
-		BE9DD73C05EBD8B0F32A89693EEFCC30 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = sqlite3;
-			target = 7578477CA77D98D8282C395822C4A93C /* sqlite3 */;
-			targetProxy = B9419AFAC6F98CB0E8553F0EF0F18738 /* PBXContainerItemProxy */;
-		};
-		DD3E82E6CF29CDB52FF4CF1B87622408 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = HTMLKit;
-			target = D6807B82082F2598A4BABD0A6B657D10 /* HTMLKit */;
-			targetProxy = 167054ACC2AB6FCA2123870301A5CCD1 /* PBXContainerItemProxy */;
-		};
-		E39D77944FDE4AD7087755195EA99F18 /* PBXTargetDependency */ = {
+		469CDEBEBF94612819C3106ABB53A094 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = composeApp;
 			target = B96E9866C2872A8B63836A92F517CD48 /* composeApp */;
-			targetProxy = E4874641832684384F37706954AD9C93 /* PBXContainerItemProxy */;
+			targetProxy = 45A736DB793457D5734C471F9250308F /* PBXContainerItemProxy */;
 		};
-		F23BF598735A5C1AEAF9BCF349EA47A6 /* PBXTargetDependency */ = {
+		6ADECFE3577F1FD32F54C9004090D6F4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = sqlite3;
 			target = 7578477CA77D98D8282C395822C4A93C /* sqlite3 */;
-			targetProxy = 2049CA5200493B0FDEFD7CE407B95033 /* PBXContainerItemProxy */;
+			targetProxy = 8A5502427F2FC89BD9A2408AD3E5ACF0 /* PBXContainerItemProxy */;
+		};
+		DBCF7EE6077BC60B26AEC3C96893D66F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = HTMLKit;
+			target = D6807B82082F2598A4BABD0A6B657D10 /* HTMLKit */;
+			targetProxy = 4D334BB81000A9A68E33981479249680 /* PBXContainerItemProxy */;
+		};
+		F10BD7760A2832C1A29CDDC73DBE9059 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = sqlite3;
+			target = 7578477CA77D98D8282C395822C4A93C /* sqlite3 */;
+			targetProxy = 97AE9154598742D3DFD8C04B5C975F1E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		01AFE7D54B8F4D1F1164E3D7F1309296 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 42EA9989B70EDA9097A96A459013245B /* sqlite3.release.xcconfig */;
-			buildSettings = {
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = "Target Support Files/sqlite3/sqlite3-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/sqlite3/sqlite3-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MODULEMAP_FILE = "Target Support Files/sqlite3/sqlite3.modulemap";
-				PRODUCT_MODULE_NAME = sqlite3;
-				PRODUCT_NAME = sqlite3;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
 		01F448C9826380419A46F8CCC44268BE /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 12008B446CDBD577D9C0570D9033341F /* HTMLKit.release.xcconfig */;
@@ -1108,9 +1075,26 @@
 			};
 			name = Release;
 		};
-		13D98D1ABFD6B154049FD09C569DE840 /* Debug */ = {
+		1418AA912CE95576F9C117D400CD4C94 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FACDC8C581D36FABD2A8C5DA0244C195 /* sqlite3.debug.xcconfig */;
+			baseConfigurationReference = 3BF2B3D9254134B21F48CA3F69A0BF8E /* composeApp.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		45F106F775A3EBFDA1BE784745E523D0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 42EA9989B70EDA9097A96A459013245B /* sqlite3.release.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
@@ -1137,27 +1121,11 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
-			name = Debug;
-		};
-		1418AA912CE95576F9C117D400CD4C94 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = E37DF7C23044E4A1522AA6D5CD2F8AE5 /* composeApp.debug.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
+			name = Release;
 		};
 		593F10BFFA94DAC7D6E17FB8A7F32D72 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -1223,7 +1191,7 @@
 		};
 		74307645785CD8FF77AE9A9AA5065454 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FE4EEDDCDB04F846BB28398CFB0938BE /* composeApp.release.xcconfig */;
+			baseConfigurationReference = E2275A92B7A893E2903CA5DD9ED05B3B /* composeApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1238,6 +1206,40 @@
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
+		};
+		76E5062DFF1DBF44E78B0DEDAA52C38D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = FACDC8C581D36FABD2A8C5DA0244C195 /* sqlite3.debug.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/sqlite3/sqlite3-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/sqlite3/sqlite3-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MODULEMAP_FILE = "Target Support Files/sqlite3/sqlite3.modulemap";
+				PRODUCT_MODULE_NAME = sqlite3;
+				PRODUCT_NAME = sqlite3;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
 		};
 		9F99340C9966C4F2ACAE2A24E1CD2267 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -1417,6 +1419,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		00AD38DA72BFBA44DFBFD5906BFC1E75 /* Build configuration list for PBXNativeTarget "sqlite3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				76E5062DFF1DBF44E78B0DEDAA52C38D /* Debug */,
+				45F106F775A3EBFDA1BE784745E523D0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4821239608C13582E20E6DA73FD5F1F9 /* Build configuration list for PBXProject "Pods" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1440,15 +1451,6 @@
 			buildConfigurations = (
 				1418AA912CE95576F9C117D400CD4C94 /* Debug */,
 				74307645785CD8FF77AE9A9AA5065454 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		E93C67E0FACAC965A60F301FFB2DC5AB /* Build configuration list for PBXNativeTarget "sqlite3" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				13D98D1ABFD6B154049FD09C569DE840 /* Debug */,
-				01AFE7D54B8F4D1F1164E3D7F1309296 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -307,7 +307,13 @@ public expect object MR {
   public object images : ResourceContainer<ImageResource> {
     public val class_lesson: ImageResource
 
+    public val course_eleven: ImageResource
+
+    public val course_twelve: ImageResource
+
     public val exams: ImageResource
+
+    public val feedback: ImageResource
 
     public val filter: ImageResource
 

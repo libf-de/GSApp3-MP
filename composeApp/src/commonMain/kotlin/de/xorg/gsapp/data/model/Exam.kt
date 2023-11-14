@@ -21,6 +21,10 @@ package de.xorg.gsapp.data.model
 import de.xorg.gsapp.data.enums.ExamCourse
 import kotlinx.datetime.LocalDate
 
+fun String.startsWithUppercaseLetter() : Boolean {
+    return this.matches(Regex("[A-Z]{1}.*"))
+}
+
 /**
  * Exam data class
  * @property label -> Label, as displayed on website (DE12, GE, et1,…)
@@ -46,7 +50,8 @@ data class Exam(
             this(label = label,
                  date = date,
                  course  = course,
-                 isCoursework = Regex("\"([A-Z]+(?!.*[0-9]))\"").matches(label),
+                 /*isCoursework = Regex("([A-Z]+(?!.*[0-9]))").matches(label),*/
+                 isCoursework = label.startsWithUppercaseLetter(),
                  subject = subject)
 
     constructor(label: String, date: LocalDate, course: ExamCourse) :

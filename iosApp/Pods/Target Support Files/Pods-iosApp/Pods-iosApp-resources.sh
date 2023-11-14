@@ -98,9 +98,11 @@ EOM
 }
 if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_resource "${PODS_ROOT}/../../composeApp/src/commonMain/resources/compose-multiplatform.xml"
+  install_resource "${PODS_ROOT}/../../composeApp/src/commonMain/resources/MR"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_resource "${PODS_ROOT}/../../composeApp/src/commonMain/resources/compose-multiplatform.xml"
+  install_resource "${PODS_ROOT}/../../composeApp/src/commonMain/resources/MR"
 fi
 
 mkdir -p "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
