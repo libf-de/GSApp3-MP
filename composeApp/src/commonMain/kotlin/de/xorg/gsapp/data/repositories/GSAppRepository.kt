@@ -42,7 +42,7 @@ import kotlinx.datetime.LocalDate
  */
 
 interface GSAppRepository {
-    fun getSubstitutions(): Flow<Result<SubstitutionSet>>
+    fun getSubstitutions(): Flow<SubstitutionSet>
     suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit)
 
     //Could switch to separate datelist + query foods per date?

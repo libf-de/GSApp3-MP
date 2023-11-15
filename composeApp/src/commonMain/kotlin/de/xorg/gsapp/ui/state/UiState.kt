@@ -18,6 +18,8 @@
 
 package de.xorg.gsapp.ui.state
 
+import de.xorg.gsapp.data.model.ComponentData
+
 /**
  * Loading states for the main app tabs.
  */
@@ -37,4 +39,26 @@ fun UiState.isLoading(): Boolean {
 
 fun UiState.isNormal(): Boolean {
     return this == UiState.NORMAL || this == UiState.NORMAL_LOADING || this == UiState.NORMAL_FAILED
+}
+
+sealed class ComponentState<out T : ComponentData, out E : Throwable> {
+    data object Loading : ComponentState<Nothing, Nothing>()
+    data class Refreshing<out T : ComponentData>(val data: T) : ComponentState<T, Nothing>()
+    data class RefreshingFailed<out T : ComponentData, out E : Throwable>(val data: T, val error: E) : ComponentState<T, E>()
+    data class Failed<out E : Throwable>(val error: E) : ComponentState<Nothing, E>()
+    data object EmptyLocal : ComponentState<Nothing, Nothing>()
+    data object Empty : ComponentState<Nothing, Nothing>()
+    data class Normal<out T : ComponentData>(val data: T) : ComponentState<T, Nothing>()
+
+    fun hasData(): Boolean {
+        return this is Refreshing || this is RefreshingFailed || this is Normal
+    }
+
+    fun isLoading(): Boolean {
+        return this is Loading || this is Refreshing
+    }
+
+    fun isNormal(): Boolean {
+        return this is Normal || this is Refreshing || this is RefreshingFailed
+    }
 }

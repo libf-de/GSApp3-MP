@@ -42,7 +42,7 @@ interface LocalDataSource {
      * Will return a NoLocalDataException if no local data is available.
      * @return Flow<Result<SubstitutionSet>>
      */
-    fun getSubstitutionPlanFlow(): Flow<Result<SubstitutionSet>>
+    fun getSubstitutionPlanFlow(): Flow<SubstitutionSet>
 
     /**
      * Returns the latest SubstitutionSet hash and date from local storage.

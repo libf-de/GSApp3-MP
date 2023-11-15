@@ -92,7 +92,7 @@ class AppRepository : GSAppRepository, KoinComponent {
     private val localDataSource: LocalDataSource by inject()
     private val defaultsDataSource: DefaultsDataSource by inject()
 
-    override fun getSubstitutions(): Flow<Result<SubstitutionSet>>
+    override fun getSubstitutions(): Flow<SubstitutionSet>
         = localDataSource.getSubstitutionPlanFlow()
 
     override suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit) {

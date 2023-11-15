@@ -37,7 +37,8 @@ data class SubstitutionSet(
     val substitutions: Map<String, List<Substitution>>,
     val haveUnknownSubs: Boolean = false,
     val haveUnknownTeachers: Boolean = false
-) {
+) : ComponentData {
+    override fun isEmpty(): Boolean = substitutions.isEmpty()
 
     companion object {
         val EMPTY = SubstitutionSet(

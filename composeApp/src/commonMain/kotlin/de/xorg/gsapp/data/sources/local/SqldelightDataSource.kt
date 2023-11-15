@@ -70,7 +70,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
     private fun <T> tryFlow(flowToTry: Flow<Result<T>>): Flow<Result<T>> = try {
         flowToTry
     } catch (ex: Exception) {
-        flow {emit(Result.failure(ex)) }
+        flow { emit(Result.failure(ex)) }
     }
 
     /**
@@ -78,78 +78,74 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
      * Will return a NoLocalDataException if no local data is available.
      * @return Flow<Result<SubstitutionSet>>
      */
-    override fun getSubstitutionPlanFlow(): Flow<Result<SubstitutionSet>> =
-        tryFlow(
-            database.dbSubstitutionSetQueries
-                .selectLatest()
-                .asFlow()
-                .mapToOneOrNull(Dispatchers.IO)
-                .distinctUntilChanged()
-                .flatMapLatest { dbSubset -> //flatMapLatest?
-                    println("got dbSubset.id ${dbSubset?.id ?: -1}")
+    override fun getSubstitutionPlanFlow(): Flow<SubstitutionSet> =
+        database.dbSubstitutionSetQueries
+            .selectLatest()
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.IO)
+            .distinctUntilChanged()
+            .flatMapLatest { dbSubset -> //flatMapLatest?
+                println("got dbSubset.id ${dbSubset?.id ?: -1}")
 
-                    if(dbSubset == null) //Return exception if there is no latest SubstitutionSet
-                        return@flatMapLatest flow {
-                            emit(
-                                Result.failure(NoLocalDataException())
-                            )
-                        }
+                if (dbSubset == null) //Return exception if there is no latest SubstitutionSet
+                    error(NoLocalDataException())
+                /*return@flatMapLatest flow {
+                    error(NoLocalDataException())
+                }*/
 
-                    database.dbSubstitutionQueries
-                        .findSubstitutionsBySetId(dbSubset.id)
-                        .asFlow()
-                        .mapToList(Dispatchers.IO)
-                        .distinctUntilChanged()
-                        .map {
-                            var haveUnknownSubs = false
-                            var haveUnknownTeas = false
+                database.dbSubstitutionQueries
+                    .findSubstitutionsBySetId(dbSubset.id)
+                    .asFlow()
+                    .mapToList(Dispatchers.IO)
+                    .distinctUntilChanged()
+                    .map {
+                        var haveUnknownSubs = false
+                        var haveUnknownTeas = false
 
-                            Result.success(
-                                SubstitutionSet(
-                                    dateStr = dbSubset.dateStr,
-                                    date = dbSubset.date,
-                                    notes = dbSubset.notes ?: "",
-                                    substitutions = it.map { dbSub ->
-                                        val origSubjShort = dbSub.origShortName ?: "!!"
-                                        val substSubjShort = dbSub.substShortName ?: "!!"
-                                        val substTeaShort = dbSub.substTeacherShortName ?: "!!"
+                        SubstitutionSet(
+                            dateStr = dbSubset.dateStr,
+                            date = dbSubset.date,
+                            notes = dbSubset.notes ?: "",
+                            substitutions = it.map { dbSub ->
+                                val origSubjShort = dbSub.origShortName ?: "!!"
+                                val substSubjShort = dbSub.substShortName ?: "!!"
+                                val substTeaShort = dbSub.substTeacherShortName ?: "!!"
 
-                                        if(dbSub.origLongName == null || dbSub.substLongName == null)
-                                            haveUnknownSubs = true
+                                if (dbSub.origLongName == null || dbSub.substLongName == null)
+                                    haveUnknownSubs = true
 
-                                        if(dbSub.substTeacherLongName == null)
-                                            haveUnknownTeas = true
+                                if (dbSub.substTeacherLongName == null)
+                                    haveUnknownTeas = true
 
-                                        Substitution(
-                                            klass = dbSub.klass,
-                                            klassFilter = dbSub.klassFilter,
-                                            lessonNr = dbSub.lessonNr ?: "?",
-                                            origSubject = Subject(
-                                                shortName = origSubjShort,
-                                                longName = dbSub.origLongName ?: origSubjShort,
-                                                color = dbSub.origColor ?: Color.Magenta
-                                            ),
-                                            substTeacher = Teacher(
-                                                shortName = substTeaShort,
-                                                longName = dbSub.substTeacherLongName ?: substTeaShort
-                                            ),
-                                            substRoom = dbSub.substRoom ?: "??",
-                                            substSubject = Subject(
-                                                shortName = substSubjShort,
-                                                longName = dbSub.substLongName ?: substSubjShort,
-                                                color = dbSub.substColor ?: Color.Magenta
-                                            ),
-                                            notes = dbSub.notes ?: "",
-                                            isNew = dbSub.isNew
-                                        )
-                                    }.groupBy { subs -> subs.klass },
-                                    haveUnknownSubs = haveUnknownSubs,
-                                    haveUnknownTeachers = haveUnknownTeas
+                                Substitution(
+                                    klass = dbSub.klass,
+                                    klassFilter = dbSub.klassFilter,
+                                    lessonNr = dbSub.lessonNr ?: "?",
+                                    origSubject = Subject(
+                                        shortName = origSubjShort,
+                                        longName = dbSub.origLongName ?: origSubjShort,
+                                        color = dbSub.origColor ?: Color.Magenta
+                                    ),
+                                    substTeacher = Teacher(
+                                        shortName = substTeaShort,
+                                        longName = dbSub.substTeacherLongName ?: substTeaShort
+                                    ),
+                                    substRoom = dbSub.substRoom ?: "??",
+                                    substSubject = Subject(
+                                        shortName = substSubjShort,
+                                        longName = dbSub.substLongName ?: substSubjShort,
+                                        color = dbSub.substColor ?: Color.Magenta
+                                    ),
+                                    notes = dbSub.notes ?: "",
+                                    isNew = dbSub.isNew
                                 )
-                            )
-                        }
-                }
-        )
+                            }.groupBy { subs -> subs.klass },
+                            haveUnknownSubs = haveUnknownSubs,
+                            haveUnknownTeachers = haveUnknownTeas
+                        )
+
+                    }
+            }
 
     /**
      * Returns the latest SubstitutionSet hash and date from local storage.
@@ -163,9 +159,12 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                 .executeAsOneOrNull()
 
             Result.success(
-                Pair(latestSet?.hashCode?.toInt() ?: -1, latestSet?.date ?: LocalDate.fromEpochDays(0))
+                Pair(
+                    latestSet?.hashCode?.toInt() ?: -1,
+                    latestSet?.date ?: LocalDate.fromEpochDays(0)
+                )
             )
-        } catch(ex: Exception) {
+        } catch (ex: Exception) {
             Result.failure(ex)
         }
     }
@@ -183,7 +182,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                     .getIdByDateString(dateStr)
                     .executeAsOneOrNull()
             )
-        } catch(ex: Exception) {
+        } catch (ex: Exception) {
             Result.failure(ex)
         }
     }
@@ -286,18 +285,17 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
      * Returns a flow for the list of subjects from local storage.
      * @return Flow<Result<List<Subject>>> List of subjects
      */
-    override fun getSubjectsFlow(): Flow<Result<List<Subject>>>
-        = tryFlow(database.dbSubjectQueries
-            .selectAll()
-            .asFlow()
-            .mapToList(Dispatchers.IO)
-            .map {
-                Result.success(
-                    it.map { dbSub ->
-                        Subject(dbSub)
-                    }
-                )
-            })
+    override fun getSubjectsFlow(): Flow<Result<List<Subject>>> = tryFlow(database.dbSubjectQueries
+        .selectAll()
+        .asFlow()
+        .mapToList(Dispatchers.IO)
+        .map {
+            Result.success(
+                it.map { dbSub ->
+                    Subject(dbSub)
+                }
+            )
+        })
 
     /**
      * Adds new subjects to local storage.
@@ -352,8 +350,8 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
     override suspend fun subjectExists(shortName: String): Boolean {
         return try {
             database.dbSubjectQueries.countByShort(shortName).executeAsOne() > 0
-        } catch(ex: Exception) {
-            Napier.w { "Exception while checking subject existence: ${ex.stackTraceToString()}"}
+        } catch (ex: Exception) {
+            Napier.w { "Exception while checking subject existence: ${ex.stackTraceToString()}" }
             false
         }
     }
@@ -371,13 +369,11 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
     }
 
 
-
     /**
      * Returns a flow for the list of teachers from local storage.
      * @return Flow<Result<List<Teacher>>> List of teachers
      */
-    override fun getTeachersFlow(): Flow<Result<List<Teacher>>>
-    = tryFlow(
+    override fun getTeachersFlow(): Flow<Result<List<Teacher>>> = tryFlow(
         database.dbTeacherQueries
             .selectAll()
             .asFlow()
@@ -395,7 +391,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
      */
     override suspend fun addAllTeachers(value: List<Teacher>) {
         database.dbTeacherQueries.transaction {
-            value.forEach {teacher ->
+            value.forEach { teacher ->
                 database.dbTeacherQueries.insertTeacher(
                     shortName = teacher.shortName,
                     longName = teacher.longName
@@ -448,7 +444,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { dbFoodList ->
-                if(dbFoodList.isEmpty()) {
+                if (dbFoodList.isEmpty()) {
                     Result.failure(NoLocalDataException())
                 } else {
                     Result.success(
@@ -472,10 +468,9 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
      * @param date Date to get foods for
      * @return Flow<Result<List<Food>>> Foods for the given date
      */
-    override fun getFoodsForDateFlow(date: LocalDate): Flow<Result<List<Food>>>
-    = tryFlow(
+    override fun getFoodsForDateFlow(date: LocalDate): Flow<Result<List<Food>>> = tryFlow(
         database.dbFoodQueries.selectByDate(date).asFlow().mapToList(Dispatchers.IO).map {
-            if(it.isEmpty()) {
+            if (it.isEmpty()) {
                 Result.failure(NoLocalDataException())
             } else {
                 Result.success(
@@ -496,19 +491,18 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
      * Will return a NoLocalDataException if no local data is available.
      * @return Flow<Result<List<LocalDate>>> List of dates for which food is available
      */
-    override fun getFoodDatesFlow(): Flow<Result<List<LocalDate>>>
-        = try {
-            database.dbFoodQueries
-                .selectAllDates()
-                .asFlow()
-                .mapToList(Dispatchers.IO)
-                .map {
-                    if(it.isEmpty()) Result.failure(NoLocalDataException())
-                    else Result.success(it)
-                }
-        } catch(ex: Exception) {
-            flow { emit(Result.failure(ex)) }
-        }
+    override fun getFoodDatesFlow(): Flow<Result<List<LocalDate>>> = try {
+        database.dbFoodQueries
+            .selectAllDates()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map {
+                if (it.isEmpty()) Result.failure(NoLocalDataException())
+                else Result.success(it)
+            }
+    } catch (ex: Exception) {
+        flow { emit(Result.failure(ex)) }
+    }
 
     /**
      * Returns the latest food plan from local storage as a list.
@@ -529,12 +523,12 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                     )
                 }
 
-            if(foodList.isEmpty())
+            if (foodList.isEmpty())
                 Result.failure(NoLocalDataException())
             else
                 Result.success(foodList)
 
-        } catch(ex: Exception) {
+        } catch (ex: Exception) {
             Result.failure(ex)
         }
     }
@@ -551,12 +545,12 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                 .selectLatestFoods()
                 .executeAsList()
 
-            if(latestSet.isEmpty())
+            if (latestSet.isEmpty())
                 Result.success(LocalDate.fromEpochDays(0))
             else
                 Result.success(latestSet.first().date)
 
-        } catch(ex: Exception) {
+        } catch (ex: Exception) {
             Result.failure(ex)
         }
     }
@@ -616,8 +610,7 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
      * Will return empty map if no local data is available.
      * @return Flow<Result<Map<String, String>>> List of additives
      */
-    override fun getAdditivesFlow(): Flow<Result<Map<String, String>>>
-    = tryFlow(
+    override fun getAdditivesFlow(): Flow<Result<Map<String, String>>> = tryFlow(
         database.dbAdditiveQueries
             .selectAll()
             .asFlow()
@@ -648,22 +641,22 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
      * Will return a NoLocalDataException if no local data is available.
      * @return Flow<Result<List<Exam>>> List of exams
      */
-    override fun getExamsFlow(): Flow<Result<List<Exam>>>
-    = tryFlow(
+    override fun getExamsFlow(): Flow<Result<List<Exam>>> = tryFlow(
         database.dbExamQueries
             .selectAllWithSubjects()
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { examList ->
-                if(examList.isEmpty()) {
+                if (examList.isEmpty()) {
                     Result.failure(NoLocalDataException())
                 } else {
                     Result.success(
                         examList
                             .map {
-                                val subject = if(it.subject == null ||
+                                val subject = if (it.subject == null ||
                                     it.subjectLongName == null ||
-                                    it.subjectColor == null)
+                                    it.subjectColor == null
+                                )
                                     null
                                 else
                                     Subject(
@@ -678,7 +671,8 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                                     course = it.course,
                                     subject = subject,
                                     isCoursework = it.isCoursework
-                                )}
+                                )
+                            }
                     )
                 }
             }
@@ -692,9 +686,10 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         return try {
             Result.success(
                 database.dbExamQueries.selectAllWithSubjects().executeAsList().map {
-                    val subject = if(it.subject == null ||
+                    val subject = if (it.subject == null ||
                         it.subjectLongName == null ||
-                        it.subjectColor == null)
+                        it.subjectColor == null
+                    )
                         null
                     else
                         Subject(
@@ -702,14 +697,16 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
                             longName = it.subjectLongName,
                             color = it.subjectColor
                         )
-                    Exam(label = it.label,
+                    Exam(
+                        label = it.label,
                         date = it.date,
                         course = it.course,
                         isCoursework = it.isCoursework,
-                        subject = subject)
+                        subject = subject
+                    )
                 }
             )
-        } catch(ex: Exception) {
+        } catch (ex: Exception) {
             Result.failure(ex)
         }
     }
