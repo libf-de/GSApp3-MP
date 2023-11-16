@@ -46,10 +46,10 @@ interface GSAppRepository {
     suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit)
 
     //Could switch to separate datelist + query foods per date?
-    fun getFoodplan(): Flow<Result<Map<LocalDate, List<Food>>>>
+    fun getFoodplan(): Flow<Map<LocalDate, List<Food>>>
     suspend fun updateFoodplan(callback: (Result<Boolean>) -> Unit)
 
-    fun getExams(): Flow<Result<List<Exam>>>
+    fun getExams(): Flow<List<Exam>>
     suspend fun updateExams(callback: (Result<Boolean>) -> Unit)
     // No Create, Update and Delete functions, as above types are not user-editable.
 

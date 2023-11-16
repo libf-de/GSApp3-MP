@@ -36,7 +36,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -438,28 +437,22 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
      * Will return a NoLocalDataException if no local data is available.
      * @return Flow<Result<Map<LocalDate, List<Food>>>>
      */
-    override fun getFoodMapFlow(): Flow<Result<Map<LocalDate, List<Food>>>> =
+    override fun getFoodMapFlow(): Flow<Map<LocalDate, List<Food>>> =
         database.dbFoodQueries
             .selectAll()
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { dbFoodList ->
-                if (dbFoodList.isEmpty()) {
-                    Result.failure(NoLocalDataException())
-                } else {
-                    Result.success(
-                        dbFoodList.groupBy { it.date }
-                            .mapValues { foodList ->
-                                foodList.value.map { dbFood ->
-                                    Food(
-                                        num = dbFood.foodId.toInt(),
-                                        name = dbFood.name,
-                                        additives = dbFood.additives
-                                    )
-                                }
-                            }
-                    )
-                }
+                dbFoodList.groupBy { it.date }
+                    .mapValues { foodList ->
+                        foodList.value.map { dbFood ->
+                            Food(
+                                num = dbFood.foodId.toInt(),
+                                name = dbFood.name,
+                                additives = dbFood.additives
+                            )
+                        }
+                    }
             }
 
     /**
@@ -610,19 +603,16 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
      * Will return empty map if no local data is available.
      * @return Flow<Result<Map<String, String>>> List of additives
      */
-    override fun getAdditivesFlow(): Flow<Result<Map<String, String>>> = tryFlow(
-        database.dbAdditiveQueries
-            .selectAll()
-            .asFlow()
-            .mapToList(Dispatchers.IO)
-            .map { additiveList ->
-                Result.success(
-                    additiveList.associate {
-                        it.shortName to it.longName
-                    }
-                )
+    override fun getAdditivesFlow(): Flow<Map<String, String>> = database
+        .dbAdditiveQueries
+        .selectAll()
+        .asFlow()
+        .mapToList(Dispatchers.IO)
+        .map { additiveList ->
+            additiveList.associate {
+                it.shortName to it.longName
             }
-    )
+        }
 
     /**
      * Adds new additives to local storage.
@@ -641,42 +631,35 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
      * Will return a NoLocalDataException if no local data is available.
      * @return Flow<Result<List<Exam>>> List of exams
      */
-    override fun getExamsFlow(): Flow<Result<List<Exam>>> = tryFlow(
-        database.dbExamQueries
+    override fun getExamsFlow(): Flow<List<Exam>> = database.dbExamQueries
             .selectAllWithSubjects()
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { examList ->
-                if (examList.isEmpty()) {
-                    Result.failure(NoLocalDataException())
-                } else {
-                    Result.success(
-                        examList
-                            .map {
-                                val subject = if (it.subject == null ||
-                                    it.subjectLongName == null ||
-                                    it.subjectColor == null
-                                )
-                                    null
-                                else
-                                    Subject(
-                                        shortName = it.subject,
-                                        longName = it.subjectLongName,
-                                        color = it.subjectColor
-                                    )
+                examList
+                    .map {
+                        val subject = if (it.subject == null ||
+                            it.subjectLongName == null ||
+                            it.subjectColor == null
+                        )
+                            null
+                        else
+                            Subject(
+                                shortName = it.subject,
+                                longName = it.subjectLongName,
+                                color = it.subjectColor
+                            )
 
-                                Exam(
-                                    label = it.label,
-                                    date = it.date,
-                                    course = it.course,
-                                    subject = subject,
-                                    isCoursework = it.isCoursework
-                                )
-                            }
-                    )
-                }
+                        Exam(
+                            label = it.label,
+                            date = it.date,
+                            course = it.course,
+                            subject = subject,
+                            isCoursework = it.isCoursework
+                        )
+                    }
             }
-    )
+
 
     /**
      * Returns the latest exams from local storage. Won't emit updates as not a flow!

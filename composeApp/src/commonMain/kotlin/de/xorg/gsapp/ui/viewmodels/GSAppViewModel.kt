@@ -25,8 +25,8 @@ import androidx.compose.runtime.setValue
 import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.data.exceptions.NoLocalDataException
 import de.xorg.gsapp.data.model.ComponentData
-import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.data.model.Filter
+import de.xorg.gsapp.data.model.Food
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
@@ -37,6 +37,8 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -45,6 +47,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
@@ -54,79 +57,27 @@ import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.reflect.KClass
+import kotlin.reflect.KSuspendFunction1
 
 /**
  * View model for the main app tabs
  */
-class GSAppViewModel : ViewModel(), KoinComponent {
-    private val appRepo: GSAppRepository by inject()
-    private val prefsRepo: PreferencesRepository by inject()
-    private val repoScope = CoroutineScope(Dispatchers.IO)
+open class GSAppViewModel : ViewModel(), KoinComponent {
+    protected val appRepo: GSAppRepository by inject()
+    protected val prefsRepo: PreferencesRepository by inject()
+    protected val repoScope = CoroutineScope(Dispatchers.IO)
+
+    private var _jobMap = mutableMapOf<String, Job>()
 
     var uiState by mutableStateOf(AppState())
         private set
 
-    private val _substitutionState =
-        MutableStateFlow<ComponentState<SubstitutionSet, Throwable>>(ComponentState.EmptyLocal)
-    val substitutionState: StateFlow<ComponentState<SubstitutionSet, Throwable>> =
-        _substitutionState
-    private val subFlow = combine(
-        appRepo.getSubstitutions(),
-        prefsRepo.getFilterFlow()
-    ) { subs, filter ->
-        if (filter.role == Filter.Role.ALL) return@combine subs
-        else subs.copy(
-            substitutions = subs.substitutions.mapValues { subsPerClass ->
-                subsPerClass.value.filter { aSub ->
-                    filter.substitutionMatches(aSub)
-                }
-            }.filter { subsPerClass ->
-                subsPerClass.value.isNotEmpty()
-            }
-        )
-    }
-
-
-    var examState = MutableStateFlow(ExamCourse.COURSE_11)
-
-
-    val foodFlow = appRepo.getFoodplan().shareIn(
-        viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        replay = 1
-    )
-
-
-    val examFlow = combine(
-        appRepo.getExams(),
-        examState
-    ) { exams, course ->
-        if (exams.isFailure) return@combine exams
-
-        val today: LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
-        return@combine Result.success(
-            exams.getOrNull()!!.filter { exam ->
-                exam.course == course && exam.date >= today
-            }
-        )
-    }.shareIn(
-        viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        replay = 1
-    )
-
     init {
         Napier.d { "GSAppViewModel init" }
-
-        initStateFromFlows()
-
-        Napier.d { "updating data..." }
-        updateExams()
-        updateFoodplan()
-        updateSubstitutions()
     }
 
-    private fun <T : ComponentData> initState(inputFlow: Flow<T>, targetState: MutableStateFlow<ComponentState<T, Throwable>>) {
+    protected fun <T> initState(inputFlow: Flow<T>, targetState: MutableStateFlow<ComponentState<T, Throwable>>) {
         viewModelScope.launch {
             inputFlow
                 .mapLatest {
@@ -137,37 +88,80 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                     }
                 }
                 .catch {
-                    targetState.value = ComponentState.Failed(it)
-                }
-                .collect {
+                    if(it is NoLocalDataException) {
+                        targetState.value = ComponentState.EmptyLocal
+                        return@catch
+                    }
                     val currentState = targetState.value
 
-                    targetState.value =
-                        if(it is ComponentState.Failed && currentState is ComponentState.Refreshing)
-                            ComponentState.RefreshingFailed(currentState.data, it.error)
-                        else it
+                    targetState.value = if(currentState is ComponentState.Refreshing)
+                        ComponentState.RefreshingFailed(currentState.data, it)
+                    else ComponentState.Failed(it)
+                }
+                .collect {
+                    targetState.value = it
                 }
         }
     }
 
-    fun refreshSubstitutions() {
-        viewModelScope.launch {
-            val currentState = substitutionState.value
+    protected fun <T> refresh(
+        refreshFunction: suspend ((Result<Boolean>) -> Unit) -> Unit,
+        targetState: MutableStateFlow<ComponentState<T, Throwable>>,
+        flowToRecoverFrom: Flow<T>
+    ) {
+        val className = targetState.value::class.simpleName ?: "generic"
+        if(_jobMap.containsKey(className)) _jobMap[className]?.cancel()
+        if(_jobMap.containsKey("${className}Ref")) _jobMap["${className}Ref"]?.cancel()
 
-            _substitutionState.value = when(currentState) {
-                is ComponentState.Normal -> ComponentState.Refreshing(currentState.data)
+        _jobMap[className] = viewModelScope.launch {
+            val pastState = targetState.value
+
+            // Enter the refreshing state when there is data to be displayed
+            targetState.value = when(pastState) {
+                is ComponentState.StateWithData -> ComponentState.Refreshing(pastState.data)
                 else -> ComponentState.Loading
             }
 
+            refreshFunction {
+                it.onFailure { exception ->
+                    targetState.value = ComponentState.Failed(exception)
+                }.onSuccess { haveNewData ->
+                    /* If there is no new data, ensure we don't stay in a refreshing state, but
+                     * revert to the NormalState with the existing data. */
+                    if (!haveNewData) targetState.value = when (pastState) {
+                        is ComponentState.Refreshing -> ComponentState.Normal(pastState.data)
+                        is ComponentState.RefreshingFailed<T, *> -> ComponentState.Normal(pastState.data)
+                        else -> pastState
+                    }
 
+                    // If there is new data, the state will be updated by the flow.
+                }
 
-            if(substitutionState.value is ComponentState.Normal) {
-                _substitutionState.value = ComponentState.Refreshing(substitutionState.value.data)
+                /* Ensure that the app does not get stuck in a loading state, and also
+                 * make sure this check get's cancelled when the user presses reload (again). */
+                _jobMap["${className}Ref"] = viewModelScope.launch {
+                    delay(5000L)
+
+                    // Ensure we don't stay in a loading state for more than 5 seconds
+                    // after we've received a response from the server
+                    if (targetState.value is ComponentState.Loading ||
+                        targetState.value is ComponentState.Refreshing ||
+                        targetState.value is ComponentState.RefreshingFailed<T, *>
+                    ) {
+                        targetState.value = flowToRecoverFrom
+                            .lastOrNull()?.let { localPlan ->
+                                if (localPlan.isEmpty())
+                                    ComponentState.Empty
+                                else
+                                    ComponentState.Normal(localPlan)
+                            } ?: ComponentState.EmptyLocal
+                    }
+                }
             }
         }
     }
 
-    private fun initStateFromFlows() {
+    /*private fun initStateFromFlows() {
         viewModelScope.launch {
             subFlow.collect {
                 uiState = if (it.isFailure) {
@@ -271,7 +265,7 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                 }
             }
         }
-    }
+    }*/
 
     private fun updateSubjects(force: Boolean = false) {
         repoScope.launch {
@@ -285,43 +279,12 @@ class GSAppViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    fun updateSubstitutions() {
-        Napier.d { "updating substitutions started" }
-        uiState = if (uiState.substitutionState == UiState.NORMAL)
-            uiState.copy(substitutionState = UiState.NORMAL_LOADING)
-        else uiState.copy(substitutionState = UiState.LOADING)
 
-        repoScope.launch {
-            appRepo.updateSubstitutions {
-                if (it.isFailure) {
-                    Napier.w { "failed to update substitution plan: ${it.exceptionOrNull()}" }
-                    uiState = if (uiState.substitutionState == UiState.NORMAL_LOADING ||
-                        uiState.substitutionState == UiState.NORMAL
-                    ) {
-                        uiState.copy(
-                            substitutionState = UiState.NORMAL_FAILED,
-                            substitutionError = it.exceptionOrNull()!!
-                        )
-                    } else {
-                        uiState.copy(
-                            substitutionState = UiState.FAILED,
-                            substitutionError = it.exceptionOrNull()!!
-                        )
-                    }
-                } else {
-                    if (it.getOrNull() == false) {
-                        //TODO: Notify user of "no new data available"
-                        uiState = uiState.copy(substitutionState = UiState.NORMAL)
-                        Napier.d { "No new data available (substitution plan)!" }
-                    } else {
-                        Napier.d { "New substitution data available!" }
-                    }
-                }
-            }
-        }
-    }
 
-    fun updateFoodplan() {
+
+
+
+    /*{
         uiState = if (uiState.foodplanState == UiState.NORMAL)
             uiState.copy(foodplanState = UiState.NORMAL_LOADING)
         else uiState.copy(foodplanState = UiState.LOADING)
@@ -354,9 +317,9 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                 }
             }
         }
-    }
+    }*/
 
-    fun updateExams() {
+    /*fun updateExams() {
         uiState = if (uiState.examState == UiState.NORMAL)
             uiState.copy(examState = UiState.NORMAL_LOADING)
         else uiState.copy(examState = UiState.LOADING)
@@ -389,12 +352,15 @@ class GSAppViewModel : ViewModel(), KoinComponent {
                 }
             }
         }
-    }
+    }*/
 
-    fun toggleCourse() {
-        examState.value = when (examState.value) {
-            ExamCourse.COURSE_11 -> ExamCourse.COURSE_12
-            ExamCourse.COURSE_12 -> ExamCourse.COURSE_11
-        }
+
+}
+
+private fun <MapOrList> MapOrList.isEmpty(): Boolean {
+    return when(this) {
+        is Map<*,*> -> this.isEmpty()
+        is List<*> -> this.isEmpty()
+        else -> false
     }
 }

@@ -80,7 +80,7 @@ interface LocalDataSource {
      * Will return a NoLocalDataException if no local data is available.
      * @return Flow<Result<Map<LocalDate, List<Food>>>>
      */
-    fun getFoodMapFlow(): Flow<Result<Map<LocalDate, List<Food>>>>
+    fun getFoodMapFlow(): Flow<Map<LocalDate, List<Food>>>
 
     /**
      * Returns a flow for foods for the given date from local storage.
@@ -127,7 +127,7 @@ interface LocalDataSource {
      * Will return empty map if no local data is available.
      * @return Flow<Result<Map<String, String>>> List of additives
      */
-    fun getAdditivesFlow(): Flow<Result<Map<String, String>>>
+    fun getAdditivesFlow(): Flow<Map<String, String>>
 
     /**
      * Adds new additives to local storage.
@@ -141,7 +141,7 @@ interface LocalDataSource {
      * Will return a NoLocalDataException if no local data is available.
      * @return Flow<Result<List<Exam>>> List of exams
      */
-    fun getExamsFlow(): Flow<Result<List<Exam>>>
+    fun getExamsFlow(): Flow<List<Exam>>
 
     /**
      * Returns the latest exams from local storage. Won't emit updates as not a flow!

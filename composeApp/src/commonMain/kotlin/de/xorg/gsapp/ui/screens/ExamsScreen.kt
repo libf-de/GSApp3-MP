@@ -56,18 +56,18 @@ import de.xorg.gsapp.ui.components.ExamCard
 import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
 import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
-import de.xorg.gsapp.ui.state.UiState
+import de.xorg.gsapp.ui.state.ComponentState
 import de.xorg.gsapp.ui.state.isLoading
 import de.xorg.gsapp.ui.tools.DateUtil
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
-import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
+import de.xorg.gsapp.ui.viewmodels.ExamPlanViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
-import org.koin.compose.koinInject
 
 /**
  * The exam plan-tab composable
@@ -77,14 +77,14 @@ import org.koin.compose.koinInject
 fun ExamsScreen(
     navController: Navigator
 ) {
-    //val viewModel: GSAppViewModel = koinViewModel(vmClass = GSAppViewModel::class)
-    val viewModel: GSAppViewModel = koinInject()
+    val viewModel: ExamPlanViewModel = koinViewModel(vmClass = ExamPlanViewModel::class)
+    //val viewModel: GSAppViewModel = koinInject()
 
-    val exams by viewModel.examFlow.collectAsStateWithLifecycle(
-        Result.success(emptyList())
+    val examState by viewModel.examState.collectAsStateWithLifecycle(
+        ComponentState.EmptyLocal
     )
 
-    val course by viewModel.examState.collectAsStateWithLifecycle(
+    val course by viewModel.courseState.collectAsStateWithLifecycle(
         ExamCourse.default
     )
 
@@ -135,16 +135,14 @@ fun ExamsScreen(
             }
         }
     ) { innerPadding ->
-        when(viewModel.uiState.examState) {
-            UiState.NORMAL,
-            UiState.NORMAL_LOADING,
-            UiState.NORMAL_FAILED -> {
+        when(val exams = examState) {
+            is ComponentState.StateWithData -> {
                 LazyColumn(
                     modifier = Modifier
                         .padding(innerPadding)
                         .windowSizeMargins(windowSizeClass)
                 ) {
-                    (exams.getOrNull() ?: emptyList())
+                    exams.data
                         .groupBy { it.date }
                         .forEach {
                             item {
@@ -168,17 +166,17 @@ fun ExamsScreen(
                 }
             }
 
-            UiState.LOADING -> {
+            is ComponentState.Loading -> {
                 LoadingComponent(modifier = Modifier.fillMaxSize())
             }
 
-            UiState.EMPTY_LOCAL -> {
+            is ComponentState.EmptyLocal -> {
                 EmptyLocalComponent(
                     where = MR.strings.tab_exams
                 )
             }
 
-            UiState.EMPTY -> {
+            is ComponentState.Empty -> {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -191,9 +189,9 @@ fun ExamsScreen(
                 }
             }
 
-            UiState.FAILED -> {
+            is ComponentState.Failed -> {
                 FailedComponent(
-                    exception = viewModel.uiState.examError,
+                    exception = exams.error,
                     where = MR.strings.tab_exams,
                     modifier = Modifier
                         .fillMaxSize()

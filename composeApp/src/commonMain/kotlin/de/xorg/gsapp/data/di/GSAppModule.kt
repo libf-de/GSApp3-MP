@@ -31,16 +31,16 @@ import de.xorg.gsapp.data.sources.defaults.DefaultsDataSource
 import de.xorg.gsapp.data.sources.defaults.GsDefaultsSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
 import de.xorg.gsapp.data.sources.local.SqldelightDataSource
-import de.xorg.gsapp.data.sources.remote.DebugDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
 import de.xorg.gsapp.data.sources.remote.WebsiteDataSource
 import de.xorg.gsapp.data.sql.GsAppDatabase
 import de.xorg.gsapp.data.sql_adapters.ColorAdapter
 import de.xorg.gsapp.data.sql_adapters.CommaSeparatedListAdapter
 import de.xorg.gsapp.data.sql_adapters.DateAdapter
-import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
+import de.xorg.gsapp.ui.viewmodels.ExamPlanViewModel
+import de.xorg.gsapp.ui.viewmodels.FoodplanViewModel
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
-import org.koin.core.module.Module
+import de.xorg.gsapp.ui.viewmodels.SubstitutionPlanViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -79,6 +79,9 @@ val preferencesRepositoryModule = module {
 }
 
 val commonModule = module {
-    singleOf(::GSAppViewModel)
+    factory { SubstitutionPlanViewModel() }
+    factory { FoodplanViewModel() }
+    factory { ExamPlanViewModel() }
+
     singleOf(::SettingsViewModel)
 }

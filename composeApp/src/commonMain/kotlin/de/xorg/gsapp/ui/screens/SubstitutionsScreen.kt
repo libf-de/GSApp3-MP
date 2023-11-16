@@ -18,14 +18,8 @@
 
 package de.xorg.gsapp.ui.screens
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.Refresh
@@ -33,7 +27,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -43,9 +36,6 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -58,23 +48,23 @@ import de.xorg.gsapp.ui.components.SubstitutionCard
 import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
 import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
+import de.xorg.gsapp.ui.state.ComponentState
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.state.isLoading
-import de.xorg.gsapp.ui.state.isNormal
-import de.xorg.gsapp.ui.tools.DateUtil
 import de.xorg.gsapp.ui.tools.DateUtil.Companion.getWeekdayLongRes
 import de.xorg.gsapp.ui.tools.PlatformInterface
 import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
-import de.xorg.gsapp.ui.tools.platformSpecificScrollBehavior
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
-import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
+import de.xorg.gsapp.ui.viewmodels.SubstitutionPlanViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.datetime.LocalDate
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.compose.koinInject
+import androidx.compose.foundation.lazy.items
 
 
 
@@ -86,20 +76,14 @@ import org.koin.compose.koinInject
 fun SubstitutionsScreen(
     navController: Navigator
 ) {
-    //val viewModel: GSAppViewModel = koinViewModel(vmClass = GSAppViewModel::class)
-    val viewModel: GSAppViewModel = koinInject()
+    val viewModel: SubstitutionPlanViewModel = koinViewModel(vmClass = SubstitutionPlanViewModel::class)
+    //val viewModel: GSAppViewModel = koinInject()
     val windowSizeClass = calculateWindowSizeClass()
 
-    /*val infiniteTransition = rememberInfiniteTransition()
-    val angle by infiniteTransition.animateFloat(
-        initialValue = 0F,
-        targetValue = 360F,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing)
-        )
-    )*/
+    val subState by viewModel.substitutionState.collectAsStateWithLifecycle(
+        ComponentState.EmptyLocal
+    )
 
-    val sds by viewModel.subFlow.collectAsStateWithLifecycle(Result.success(SubstitutionSet.EMPTY))
     var isFirst = false
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -123,11 +107,11 @@ fun SubstitutionsScreen(
                             style = MaterialTheme.typography.headlineMedium
                         )
 
-                        if(viewModel.uiState.substitutionState.isNormal() && sds.getOrNull() != null) {
+                        subState.whenDataAvailable { data ->
                             Text(
                                 text = stringResource(
                                     MR.strings.subplan_date_header_for,
-                                    sds.getOrDefault(SubstitutionSet.EMPTY).dateStr
+                                    data.dateStr
                                 ),
                                 fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
                                 style = MaterialTheme.typography.titleSmall
@@ -156,27 +140,25 @@ fun SubstitutionsScreen(
             )
         }
     ) { innerPadding ->
-        when(viewModel.uiState.substitutionState) {
-            UiState.NORMAL,
-            UiState.NORMAL_LOADING,
-            UiState.NORMAL_FAILED -> {
+        when(val sds = subState) {
+            // StateWithData = Normal, Refreshing, RefreshingFailed
+            is ComponentState.StateWithData -> {
                 LazyColumn(
                     modifier = Modifier
                         .padding(innerPadding)
                         .windowSizeMargins(windowSizeClass)
                 ) {
-                    val notes = sds.getOrDefault(SubstitutionSet.EMPTY).notes
-                    if(notes.isNotBlank()) {
+                    if(sds.data.notes.isNotBlank()) {
                         item {
                             NoteCard(
-                                text = notes,
+                                text = sds.data.notes,
                                 modifier = Modifier
                                     .fillMaxWidth()
                             )
                         }
                     }
 
-                    sds.getOrDefault(SubstitutionSet.EMPTY)
+                    sds.data
                         .substitutions
                         .forEach {
                             item {
@@ -199,7 +181,7 @@ fun SubstitutionsScreen(
                 }
             }
 
-            UiState.LOADING -> {
+            is ComponentState.Loading -> {
                 LoadingComponent(
                     modifier = Modifier
                         .fillMaxSize()
@@ -207,7 +189,7 @@ fun SubstitutionsScreen(
                 )
             }
 
-            UiState.EMPTY -> {
+            is ComponentState.Empty -> {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -220,16 +202,16 @@ fun SubstitutionsScreen(
                 }
             }
 
-            UiState.EMPTY_LOCAL -> {
+            is ComponentState.EmptyLocal -> {
                 EmptyLocalComponent(
                     where = MR.strings.tab_substitutions,
                     windowSizeClass = windowSizeClass
                 )
             }
 
-            UiState.FAILED -> {
+            is ComponentState.Failed -> {
                 FailedComponent(
-                    exception = viewModel.uiState.substitutionError,
+                    exception = sds.error,
                     where = MR.strings.tab_substitutions,
                     modifier = Modifier
                         .fillMaxSize()

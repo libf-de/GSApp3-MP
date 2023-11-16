@@ -43,11 +43,12 @@ import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.tools.DateUtil
 import dev.icerock.moko.resources.desc.desc
 import dev.icerock.moko.resources.format
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -145,13 +146,17 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
             if (it.isSuccess) {
                 // Update was successful -> show preview in notification
                 scope.launch {
-                    appRepository.getSubstitutions().collectLatest { subSet ->
-                        postSubstitutionNotification(
-                            context = this@GSAppFirebaseMessagingService,
-                            substitutionSet = subSet.getOrNull(),
-                            filter = filter
-                        )
-                    }
+                    appRepository.getSubstitutions()
+                        .catch { e ->
+                            Napier.w("Failed to get substitutions", e)
+                        }
+                        .collectLatest { subSet ->
+                            postSubstitutionNotification(
+                                context = this@GSAppFirebaseMessagingService,
+                                substitutionSet = subSet,
+                                filter = filter
+                            )
+                        }
                 }
             } else {
                 postSubstitutionNotification(context = this@GSAppFirebaseMessagingService)

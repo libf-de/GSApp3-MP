@@ -41,7 +41,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
@@ -49,7 +48,6 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -70,41 +68,39 @@ import de.xorg.gsapp.ui.components.FoodplanCard
 import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
 import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
+import de.xorg.gsapp.ui.state.ComponentState
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.state.isLoading
 import de.xorg.gsapp.ui.tools.DateUtil
-import de.xorg.gsapp.ui.tools.PlatformInterface
 import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
 import de.xorg.gsapp.ui.tools.SupportTopAppBarDefaults
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
-import de.xorg.gsapp.ui.viewmodels.GSAppViewModel
+import de.xorg.gsapp.ui.viewmodels.FoodplanViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.stringResource
-import getPlatformName
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
-import org.koin.compose.koinInject
 
 /**
  * The foodplan-tab composable
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalCoroutinesApi::class
+    ExperimentalMaterial3WindowSizeClassApi::class
 )
 @Composable
 fun FoodplanScreen(
     navController: Navigator
 ) {
-    //val viewModel: GSAppViewModel = koinViewModel(vmClass = GSAppViewModel::class)
-    val viewModel: GSAppViewModel = koinInject()
+    val viewModel: FoodplanViewModel = koinViewModel(vmClass = FoodplanViewModel::class)
+    //val viewModel: GSAppViewModel = koinInject()
 
     val windowSizeClass = calculateWindowSizeClass()
 
@@ -113,13 +109,15 @@ fun FoodplanScreen(
         rememberTopAppBarState()
     )
 
-    val foodplan by viewModel.foodFlow
-        .mapLatest { it.getOrDefault(emptyMap()) }
-        .collectAsStateWithLifecycle(emptyMap())
+    val foodplanState by viewModel.foodplanState.collectAsStateWithLifecycle()
 
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-    val todayIndex = if(foodplan.keys.contains(today)) foodplan.keys.indexOf(today) else 0
-    val pagerState = rememberPagerState(initialPage = todayIndex) { foodplan.size }
+    val todayIndex = if(foodplanState.dataOrDefault(emptyMap()).keys.contains(today))
+                        foodplanState.dataOrDefault(emptyMap()).keys.indexOf(today)
+                     else 0
+    val pagerState = rememberPagerState(initialPage = todayIndex) {
+        foodplanState.dataOrDefault(emptyMap()).size
+    }
     var currentPageIndex by remember { mutableStateOf(todayIndex) }
 
     var appBarColor by remember { mutableStateOf(Color.Transparent) }
@@ -179,10 +177,8 @@ fun FoodplanScreen(
             )
         }
     ) { innerPadding ->
-        when(viewModel.uiState.foodplanState) {
-            UiState.NORMAL,
-            UiState.NORMAL_FAILED,
-            UiState.NORMAL_LOADING -> {
+        when(val foodplan = foodplanState) {
+            is ComponentState.StateWithData -> {
                 LazyColumn(
                     modifier = Modifier
                         .padding(innerPadding),
@@ -207,7 +203,7 @@ fun FoodplanScreen(
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                foodplan.entries.forEachIndexed { index, entry ->
+                                foodplan.data.entries.forEachIndexed { index, entry ->
                                     Tab(
                                         modifier = Modifier.wrapContentWidth(),
                                         text = {
@@ -241,13 +237,13 @@ fun FoodplanScreen(
                                     ),
                                 verticalArrangement = Arrangement.Top
                             ) {
-                                if(page >= foodplan.size) {
+                                if(page >= foodplan.data.size) {
                                     Text("Fehler: aktuelle Seite ist nicht im Speiseplan enthalten :/")
                                     return@Column
                                 }
 
                                 var foodNum = 0
-                                val todayFoods = foodplan.values.toList()[page]
+                                val todayFoods = foodplan.data.values.toList()[page]
 
                                 todayFoods.forEach {
                                     val color = Color.hsl(
@@ -273,7 +269,7 @@ fun FoodplanScreen(
                 }
             }
 
-            UiState.EMPTY -> {
+            is ComponentState.Empty -> {
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -287,20 +283,20 @@ fun FoodplanScreen(
                 }
             }
 
-            UiState.EMPTY_LOCAL -> {
+            is ComponentState.EmptyLocal -> {
                 EmptyLocalComponent(
                     where = MR.strings.tab_foodplan,
                     windowSizeClass = windowSizeClass
                 )
             }
 
-            UiState.LOADING -> {
+            is ComponentState.Loading -> {
                 LoadingComponent(modifier = Modifier.fillMaxSize())
             }
 
-            UiState.FAILED -> {
+            is ComponentState.Failed -> {
                 FailedComponent(
-                    exception = viewModel.uiState.foodplanError,
+                    exception = foodplan.error,
                     where = MR.strings.tab_foodplan,
                     modifier = Modifier
                         .fillMaxSize()
@@ -308,5 +304,12 @@ fun FoodplanScreen(
                 )
             }
         }
+    }
+}
+
+private fun <T, E : Throwable> ComponentState<T, E>.dataOrDefault(default: T): T {
+    return when(this) {
+        is ComponentState.Normal -> data
+        else -> default
     }
 }

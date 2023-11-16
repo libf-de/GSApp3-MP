@@ -92,8 +92,7 @@ class AppRepository : GSAppRepository, KoinComponent {
     private val localDataSource: LocalDataSource by inject()
     private val defaultsDataSource: DefaultsDataSource by inject()
 
-    override fun getSubstitutions(): Flow<SubstitutionSet>
-        = localDataSource.getSubstitutionPlanFlow()
+    override fun getSubstitutions(): Flow<SubstitutionSet> = localDataSource.getSubstitutionPlanFlow()
 
     override suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit) {
         Napier.d { "updateSubstitutions in AppRepository" }
@@ -140,18 +139,12 @@ class AppRepository : GSAppRepository, KoinComponent {
         }
     }
 
-    override fun getFoodplan(): Flow<Result<Map<LocalDate, List<Food>>>>
-    = combine(localDataSource.getFoodMapFlow(), localDataSource.getAdditivesFlow()) { food, ad ->
-        if(food.isFailure || ad.isFailure) return@combine food
-
-        val adMap = ad.getOrNull()!!
-        food.mapCatching { outerMap ->
-            outerMap.mapValues { foodMap ->
-                foodMap.value.map { foodEntry ->
-                    foodEntry.copy(
-                        additives = foodEntry.additives.map { adShort -> adMap[adShort] ?: adShort }
-                    )
-                }
+    override fun getFoodplan(): Flow<Map<LocalDate, List<Food>>> = combine(localDataSource.getFoodMapFlow(), localDataSource.getAdditivesFlow()) { food, ad ->
+        food.mapValues { foodMap ->
+            foodMap.value.map { foodEntry ->
+                foodEntry.copy(
+                    additives = foodEntry.additives.map { adShort -> ad[adShort] ?: adShort }
+                )
             }
         }
     }
@@ -204,7 +197,7 @@ class AppRepository : GSAppRepository, KoinComponent {
         }
     }
 
-    override fun getExams(): Flow<Result<List<Exam>>> = localDataSource.getExamsFlow()
+    override fun getExams(): Flow<List<Exam>> = localDataSource.getExamsFlow()
 
     override suspend fun updateExams(callback: (Result<Boolean>) -> Unit) {
         try {
