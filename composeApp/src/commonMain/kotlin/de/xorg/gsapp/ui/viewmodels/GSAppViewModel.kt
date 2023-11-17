@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.lastOrNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
@@ -81,7 +82,7 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
      * @param inputFlow The input flow
      * @param targetState The state flow to update
      */
-    protected fun <T> initState(inputFlow: Flow<T>, targetState: MutableStateFlow<ComponentState<T, Throwable>>) {
+    protected fun <T, E : Throwable> initState(inputFlow: Flow<T>, targetState: MutableStateFlow<ComponentState<T, E>>) {
         viewModelScope.launch {
             Napier.d { "initState" }
             inputFlow
@@ -90,18 +91,28 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
                         ComponentState.Empty
                     } else {
                         ComponentState.Normal(it)
-                    }
-                }/* This is a problem - if catch gets active, the flow isn't collected */
+                    } as ComponentState<T, E>
+                    // Although Android Studio claims this cast is unnecessary, it is necessary as
+                    // otherwise the flow will be of type ComponentState<T, Nothing>, which makes it
+                    // impossible to emit ComponentState.Failed in the catch block.
+                }
+                .onEach {
+                    Napier.d { "GSAppViewModel: New state: $it" }
+                }
                 .catch {
                     if(it is NoLocalDataException) {
-                        targetState.value = ComponentState.EmptyLocal
+                        emit(ComponentState.EmptyLocal)
                         return@catch
                     }
                     val currentState = targetState.value
 
-                    targetState.value = if(currentState is ComponentState.Refreshing)
-                        ComponentState.RefreshingFailed(currentState.data, it)
-                    else ComponentState.Failed(it)
+                    if(currentState is ComponentState.Refreshing)
+                        emit(ComponentState.RefreshingFailed(currentState.data, it))
+                    else
+                        emit(ComponentState.Failed(it) as ComponentState<T, E>)
+                }
+                .onEach {
+
                 }
                 .collect {
                     targetState.value = it
