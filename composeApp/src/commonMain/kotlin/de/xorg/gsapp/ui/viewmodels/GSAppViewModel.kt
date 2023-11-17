@@ -22,43 +22,33 @@ package de.xorg.gsapp.ui.viewmodels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import de.xorg.gsapp.data.enums.ExamCourse
+import de.xorg.gsapp.LAUNCH_VERSION
+import de.xorg.gsapp.data.di.JOB_MAP
+import de.xorg.gsapp.data.exceptions.AppStuckInLoadingException
 import de.xorg.gsapp.data.exceptions.NoLocalDataException
-import de.xorg.gsapp.data.model.ComponentData
-import de.xorg.gsapp.data.model.Filter
-import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.AppState
 import de.xorg.gsapp.ui.state.ComponentState
-import de.xorg.gsapp.ui.state.UiState
+import de.xorg.gsapp.ui.tools.JobTool
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import kotlin.reflect.KClass
-import kotlin.reflect.KSuspendFunction1
+import org.koin.core.qualifier.named
 
 /**
  * View model for the main app tabs
@@ -68,15 +58,29 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
     protected val prefsRepo: PreferencesRepository by inject()
     protected val repoScope = CoroutineScope(Dispatchers.IO)
 
-    private var _jobMap = mutableMapOf<String, Job>()
+    protected val jobTool: JobTool by inject()
+
+    protected val jobMap: MutableMap<String, Job> by inject(qualifier = named(JOB_MAP))
 
     var uiState by mutableStateOf(AppState())
         private set
 
     init {
         Napier.d { "GSAppViewModel init" }
+
+        // Populate database with default values if necessary
+        jobTool.singletonIgnoringJob("dbDefaultsInit", viewModelScope) {
+            appRepo.handleUpdate(prefsRepo.getLaunchVersion())
+            prefsRepo.setLaunchVersion(LAUNCH_VERSION)
+        }
     }
 
+    /**
+     * Initializes a state flow from a given input flow.
+     * Should be used by the subclasses to initialize their state flows.
+     * @param inputFlow The input flow
+     * @param targetState The state flow to update
+     */
     protected fun <T> initState(inputFlow: Flow<T>, targetState: MutableStateFlow<ComponentState<T, Throwable>>) {
         viewModelScope.launch {
             inputFlow
@@ -100,20 +104,33 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
                 }
                 .collect {
                     targetState.value = it
+                    Napier.d { "GSAppViewModel: New state: $it" }
                 }
         }
     }
 
+    /**
+     * Refreshes a state flow from a given refresh function.
+     * Should be used by the subclasses to refresh their state flows.
+     * @param refreshFunction The refresh function
+     * @param targetState The state flow to update
+     * @param flowToRecoverFrom The flow to recover from if the refresh function fails (unused)
+     */
     protected fun <T> refresh(
-        refreshFunction: suspend ((Result<Boolean>) -> Unit) -> Unit,
+        refreshFunction: suspend ( suspend(Result<Boolean>) -> Unit) -> Unit,
         targetState: MutableStateFlow<ComponentState<T, Throwable>>,
         flowToRecoverFrom: Flow<T>
     ) {
         val className = targetState.value::class.simpleName ?: "generic"
-        if(_jobMap.containsKey(className)) _jobMap[className]?.cancel()
-        if(_jobMap.containsKey("${className}Ref")) _jobMap["${className}Ref"]?.cancel()
 
-        _jobMap[className] = viewModelScope.launch {
+        // Cancel existing "ensure not stuck in refreshing" job
+        jobTool.cancelJob("${className}Ref")
+
+        // Replace existing refresh job
+        jobTool.singletonReplacingJob(
+            jobName = className,
+            scope = viewModelScope
+        ) {
             val pastState = targetState.value
 
             // Enter the refreshing state when there is data to be displayed
@@ -129,6 +146,7 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
                     /* If there is no new data, ensure we don't stay in a refreshing state, but
                      * revert to the NormalState with the existing data. */
                     if (!haveNewData) targetState.value = when (pastState) {
+                        is ComponentState.Loading -> ComponentState.EmptyLocal /* Should not happen */
                         is ComponentState.Refreshing -> ComponentState.Normal(pastState.data)
                         is ComponentState.RefreshingFailed<T, *> -> ComponentState.Normal(pastState.data)
                         else -> pastState
@@ -137,9 +155,16 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
                     // If there is new data, the state will be updated by the flow.
                 }
 
+                //TODO: The only case this may happen is when there is new data, but the database
+                // doesn't emit it - so in theory should NEVER happen?
+
                 /* Ensure that the app does not get stuck in a loading state, and also
                  * make sure this check get's cancelled when the user presses reload (again). */
-                _jobMap["${className}Ref"] = viewModelScope.launch {
+                jobTool.singletonReplacingJob(
+                    jobName = "${className}Ref",
+                    scope = viewModelScope
+                ) {
+                    // Wait 5 seconds before checking if we're still in a loading state
                     delay(5000L)
 
                     // Ensure we don't stay in a loading state for more than 5 seconds
@@ -148,213 +173,20 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
                         targetState.value is ComponentState.Refreshing ||
                         targetState.value is ComponentState.RefreshingFailed<T, *>
                     ) {
-                        targetState.value = flowToRecoverFrom
+                        Napier.w { "App stuck in a loading state!" }
+                        targetState.value = ComponentState.Failed(AppStuckInLoadingException())
+                        /*targetState.value = flowToRecoverFrom
                             .lastOrNull()?.let { localPlan ->
                                 if (localPlan.isEmpty())
                                     ComponentState.Empty
                                 else
                                     ComponentState.Normal(localPlan)
-                            } ?: ComponentState.EmptyLocal
+                            } ?: ComponentState.EmptyLocal*/
                     }
                 }
             }
         }
     }
-
-    /*private fun initStateFromFlows() {
-        viewModelScope.launch {
-            subFlow.collect {
-                uiState = if (it.isFailure) {
-                    if (it.exceptionOrNull() is NoLocalDataException) {
-                        if (uiState.substitutionState == UiState.LOADING) {
-                            uiState.copy(substitutionState = UiState.LOADING)
-                        } else {
-                            uiState.copy(substitutionState = UiState.EMPTY_LOCAL)
-                        }
-                    } else {
-                        if (uiState.substitutionState == UiState.NORMAL_LOADING ||
-                            uiState.substitutionState == UiState.NORMAL
-                        ) {
-
-                            uiState.copy(
-                                substitutionState = UiState.NORMAL_FAILED,
-                                substitutionError = it.exceptionOrNull()!!
-                            )
-
-                        } else {
-                            uiState.copy(
-                                substitutionState = UiState.FAILED,
-                                substitutionError = it.exceptionOrNull()!!
-                            )
-                        }
-                    }
-                } else {
-                    if (it.getOrNull()!!.haveUnknownSubs)
-                        updateSubjects()
-
-                    if (it.getOrNull()!!.haveUnknownTeachers)
-                        updateTeachers()
-
-
-                    if (it.getOrNull()!!.substitutions.isEmpty()) {
-                        uiState.copy(substitutionState = UiState.EMPTY)
-                    } else {
-                        uiState.copy(substitutionState = UiState.NORMAL)
-                    }
-                }
-            }
-        }
-        viewModelScope.launch {
-            foodFlow.collect {
-                uiState = if (it.isFailure) {
-                    if (it.exceptionOrNull() is NoLocalDataException) {
-                        uiState.copy(foodplanState = UiState.EMPTY_LOCAL)
-                    } else {
-                        if (uiState.foodplanState == UiState.NORMAL_LOADING ||
-                            uiState.foodplanState == UiState.NORMAL
-                        ) {
-                            uiState.copy(
-                                foodplanState = UiState.NORMAL_FAILED,
-                                foodplanError = it.exceptionOrNull()!!
-                            )
-                        } else {
-                            uiState.copy(
-                                foodplanState = UiState.FAILED,
-                                foodplanError = it.exceptionOrNull()!!
-                            )
-                        }
-                    }
-                } else {
-                    if (it.getOrNull()!!.isEmpty()) {
-                        uiState.copy(foodplanState = UiState.EMPTY)
-                    } else {
-                        uiState.copy(foodplanState = UiState.NORMAL)
-                    }
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            examFlow.collect {
-                uiState = if (it.isFailure) {
-                    if (it.exceptionOrNull() is NoLocalDataException) {
-                        uiState.copy(examState = UiState.EMPTY_LOCAL)
-                    } else {
-                        if (uiState.examState == UiState.NORMAL_LOADING ||
-                            uiState.examState == UiState.NORMAL
-                        ) {
-
-                            uiState.copy(
-                                examState = UiState.NORMAL_FAILED,
-                                examError = it.exceptionOrNull()!!
-                            )
-
-                        } else {
-                            uiState.copy(
-                                examState = UiState.FAILED,
-                                examError = it.exceptionOrNull()!!
-                            )
-                        }
-                    }
-                } else {
-                    if (it.getOrNull()!!.isEmpty()) {
-                        uiState.copy(examState = UiState.EMPTY)
-                    } else {
-                        uiState.copy(examState = UiState.NORMAL)
-                    }
-                }
-            }
-        }
-    }*/
-
-    private fun updateSubjects(force: Boolean = false) {
-        repoScope.launch {
-            appRepo.updateSubjects { }
-        }
-    }
-
-    private fun updateTeachers() {
-        repoScope.launch {
-            appRepo.updateTeachers { }
-        }
-    }
-
-
-
-
-
-
-    /*{
-        uiState = if (uiState.foodplanState == UiState.NORMAL)
-            uiState.copy(foodplanState = UiState.NORMAL_LOADING)
-        else uiState.copy(foodplanState = UiState.LOADING)
-
-        repoScope.launch {
-            appRepo.updateFoodplan {
-                if (it.isFailure) {
-                    Napier.w { "failed to update foodplan: ${it.exceptionOrNull()}" }
-                    uiState = if (uiState.foodplanState == UiState.NORMAL_LOADING ||
-                        uiState.foodplanState == UiState.NORMAL
-                    ) {
-                        uiState.copy(
-                            foodplanState = UiState.NORMAL_FAILED,
-                            foodplanError = it.exceptionOrNull()!!
-                        )
-                    } else {
-                        uiState.copy(
-                            foodplanState = UiState.FAILED,
-                            foodplanError = it.exceptionOrNull()!!
-                        )
-                    }
-                } else {
-                    if (it.getOrNull() == false) {
-                        //TODO: Notify user of "no new data available"
-                        uiState = uiState.copy(foodplanState = UiState.NORMAL)
-                        Napier.d { "No new data available (foodplan)!" }
-                    } else {
-                        Napier.d { "New food data available!" }
-                    }
-                }
-            }
-        }
-    }*/
-
-    /*fun updateExams() {
-        uiState = if (uiState.examState == UiState.NORMAL)
-            uiState.copy(examState = UiState.NORMAL_LOADING)
-        else uiState.copy(examState = UiState.LOADING)
-
-        repoScope.launch {
-            appRepo.updateExams {
-                if (it.isFailure) {
-                    Napier.w { "failed to update exams: ${it.exceptionOrNull()}" }
-                    uiState = if (uiState.examState == UiState.NORMAL_LOADING ||
-                        uiState.examState == UiState.NORMAL
-                    ) {
-                        uiState.copy(
-                            examState = UiState.NORMAL_FAILED,
-                            examError = it.exceptionOrNull()!!
-                        )
-                    } else {
-                        uiState.copy(
-                            examState = UiState.FAILED,
-                            examError = it.exceptionOrNull()!!
-                        )
-                    }
-                } else {
-                    if (it.getOrNull() == false) {
-                        //TODO: Notify user of "no new data available"
-                        uiState = uiState.copy(examState = UiState.NORMAL)
-                        Napier.d { "No new data available (exam)!" }
-                    } else {
-                        Napier.d { "New exam data available!" }
-                    }
-                }
-            }
-        }
-    }*/
-
-
 }
 
 private fun <MapOrList> MapOrList.isEmpty(): Boolean {

@@ -53,6 +53,8 @@ import moe.tlaster.precompose.navigation.rememberNavigator
 import moe.tlaster.precompose.navigation.transition.NavTransition
 import org.koin.compose.KoinContext
 
+const val LAUNCH_VERSION = 1
+
 /**
  * This is the app main-common-entry composable, that applies the theme and mainly consists
  * of a hideable bottom bar and a NavHost, which navigates to the different app screens.

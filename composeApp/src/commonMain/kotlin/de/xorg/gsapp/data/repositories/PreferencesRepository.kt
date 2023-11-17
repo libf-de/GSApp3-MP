@@ -66,4 +66,11 @@ interface PreferencesRepository {
     suspend fun getAskUserForNotificationPermission(): Boolean
     suspend fun setAskUserForNotificationPermission(value: Boolean)
     suspend fun observeAskUserForNotificationPermission(callback: (Boolean) -> Unit): SettingsListener?
+
+    fun getLaunchVersionFlow(): Flow<Int>
+    suspend fun getLaunchVersion(): Int
+    suspend fun setLaunchVersion(value: Int)
+
+    suspend fun getDatabaseDefaultsVersion(): Int
+    suspend fun setDatabaseDefaultsVersion(value: Int)
 }

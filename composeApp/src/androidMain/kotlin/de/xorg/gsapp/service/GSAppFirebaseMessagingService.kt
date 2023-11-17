@@ -145,19 +145,17 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
         appRepository.updateSubstitutions {
             if (it.isSuccess) {
                 // Update was successful -> show preview in notification
-                scope.launch {
-                    appRepository.getSubstitutions()
-                        .catch { e ->
-                            Napier.w("Failed to get substitutions", e)
-                        }
-                        .collectLatest { subSet ->
-                            postSubstitutionNotification(
-                                context = this@GSAppFirebaseMessagingService,
-                                substitutionSet = subSet,
-                                filter = filter
-                            )
-                        }
-                }
+                appRepository.getSubstitutions()
+                    .catch { e ->
+                        Napier.w("Failed to get substitutions", e)
+                    }
+                    .collectLatest { subSet ->
+                        postSubstitutionNotification(
+                            context = this@GSAppFirebaseMessagingService,
+                            substitutionSet = subSet,
+                            filter = filter
+                        )
+                    }
             } else {
                 postSubstitutionNotification(context = this@GSAppFirebaseMessagingService)
             }

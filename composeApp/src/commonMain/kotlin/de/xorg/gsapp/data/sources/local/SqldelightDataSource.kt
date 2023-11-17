@@ -367,6 +367,14 @@ class SqldelightDataSource : LocalDataSource, KoinComponent {
         }
     }
 
+    override suspend fun getAllTeachersShorts(): Result<List<String>> {
+        return try {
+            Result.success(database.dbTeacherQueries.selectAllShorts().executeAsList())
+        } catch(ex: Exception) {
+            Result.failure(ex)
+        }
+    }
+
 
     /**
      * Returns a flow for the list of teachers from local storage.

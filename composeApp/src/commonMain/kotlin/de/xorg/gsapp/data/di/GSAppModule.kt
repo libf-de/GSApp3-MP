@@ -37,16 +37,27 @@ import de.xorg.gsapp.data.sql.GsAppDatabase
 import de.xorg.gsapp.data.sql_adapters.ColorAdapter
 import de.xorg.gsapp.data.sql_adapters.CommaSeparatedListAdapter
 import de.xorg.gsapp.data.sql_adapters.DateAdapter
+import de.xorg.gsapp.ui.tools.JobTool
 import de.xorg.gsapp.ui.viewmodels.ExamPlanViewModel
 import de.xorg.gsapp.ui.viewmodels.FoodplanViewModel
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
 import de.xorg.gsapp.ui.viewmodels.SubstitutionPlanViewModel
+import kotlinx.coroutines.Job
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
+
+const val JOB_MAP = "jobMap"
 
 fun appModule() = listOf(dataRepositoryModule, preferencesRepositoryModule, commonModule)
 
 val dataRepositoryModule = module {
+    single<MutableMap<String, Job>>(named(JOB_MAP)) {
+        mutableMapOf()
+    }
+
+    single { JobTool() }
+
     single {
         GsAppDatabase(
             driver = get(),

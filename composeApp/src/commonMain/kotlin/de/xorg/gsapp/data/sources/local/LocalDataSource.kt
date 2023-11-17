@@ -224,6 +224,12 @@ interface LocalDataSource {
     suspend fun countSubjects(): Result<Long>
 
     /**
+     * Returns a list of teachers' short codes from local storage.
+     * @return List<String> List of teachers' short codes
+     */
+    suspend fun getAllTeachersShorts(): Result<List<String>>
+
+    /**
      * Returns a flow for the list of teachers from local storage.
      * @return Flow<Result<List<Teacher>>> List of teachers
      */

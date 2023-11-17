@@ -38,6 +38,8 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
         const val FilterValue = "filter"
         const val PushState = "push"
         const val AskNotifyPermission = "askNotifyPermission"
+        const val LaunchVersion = "launchVersion"
+        const val DatabaseDefaultsVersion = "databaseDefaultsVersion"
     }
 
     private val appSettings: FlowSettings by inject()
@@ -210,5 +212,46 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
         return settings.addBooleanListener(PrefKeys.AskNotifyPermission, false) {
             callback(it)
         }
+    }
+
+    /** LaunchVersion - used to determine whether to show onboarding screens and to fill
+     * the Database with default values. **/
+
+    /**
+     * Returns a flow for launch version from settings.
+     * @return Flow<Int>
+     */
+    override fun getLaunchVersionFlow(): Flow<Int> = appSettings.getIntFlow(PrefKeys.LaunchVersion, 0)
+
+    /**
+     * Returns the launch version from settings.
+     * @return Int
+     */
+    override suspend fun getLaunchVersion(): Int {
+        return appSettings.getInt(PrefKeys.LaunchVersion, 0)
+    }
+
+    /**
+     * Stores the launch version in settings.
+     * @param value Int
+     */
+    override suspend fun setLaunchVersion(value: Int) {
+        appSettings.putInt(PrefKeys.LaunchVersion, value)
+    }
+
+    /**
+     * Returns the database defaults version from settings.
+     * @return Int
+     */
+    override suspend fun getDatabaseDefaultsVersion(): Int {
+        return appSettings.getInt(PrefKeys.DatabaseDefaultsVersion, 0)
+    }
+
+    /**
+     * Stores the database defaults version in settings.
+     * @param value Int
+     */
+    override suspend fun setDatabaseDefaultsVersion(value: Int) {
+        appSettings.putInt(PrefKeys.DatabaseDefaultsVersion, value)
     }
 }

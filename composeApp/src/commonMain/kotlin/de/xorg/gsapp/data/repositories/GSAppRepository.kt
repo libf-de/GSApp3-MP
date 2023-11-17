@@ -42,25 +42,31 @@ import kotlinx.datetime.LocalDate
  */
 
 interface GSAppRepository {
+    /**
+     * Fill the database with default values if that's necessary after an update.
+     *
+     */
+    suspend fun handleUpdate(dbDefaultsVersion: Int)
+
     fun getSubstitutions(): Flow<SubstitutionSet>
-    suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit)
+    suspend fun updateSubstitutions(callback: suspend (Result<Boolean>) -> Unit = {})
 
     //Could switch to separate datelist + query foods per date?
     fun getFoodplan(): Flow<Map<LocalDate, List<Food>>>
-    suspend fun updateFoodplan(callback: (Result<Boolean>) -> Unit)
+    suspend fun updateFoodplan(callback: suspend (Result<Boolean>) -> Unit = {})
 
     fun getExams(): Flow<List<Exam>>
-    suspend fun updateExams(callback: (Result<Boolean>) -> Unit)
+    suspend fun updateExams(callback: suspend (Result<Boolean>) -> Unit = {})
     // No Create, Update and Delete functions, as above types are not user-editable.
 
     fun getTeachers(): Flow<Result<List<Teacher>>>
-    suspend fun updateTeachers(callback: (Result<Boolean>) -> Unit)
+    suspend fun updateTeachers(callback: suspend (Result<Boolean>) -> Unit = {})
     suspend fun addTeacher(value: Teacher): Result<Boolean>
     suspend fun editTeacher(oldTea: Teacher, newLongName: String): Result<Teacher>
     suspend fun deleteTeacher(value: Teacher): Result<Boolean>
 
     fun getSubjects(): Flow<Result<List<Subject>>>
-    suspend fun updateSubjects(force: Boolean = false, callback: (Result<Boolean>) -> Unit) //stub as currently subjects are not fetched from remote
+    suspend fun updateSubjects(force: Boolean = false, callback: suspend (Result<Boolean>) -> Unit = {}) //stub as currently subjects are not fetched from remote
     suspend fun addSubject(value: Subject): Result<Boolean>
     suspend fun deleteSubject(value: Subject): Result<Boolean>
     suspend fun resetSubjects(): Result<Boolean>

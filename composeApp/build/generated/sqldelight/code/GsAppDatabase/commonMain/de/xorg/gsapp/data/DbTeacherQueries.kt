@@ -27,6 +27,11 @@ public class DbTeacherQueries(
     )
   }
 
+  public fun selectAllShorts(): Query<String> = Query(981_799_468, arrayOf("DbTeacher"), driver,
+      "DbTeacher.sq", "selectAllShorts", "SELECT shortName FROM DbTeacher") { cursor ->
+    cursor.getString(0)!!
+  }
+
   public fun <T : Any> selectByShort(shortName: String, mapper: (shortName: String,
       longName: String) -> T): Query<T> = SelectByShortQuery(shortName) { cursor ->
     mapper(

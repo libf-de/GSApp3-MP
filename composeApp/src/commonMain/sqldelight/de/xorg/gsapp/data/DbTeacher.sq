@@ -5,6 +5,9 @@ CREATE TABLE DbTeacher (
 selectAll:
 SELECT * FROM DbTeacher;
 
+selectAllShorts:
+SELECT shortName FROM DbTeacher;
+
 selectByShort:
 SELECT * FROM DbTeacher WHERE shortName = ? COLLATE NOCASE;
 

@@ -92,47 +92,60 @@ class AppRepository : GSAppRepository, KoinComponent {
     private val localDataSource: LocalDataSource by inject()
     private val defaultsDataSource: DefaultsDataSource by inject()
 
+    override suspend fun handleUpdate(dbDefaultsVersion: Int) {
+        if(dbDefaultsVersion < 1) {
+            updateSubjects(force = true)
+        }
+    }
+
     override fun getSubstitutions(): Flow<SubstitutionSet> = localDataSource.getSubstitutionPlanFlow()
 
-    override suspend fun updateSubstitutions(callback: (Result<Boolean>) -> Unit) {
+    override suspend fun updateSubstitutions(callback: suspend (Result<Boolean>) -> Unit) {
         Napier.d { "updateSubstitutions in AppRepository" }
         try {
             Napier.d { "updateSubstitutions in try" }
-            with(apiDataSource.getSubstitutionPlan()) {
-                Napier.d { "updateSubstitutions in with" }
-                if(this.isFailure) {
-                    Napier.w { "getSubstitutionPlan failed :/" }
-                    callback(
-                        Result.failure(
-                            this.exceptionOrNull() ?: Exception("unknown cause (api) :(")
-                        )
-                    )
+
+            apiDataSource.getSubstitutionPlan()
+                .onFailure {
+                    callback(Result.failure(it))
                     return
                 }
+                .onSuccess { subApiModelSet ->
+                    //TODO: Compare remote vs. local by hash AND DATE? (https://github.com/libf-de/GSApp3-MP/issues/8)
+                    localDataSource.getLatestSubstitutionHashAndDate()
+                        .onFailure {
+                            Napier.w { "getLocalHash failed :/" }
+                            callback(Result.failure(it))
+                            return
+                        }
+                        .onSuccess { localLatestHashAndDate ->
+                            if(localLatestHashAndDate.first != subApiModelSet.hashCode()) {
+                                Napier.d { "got new plan!" }
+                                localDataSource.addSubstitutionPlanAndCleanup(subApiModelSet)
+                                callback(Result.success(true))
+                            } else {
+                                Napier.d { "no new plan!" }
+                                localDataSource.cleanupSubstitutionPlan()
+                                callback(Result.success(false))
+                            }
 
-                //TODO: Compare remote vs. local by hash AND DATE? (https://github.com/libf-de/GSApp3-MP/issues/8)
-                val localLatestHash = localDataSource.getLatestSubstitutionHashAndDate()
-                if(localLatestHash.isFailure) {
-                    Napier.w { "getLocalHash failed :/" }
-                    callback(
-                        Result.failure(
-                            this.exceptionOrNull() ?: Exception("unknown cause (dbLatest) :(")
-                        )
-                    )
-                    return
-                }
+                            // Update teachers from website if not all
+                            localDataSource.getAllTeachersShorts().onSuccess { dbList ->
+                                val teachers = dbList.map { it.lowercase() }
 
-                //If remote plan is different from latest local -> store it!
-                if(localLatestHash.getOrNull()!!.first != this.getOrNull()!!.hashCode()) {
-                    Napier.d { "got new plan!" }
-                    localDataSource.addSubstitutionPlanAndCleanup(this.getOrNull()!!)
-                    callback(Result.success(true))
-                } else {
-                    Napier.d { "no new plan!" }
-                    localDataSource.cleanupSubstitutionPlan()
-                    callback(Result.success(false))
+                                subApiModelSet.substitutionApiModels
+                                    .map {
+                                        it.substTeacher.lowercase()
+                                    }.filter {
+                                        it.isNotBlank() && it.matches(Regex("^[A-Za-z0-9]+\$"))
+                                    }.all {
+                                        it in teachers
+                                    }.ifNot {
+                                        updateTeachers()
+                                    }
+                            }
+                        }
                 }
-            }
         } catch (ex: Exception) {
             Napier.w { ex.stackTraceToString() }
             callback(Result.failure(ex))
@@ -149,7 +162,7 @@ class AppRepository : GSAppRepository, KoinComponent {
         }
     }
 
-    override suspend fun updateFoodplan(callback: (Result<Boolean>) -> Unit) {
+    override suspend fun updateFoodplan(callback: suspend (Result<Boolean>) -> Unit) {
         try {
             with(apiDataSource.getFoodplanAndAdditives()) {
                 if(this.isFailure) {
@@ -199,7 +212,7 @@ class AppRepository : GSAppRepository, KoinComponent {
 
     override fun getExams(): Flow<List<Exam>> = localDataSource.getExamsFlow()
 
-    override suspend fun updateExams(callback: (Result<Boolean>) -> Unit) {
+    override suspend fun updateExams(callback: suspend (Result<Boolean>) -> Unit) {
         try {
             with(apiDataSource.getExams()) {
                 if(this.isFailure) {
@@ -251,7 +264,7 @@ class AppRepository : GSAppRepository, KoinComponent {
 
     override fun getTeachers(): Flow<Result<List<Teacher>>> = localDataSource.getTeachersFlow()
 
-    override suspend fun updateTeachers(callback: (Result<Boolean>) -> Unit) {
+    override suspend fun updateTeachers(callback: suspend (Result<Boolean>) -> Unit) {
         try {
             with(apiDataSource.getTeachers()) {
                 if(this.isFailure) {
@@ -299,7 +312,7 @@ class AppRepository : GSAppRepository, KoinComponent {
 
     override fun getSubjects(): Flow<Result<List<Subject>>> = localDataSource.getSubjectsFlow()
 
-    override suspend fun updateSubjects(force: Boolean, callback: (Result<Boolean>) -> Unit) {
+    override suspend fun updateSubjects(force: Boolean, callback: suspend (Result<Boolean>) -> Unit) {
         try {
             with(localDataSource.countSubjects()) {
                 if(this.isFailure) {
@@ -377,4 +390,8 @@ class AppRepository : GSAppRepository, KoinComponent {
 
     //****************** SETTINGS ******************
 
+}
+
+private suspend fun Boolean.ifNot(func: suspend () -> Unit): Boolean {
+    if(!this) func(); return this
 }
