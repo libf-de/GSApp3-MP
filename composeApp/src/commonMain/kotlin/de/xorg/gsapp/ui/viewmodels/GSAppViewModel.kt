@@ -83,6 +83,7 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
      */
     protected fun <T> initState(inputFlow: Flow<T>, targetState: MutableStateFlow<ComponentState<T, Throwable>>) {
         viewModelScope.launch {
+            Napier.d { "initState" }
             inputFlow
                 .mapLatest {
                     if (it.isEmpty()) {
@@ -90,7 +91,7 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
                     } else {
                         ComponentState.Normal(it)
                     }
-                }
+                }/* This is a problem - if catch gets active, the flow isn't collected */
                 .catch {
                     if(it is NoLocalDataException) {
                         targetState.value = ComponentState.EmptyLocal
