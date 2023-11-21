@@ -80,9 +80,10 @@ fun SubstitutionsScreen(
     //val viewModel: GSAppViewModel = koinInject()
     val windowSizeClass = calculateWindowSizeClass()
 
-    val subState by viewModel.substitutionState.collectAsStateWithLifecycle(
+    /*val subState by viewModel.substitutionState.collectAsStateWithLifecycle(
         ComponentState.EmptyLocal
-    )
+    )*/
+    val subState by viewModel.componentState.collectAsStateWithLifecycle()
 
     var isFirst = false
 
@@ -124,11 +125,11 @@ fun SubstitutionsScreen(
                 actions = {
                     koinInject<PlatformInterface>().FeedbackButton()
 
-                    IconButton(onClick = { viewModel.updateSubstitutions() }) {
+                    IconButton(onClick = { viewModel.refresh() }) {
                         Icon(imageVector = Icons.Rounded.Refresh,
                             contentDescription = null,
                             modifier = Modifier.spinAnimation(
-                                viewModel.uiState.substitutionState.isLoading()
+                                subState.isLoading()
                             ))
                     }
 

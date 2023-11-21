@@ -335,17 +335,67 @@ public expect object MR {
   }
 
   public object fonts : ResourceContainer<FontResource> {
-    public object LondrinaSolid {
+    public object OrelegaOne {
+      public val regular: FontResource
+    }
+
+    public object Roboto {
+      public val regular: FontResource
+    }
+
+    public object RobotoCondensed {
+      public val regular: FontResource
+    }
+
+    public object Saira {
       public val black: FontResource
+
+      public val blackItalic: FontResource
+
+      public val bold: FontResource
+
+      public val boldItalic: FontResource
+
+      public val extraBold: FontResource
+
+      public val extraBoldItalic: FontResource
+
+      public val extraLight: FontResource
+
+      public val extraLightItalic: FontResource
+
+      public val italic: FontResource
 
       public val light: FontResource
 
+      public val lightItalic: FontResource
+
+      public val medium: FontResource
+
+      public val mediumItalic: FontResource
+
       public val regular: FontResource
 
+      public val semiBold: FontResource
+
+      public val semiBoldItalic: FontResource
+
       public val thin: FontResource
+
+      public val thinItalic: FontResource
+
+      public val variable: FontResource
     }
 
-    public object OrelegaOne {
+    public object SairaCondensed {
+      public val regular: FontResource
+    }
+
+    public object SairaExtraCondensed {
+      public val regular: FontResource
+    }
+
+    public object SairaSemiCondensed {
       public val regular: FontResource
     }
   }

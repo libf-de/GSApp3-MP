@@ -26,6 +26,7 @@ import de.xorg.gsapp.LAUNCH_VERSION
 import de.xorg.gsapp.data.di.JOB_MAP
 import de.xorg.gsapp.data.exceptions.AppStuckInLoadingException
 import de.xorg.gsapp.data.exceptions.NoLocalDataException
+import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.AppState
@@ -36,14 +37,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.lastOrNull
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
@@ -61,18 +61,19 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
 
     protected val jobTool: JobTool by inject()
 
-    protected val jobMap: MutableMap<String, Job> by inject(qualifier = named(JOB_MAP))
-
     var uiState by mutableStateOf(AppState())
         private set
+
+    var retryCount: Int = 0
+    var flowActive: Boolean = false
 
     init {
         Napier.d { "GSAppViewModel init" }
 
         // Populate database with default values if necessary
         jobTool.singletonIgnoringJob("dbDefaultsInit", viewModelScope) {
-            appRepo.handleUpdate(prefsRepo.getLaunchVersion())
-            prefsRepo.setLaunchVersion(LAUNCH_VERSION)
+            appRepo.handleUpdate(prefsRepo.getDatabaseDefaultsVersion())
+            prefsRepo.setDatabaseDefaultsVersion(LAUNCH_VERSION)
         }
     }
 
@@ -82,37 +83,36 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
      * @param inputFlow The input flow
      * @param targetState The state flow to update
      */
-    protected fun <T, E : Throwable> initState(inputFlow: Flow<T>, targetState: MutableStateFlow<ComponentState<T, E>>) {
+    protected fun <T> initState(
+        inputFlow: Flow<T>,
+        targetState: MutableStateFlow<ComponentState<T>>,
+    ) {
         viewModelScope.launch {
-            Napier.d { "initState" }
+            flowActive = true
             inputFlow
                 .mapLatest {
-                    if (it.isEmpty()) {
-                        ComponentState.Empty
-                    } else {
-                        ComponentState.Normal(it)
-                    } as ComponentState<T, E>
-                    // Although Android Studio claims this cast is unnecessary, it is necessary as
-                    // otherwise the flow will be of type ComponentState<T, Nothing>, which makes it
-                    // impossible to emit ComponentState.Failed in the catch block.
+                    ComponentState.fromEmptyable(it) // -> Normal or Empty
                 }
-                .onEach {
-                    Napier.d { "GSAppViewModel: New state: $it" }
+                .onStart {
+                    emit(ComponentState.Loading)
                 }
                 .catch {
-                    if(it is NoLocalDataException) {
-                        emit(ComponentState.EmptyLocal)
-                        return@catch
+                    targetState.value =
+                        /*if(it is NoLocalDataException) {*/
+                        if (it.message?.contains("NoLocalDataException") == true) {
+                            ComponentState.EmptyLocal
+                        } else {
+                            targetState.value.toFailureState(it) //-> (Refreshing-)Failed
+                        }
+
+                    if(retryCount < 10) {
+                        delay(3000L)
+                        retryCount++
+                        initState(inputFlow, targetState) // Re-subscribe to keep the flow active
+                    } else {
+                        flowActive = false
+                        Napier.e { "Failed to initialize state flow after 10 retries" }
                     }
-                    val currentState = targetState.value
-
-                    if(currentState is ComponentState.Refreshing)
-                        emit(ComponentState.RefreshingFailed(currentState.data, it))
-                    else
-                        emit(ComponentState.Failed(it) as ComponentState<T, E>)
-                }
-                .onEach {
-
                 }
                 .collect {
                     targetState.value = it
@@ -130,7 +130,7 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
      */
     protected fun <T> refresh(
         refreshFunction: suspend ( suspend(Result<Boolean>) -> Unit) -> Unit,
-        targetState: MutableStateFlow<ComponentState<T, Throwable>>,
+        targetState: MutableStateFlow<ComponentState<T>>,
         flowToRecoverFrom: Flow<T>
     ) {
         val className = targetState.value::class.simpleName ?: "generic"
@@ -157,11 +157,12 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
                 }.onSuccess { haveNewData ->
                     /* If there is no new data, ensure we don't stay in a refreshing state, but
                      * revert to the NormalState with the existing data. */
-                    if (!haveNewData) targetState.value = when (pastState) {
-                        is ComponentState.Loading -> ComponentState.EmptyLocal /* Should not happen */
-                        is ComponentState.Refreshing -> ComponentState.Normal(pastState.data)
-                        is ComponentState.RefreshingFailed<T, *> -> ComponentState.Normal(pastState.data)
-                        else -> pastState
+                    if (!haveNewData) targetState.value = pastState.ensureNotStuck()
+
+                    // Check if the flow is still active (after failure), if not,
+                    // reactivate it!
+                    if (!flowActive) {
+                        initState(flowToRecoverFrom, targetState)
                     }
 
                     // If there is new data, the state will be updated by the flow.
@@ -183,7 +184,7 @@ open class GSAppViewModel : ViewModel(), KoinComponent {
                     // after we've received a response from the server
                     if (targetState.value is ComponentState.Loading ||
                         targetState.value is ComponentState.Refreshing ||
-                        targetState.value is ComponentState.RefreshingFailed<T, *>
+                        targetState.value is ComponentState.RefreshingFailed<T>
                     ) {
                         Napier.w { "App stuck in a loading state!" }
                         targetState.value = ComponentState.Failed(AppStuckInLoadingException())

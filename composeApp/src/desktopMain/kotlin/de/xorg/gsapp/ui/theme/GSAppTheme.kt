@@ -32,7 +32,7 @@ actual fun GSAppTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = getTypography(),
         content = content
     )
 }

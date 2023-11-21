@@ -17,6 +17,6 @@
   -->
 
 <resources>
-    <string name="app_name">GSApp</string>
+    <string name="appl_name">GSApp</string>
     <string name="default_notification_channel_id">GSApp-FCM</string>
 </resources>

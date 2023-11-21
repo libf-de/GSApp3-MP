@@ -80,9 +80,10 @@ fun ExamsScreen(
     val viewModel: ExamPlanViewModel = koinViewModel(vmClass = ExamPlanViewModel::class)
     //val viewModel: GSAppViewModel = koinInject()
 
-    val examState by viewModel.examState.collectAsStateWithLifecycle(
+    /*val examState by viewModel.examState.collectAsStateWithLifecycle(
         ComponentState.EmptyLocal
-    )
+    )*/
+    val examState by viewModel.componentState.collectAsStateWithLifecycle()
 
     val course by viewModel.courseState.collectAsStateWithLifecycle(
         ExamCourse.default
@@ -110,11 +111,11 @@ fun ExamsScreen(
                 },
                 scrollBehavior = scrollBehavior,
                 actions = {
-                    IconButton(onClick = { viewModel.updateExams() }) {
+                    IconButton(onClick = { viewModel.refresh() }) {
                         Icon(imageVector = Icons.Rounded.Refresh,
                             contentDescription = null,
                             modifier = Modifier.spinAnimation(
-                                viewModel.uiState.examState.isLoading()
+                                examState.isLoading()
                             ))
                     }
 

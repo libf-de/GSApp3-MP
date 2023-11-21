@@ -34,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.screens.ExamsScreen
 import de.xorg.gsapp.ui.screens.FoodplanScreen
 import de.xorg.gsapp.ui.screens.SubstitutionsScreen
@@ -46,12 +47,17 @@ import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.PopUpTo
 import moe.tlaster.precompose.navigation.rememberNavigator
 import moe.tlaster.precompose.navigation.transition.NavTransition
 import org.koin.compose.KoinContext
+import org.koin.compose.koinInject
 
 const val LAUNCH_VERSION = 1
 
@@ -66,6 +72,11 @@ fun GSApp() {
     Napier.base(DebugAntilog())
 
     KoinContext {
+        val prefRepo = koinInject<PreferencesRepository>()
+        CoroutineScope(Dispatchers.IO).launch {
+            prefRepo.setDatabaseDefaultsVersion(0) //TODO: Remove in release!
+        }
+
         GSAppTheme {
             val navigator = rememberNavigator()
             var hideNavBar by rememberSaveable { mutableStateOf(false) }

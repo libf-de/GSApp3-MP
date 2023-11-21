@@ -143,23 +143,25 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
         println("before repository")
         val appRepository: GSAppRepository by inject()
         appRepository.updateSubstitutions {
-            if (it.isSuccess) {
-                // Update was successful -> show preview in notification
-                appRepository.getSubstitutions()
-                    .catch { e ->
-                        Napier.w("Failed to get substitutions", e)
-                    }
-                    .collectLatest { subSet ->
-                        postSubstitutionNotification(
-                            context = this@GSAppFirebaseMessagingService,
-                            substitutionSet = subSet,
-                            filter = filter
-                        )
-                    }
-            } else {
-                postSubstitutionNotification(context = this@GSAppFirebaseMessagingService)
-            }
-
+            it
+                .onSuccess {
+                    // Update was successful -> show preview in notification
+                    appRepository.getSubstitutions()
+                        .catch { e ->
+                            Napier.w("Failed to get substitutions", e)
+                            postSubstitutionNotification(context = this@GSAppFirebaseMessagingService)
+                        }
+                        .collectLatest { subSet ->
+                            postSubstitutionNotification(
+                                context = this@GSAppFirebaseMessagingService,
+                                substitutionSet = subSet,
+                                filter = filter
+                            )
+                        }
+                }
+                .onFailure {
+                    postSubstitutionNotification(context = this@GSAppFirebaseMessagingService)
+                }
 
             Log.d(
                 TAG, "Updated substitution plan " + (if (it.isSuccess) "successfully" else "")

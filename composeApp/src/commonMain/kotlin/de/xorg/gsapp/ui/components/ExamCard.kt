@@ -32,16 +32,20 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Exam
+import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.materialtools.ColorRoles
 import de.xorg.gsapp.ui.materialtools.MaterialColors
+import dev.icerock.moko.resources.compose.fontFamilyResource
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -54,6 +58,22 @@ fun ExamCard(
     exam: Exam,
     modifier: Modifier = Modifier
 ) {
+    val subjectTitle = remember {
+        exam.subject?.longName ?: exam.label.filter { it.isLetter() }
+    }
+
+    val subcourses = remember {
+        exam.label
+            .filter { it.isDigit() }
+            .map { it.toString() }
+            .joinToString(", ")
+    }
+
+    val timeTillExam = remember {
+        exam.date.todayUntilString()
+    }
+
+
     val harmonizedColor = MaterialColors.harmonize(
         colorToHarmonize = (exam.subject?.color ?: MaterialTheme.colorScheme.tertiaryContainer).toArgb(),
         colorToHarmonizeWith = MaterialTheme.colorScheme.primary.toArgb())
@@ -71,22 +91,28 @@ fun ExamCard(
             EncircledText(
                 value = exam.label,
                 colorRoles = colorRoles,
-                modifier = Modifier.padding(end = 8.dp).alignByBaseline()
+                modifier = Modifier.padding(end = 8.dp).alignByBaseline(),
+                fontFamily = fontFamilyResource(
+                    /*if(exam.label.length > 4) MR.fonts.SairaExtraCondensed.regular
+                    else if(exam.label.length > 2) MR.fonts.SairaSemiCondensed.regular
+                    else MR.fonts.Saira.regular*/
+                    if(exam.label.length > 4) MR.fonts.RobotoCondensed.regular
+                    else MR.fonts.Roboto.regular
+                )
             )
 
             Box(modifier = Modifier.weight(1f).alignByBaseline()) {
-                Text(text = (exam.subject?.longName ?: exam.label.filter { it.isLetter() }) + " " +
-                        exam.label.filter { it.isDigit() } + " " +
-                        (if (exam.isCoursework) "Kursarbeit" else "Klausur"),
+                Text(
+                    text = "$subjectTitle $subcourses",
                     modifier = Modifier.padding(12.dp),
-                    style = MaterialTheme.typography.titleLarge)
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
 
-            Text(text = exam.date.todayUntilString())
+            Text(text = timeTillExam)
         }
 
     }
-
 }
 
 private fun LocalDate.todayUntilString(): String {

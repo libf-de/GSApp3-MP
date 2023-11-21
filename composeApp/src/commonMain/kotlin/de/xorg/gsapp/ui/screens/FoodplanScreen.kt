@@ -70,6 +70,7 @@ import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.ComponentState
 import de.xorg.gsapp.ui.state.UiState
+import de.xorg.gsapp.ui.state.dataOrDefault
 import de.xorg.gsapp.ui.state.isLoading
 import de.xorg.gsapp.ui.tools.DateUtil
 import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
@@ -109,12 +110,17 @@ fun FoodplanScreen(
         rememberTopAppBarState()
     )
 
-    val foodplanState by viewModel.foodplanState.collectAsStateWithLifecycle()
+    /*val foodplanState by viewModel.foodplanState.collectAsStateWithLifecycle()*/
+    val foodplanState by viewModel.componentState.collectAsStateWithLifecycle()
 
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-    val todayIndex = if(foodplanState.dataOrDefault(emptyMap()).keys.contains(today))
-                        foodplanState.dataOrDefault(emptyMap()).keys.indexOf(today)
-                     else 0
+
+    val todayIndex = with(foodplanState.dataOrDefault(emptyMap())) {
+        if(this.keys.contains(today))
+            this.keys.indexOf(today)
+        else 0
+    }
+
     val pagerState = rememberPagerState(initialPage = todayIndex) {
         foodplanState.dataOrDefault(emptyMap()).size
     }
@@ -154,23 +160,17 @@ fun FoodplanScreen(
                                     MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
                          else */SupportTopAppBarDefaults.supportMediumTopAppBarColors(),
                 actions = {
-                    /** Settings button **/
-                    IconButton(
-                        onClick = { navController.navigate(GSAppRoutes.SETTINGS) },
-                        modifier = Modifier
-                    ) {
-                        IconButton(onClick = { viewModel.updateFoodplan() }) {
-                            Icon(imageVector = Icons.Rounded.Refresh,
-                                contentDescription = null,
-                                modifier = Modifier.spinAnimation(
-                                    viewModel.uiState.foodplanState.isLoading()
-                                ))
-                        }
+                    IconButton(onClick = { viewModel.refresh() }) {
+                        Icon(imageVector = Icons.Rounded.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.spinAnimation(
+                                foodplanState.isLoading()
+                            ))
+                    }
 
-                        IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
-                            Icon(imageVector = Icons.Filled.Settings,
-                                contentDescription = stringResource(MR.strings.settings_title))
-                        }
+                    IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
+                        Icon(imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(MR.strings.settings_title))
                     }
                 },
                 onBackgroundColorChanged = { color -> appBarColor = color }
@@ -304,12 +304,5 @@ fun FoodplanScreen(
                 )
             }
         }
-    }
-}
-
-private fun <T, E : Throwable> ComponentState<T, E>.dataOrDefault(default: T): T {
-    return when(this) {
-        is ComponentState.Normal -> data
-        else -> default
     }
 }

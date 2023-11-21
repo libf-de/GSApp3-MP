@@ -12,12 +12,12 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 
 class ExamPlanViewModel : GSAppViewModel() {
-    var _courseState = MutableStateFlow(ExamCourse.COURSE_11)
+    private var _courseState = MutableStateFlow(ExamCourse.COURSE_11)
     val courseState: StateFlow<ExamCourse> = _courseState
 
     private val _examState =
-        MutableStateFlow<ComponentState<List<Exam>, Throwable>>(ComponentState.EmptyLocal)
-    val examState: StateFlow<ComponentState<List<Exam>, Throwable>> =
+        MutableStateFlow<ComponentState<List<Exam>>>(ComponentState.EmptyLocal)
+    val componentState: StateFlow<ComponentState<List<Exam>>> =
         _examState
 
     private val examFlow = combine(
@@ -32,9 +32,10 @@ class ExamPlanViewModel : GSAppViewModel() {
 
     init {
         initState(examFlow, _examState)
+        refresh()
     }
 
-    fun updateExams() = refresh(
+    fun refresh() = refresh(
         refreshFunction = appRepo::updateExams,
         targetState = _examState,
         flowToRecoverFrom = examFlow,

@@ -8,16 +8,17 @@ import kotlinx.datetime.LocalDate
 
 class FoodplanViewModel : GSAppViewModel() {
     private val _foodplanState =
-        MutableStateFlow<ComponentState<Map<LocalDate, List<Food>>, Throwable>>(ComponentState.EmptyLocal)
-    val foodplanState: StateFlow<ComponentState<Map<LocalDate, List<Food>>, Throwable>> =
+        MutableStateFlow<ComponentState<Map<LocalDate, List<Food>>>>(ComponentState.EmptyLocal)
+    val componentState: StateFlow<ComponentState<Map<LocalDate, List<Food>>>> =
         _foodplanState
     private val foodplanFlow = appRepo.getFoodplan()
 
     init {
         initState(foodplanFlow, _foodplanState)
+        refresh()
     }
 
-    fun updateFoodplan() = refresh(
+    fun refresh() = refresh(
         refreshFunction = appRepo::updateFoodplan,
         targetState = _foodplanState,
         flowToRecoverFrom = foodplanFlow,

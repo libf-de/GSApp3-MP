@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.ui.materialtools.ColorRoles
@@ -22,6 +23,7 @@ fun EncircledText(
     colorRoles: ColorRoles,
     isSingleLine: Boolean = true,
     modifier: Modifier = Modifier,
+    fontFamily: FontFamily? = MaterialTheme.typography.titleMedium.fontFamily
 ) {
     Box(contentAlignment = Alignment.CenterStart,
         modifier = modifier ) {
@@ -38,6 +40,7 @@ fun EncircledText(
                 color = Color(colorRoles.onAccent),
                 overflow = TextOverflow.Clip,
                 softWrap = !isSingleLine,
+                fontFamily = fontFamily,
                 modifier = Modifier.padding(bottom = 1.5f.dp))
         }
     }

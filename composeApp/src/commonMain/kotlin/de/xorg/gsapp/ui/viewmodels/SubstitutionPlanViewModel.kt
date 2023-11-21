@@ -6,13 +6,11 @@ import de.xorg.gsapp.ui.state.ComponentState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
-import moe.tlaster.precompose.viewmodel.viewModelScope
 
 class SubstitutionPlanViewModel : GSAppViewModel() {
     private val _substitutionState =
-        MutableStateFlow<ComponentState<SubstitutionSet, Throwable>>(ComponentState.EmptyLocal)
-    val substitutionState: StateFlow<ComponentState<SubstitutionSet, Throwable>> =
+        MutableStateFlow<ComponentState<SubstitutionSet>>(ComponentState.EmptyLocal)
+    val componentState: StateFlow<ComponentState<SubstitutionSet>> =
         _substitutionState
     private val subFlow = combine(
         appRepo.getSubstitutions(),
@@ -32,9 +30,10 @@ class SubstitutionPlanViewModel : GSAppViewModel() {
 
     init {
         initState(subFlow, _substitutionState)
+        refresh()
     }
 
-    fun updateSubstitutions() = refresh(
+    fun refresh() = refresh(
         refreshFunction = appRepo::updateSubstitutions,
         targetState = _substitutionState,
         flowToRecoverFrom = subFlow,

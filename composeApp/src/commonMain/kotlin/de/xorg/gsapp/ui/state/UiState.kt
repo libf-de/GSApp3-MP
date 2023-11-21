@@ -19,6 +19,7 @@
 package de.xorg.gsapp.ui.state
 
 import androidx.compose.runtime.Composable
+import de.xorg.gsapp.data.model.SubstitutionSet
 
 /**
  * Loading states for the main app tabs.
@@ -41,28 +42,28 @@ fun UiState.isNormal(): Boolean {
     return this == UiState.NORMAL || this == UiState.NORMAL_LOADING || this == UiState.NORMAL_FAILED
 }
 
-sealed class ComponentState<out T, out E : Throwable> {
-    data object Loading : ComponentState<Nothing, Nothing>()
-    data object EmptyLocal : ComponentState<Nothing, Nothing>()
-    data object Empty : ComponentState<Nothing, Nothing>()
+// <out T>, because we want to be able to return a ComponentState<Nothing> as well.
+sealed class ComponentState<out T> {
+    data object Loading : ComponentState<Nothing>()
+    data object EmptyLocal : ComponentState<Nothing>()
+    data object Empty : ComponentState<Nothing>()
 
-    abstract class StateWithData<out T> : ComponentState<T, Nothing>() {
+    abstract class StateWithData<T> : ComponentState<T>() {
         abstract val data: T
     }
-    data class Normal<out T>(override val data: T) : StateWithData<T>()
-    data class Refreshing<out T>(override val data: T) : StateWithData<T>()
-    data class RefreshingFailed<out T, out E : Throwable>(override val data: T, val error: E) : StateWithData<T>()
+    data class Normal<T>(override val data: T) : StateWithData<T>()
+    data class Refreshing<T>(override val data: T) : StateWithData<T>()
+    data class RefreshingFailed<T>(override val data: T, val error: Throwable) : StateWithData<T>()
 
-
-    data class Failed<out E : Throwable>(val error: E) : ComponentState<Nothing, E>()
+    data class Failed(val error: Throwable) : ComponentState<Nothing>()
 
 
 
     @Composable
-    fun whenDataAvailable(composable: @Composable (data: T) -> Unit): ComponentState<T, E> {
+    fun whenDataAvailable(composable: @Composable (data: T) -> Unit): ComponentState<T> {
         when(this) {
             is Refreshing -> composable(data)
-            is RefreshingFailed<T, *> -> composable(data)
+            is RefreshingFailed<T> -> composable(data)
             is Normal -> composable(data)
             else -> {}
         }
@@ -70,9 +71,9 @@ sealed class ComponentState<out T, out E : Throwable> {
     }
 
     @Composable
-    fun whenErrorAvailable(composable: @Composable (error: Throwable) -> Unit): ComponentState<T, Throwable>  {
+    fun whenErrorAvailable(composable: @Composable (error: Throwable) -> Unit): ComponentState<T>  {
         when(this) {
-            is RefreshingFailed<*, *> -> composable(error)
+            is RefreshingFailed<T> -> composable(error)
             is Failed -> composable(error)
             else -> {}
         }
@@ -80,7 +81,7 @@ sealed class ComponentState<out T, out E : Throwable> {
     }
 
     fun hasData(): Boolean {
-        return this is Refreshing || this is RefreshingFailed<*, *> || this is Normal
+        return this is Refreshing || this is RefreshingFailed<*> || this is Normal
     }
 
     fun isLoading(): Boolean {
@@ -88,6 +89,45 @@ sealed class ComponentState<out T, out E : Throwable> {
     }
 
     fun isNormal(): Boolean {
-        return this is Normal || this is Refreshing || this is RefreshingFailed<*, *>
+        return this is Normal || this is Refreshing || this is RefreshingFailed<*>
+    }
+
+    fun ensureNotStuck(): ComponentState<T> {
+        return when(this) {
+            is Loading -> EmptyLocal /* Should not happen */
+            is Refreshing -> Normal(this.data)
+            is RefreshingFailed<T> -> Normal(this.data)
+            else -> this
+        }
+    }
+
+    fun toFailureState(it: Throwable): ComponentState<T> {
+        return if(this is Refreshing) {
+            RefreshingFailed(this.data, it)
+        } else {
+            Failed(it)
+        }
+    }
+
+    companion object {
+        /**
+         * Create a ComponentState from a collection (List, Set, Map, ...) that can be empty.
+         * If the collection is empty, return [Empty], otherwise return [Normal].
+         * @param data The collection to check.
+         * @return [Empty] if the collection is empty, [Normal] otherwise.
+         */
+        fun <T> fromEmptyable(data: T): ComponentState<T> {
+            return if (data is Collection<*> && data.isEmpty()) Empty
+            else if (data is Map<*,*> && data.isEmpty()) Empty
+            else Normal(data)
+        }
+
+    }
+}
+
+fun <T> ComponentState<T>.dataOrDefault(default: T): T {
+    return when(this) {
+        is ComponentState.Normal -> data
+        else -> default
     }
 }

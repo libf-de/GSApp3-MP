@@ -19,9 +19,16 @@
 package de.xorg.gsapp.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import de.xorg.gsapp.res.MR
+import dev.icerock.moko.resources.compose.fontFamilyResource
 
 
 val LightColors = lightColorScheme(
@@ -88,6 +95,57 @@ val DarkColors = darkColorScheme(
     outlineVariant = md_theme_dark_outlineVariant,
     scrim = md_theme_dark_scrim,
 )
+
+@Composable
+fun getTypography(): Typography {
+    return MaterialTheme.typography.copy(
+        displayLarge = MaterialTheme.typography.displayLarge.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        displayMedium = MaterialTheme.typography.displayMedium.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        displaySmall = MaterialTheme.typography.displaySmall.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        titleLarge = MaterialTheme.typography.titleLarge.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        titleMedium = MaterialTheme.typography.titleMedium.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        titleSmall = MaterialTheme.typography.titleSmall.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        bodyLarge = MaterialTheme.typography.bodyLarge.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        bodyMedium = MaterialTheme.typography.bodyMedium.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        bodySmall = MaterialTheme.typography.bodySmall.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        labelLarge = MaterialTheme.typography.labelLarge.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        labelMedium = MaterialTheme.typography.labelMedium.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        labelSmall = MaterialTheme.typography.labelSmall.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        headlineLarge = MaterialTheme.typography.headlineLarge.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        headlineMedium = MaterialTheme.typography.headlineMedium.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+        headlineSmall = MaterialTheme.typography.headlineSmall.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+        ),
+    )
+}
 
 @Composable
 expect fun GSAppTheme(

@@ -36,56 +36,6 @@ import kotlinx.datetime.LocalDate
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-/**
- * This combines all data sources (local cache and remote apis), as well as app settings into a
- * single interface to be used by the UI layer.
- *
- * All of the "get" flows (marked with |GET|) roughly follow this chart:
- * (if flow does not support reload ==>  reloading = false)
- * ┌──────────┐
- * │Reloading?│
- * └┬──────┬──┘
- *  │Yes   │No
- *  │    ┌─▼────────────────┐
- *  │    │Load local cache. │
- *  │    │Was it successful?│
- *  │    └──┬────────┬──────┘
- *  │       │No      │Yes
- *  │       │      ┌─▼──────┐
- *  │       │      │Emit it!│
- *  │       │      └─┬──────┘
- *  │       │        │
- * ┌▼───────▼────────▼────┐
- * │Load from api/website.│
- * │Was it successful?    │
- * └┬──────────────┬──────┘
- *  │No            │Yes
- *  │     ┌────────┴────────┐
- *  │     │Is it different  │
- *  │     │from local cache?│
- *  │     └───┬────────────┬┘
- *  │         │Yes       No│
- *  │  ┌──────▼─────────┐  │
- *  │  │ Emit and write │  │
- *  │  │ to local cache.│  │
- *  │  └─────────────┬──┘  │
- *  │                └─────┤
- *  │                      │
- * ┌▼────────────────────┐ │
- * │Was loading frm local│ │
- * │cache successful AND │ │
- * │are we NOT reloading?│ │
- * ├─ ── ── ── ── ── ── ─┤ │
- * │(Is there any data to│ │
- * │ be displayed?)      │ │
- * └─┬───────────────┬───┘ │
- *   │No          Yes│     │
- *  ┌▼───────┐     ┌─▼─────▼┐
- *  │Emit web│     │ !DONE! │
- *  │error   ├─────► !DONE! │
- *  └────────┘     └────────┘
- */
-
 class AppRepository : GSAppRepository, KoinComponent {
     //Get data sources from DI
     private val apiDataSource: RemoteDataSource by inject()
