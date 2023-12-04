@@ -21,6 +21,7 @@ package de.xorg.gsapp.ui.screens
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,6 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.res.MR
@@ -98,7 +100,8 @@ import moe.tlaster.precompose.navigation.Navigator
 )
 @Composable
 fun FoodplanScreen(
-    navController: Navigator
+    navController: Navigator,
+    bottomPadding: Dp = 84.dp
 ) {
     val viewModel: FoodplanViewModel = koinViewModel(vmClass = FoodplanViewModel::class)
     //val viewModel: GSAppViewModel = koinInject()
@@ -142,7 +145,7 @@ fun FoodplanScreen(
     Scaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .padding(bottom = 84.dp),
+            .padding(bottom = bottomPadding),
         topBar = {
             SupportMediumTopAppBar(
                 title = {

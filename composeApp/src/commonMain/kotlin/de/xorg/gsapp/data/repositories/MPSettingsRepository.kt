@@ -163,7 +163,6 @@ class MPSettingsRepository : PreferencesRepository, KoinComponent {
      * Returns the push notification enablement from settings
      * @return PushState
      */
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))
     override suspend fun getPush(): PushState {
         return PushState.fromInt(
             appSettings.getInt(PrefKeys.PushState, PushState.DISABLED.value)

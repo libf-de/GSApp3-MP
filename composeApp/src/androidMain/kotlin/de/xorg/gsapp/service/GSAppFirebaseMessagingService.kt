@@ -67,6 +67,7 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
 
     private val prefRepo: PreferencesRepository by inject()
 
+
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library

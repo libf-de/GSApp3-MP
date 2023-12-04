@@ -64,6 +64,7 @@
     <string name="app_name">GSApp</string>
     <string name="tab_substitutions">Vertretungsplan</string>
     <string name="tab_foodplan">Speiseplan</string>
+    <string name="tab_foodorder">Essenbestellung</string>
     <string name="tab_exams">Klausuren</string>
 
     <!-- Substitution plan -->
@@ -86,6 +87,9 @@
 
     <!-- Exam plan -->
     <string name="examplan_empty">Keine Klausuren (mehr) :)</string>
+    <string name="examplan_course_eleven">11. Klasse</string>
+    <string name="examplan_course_twelve">12. Klasse</string>
+    <string name="examplan_explain_coursework">Fett → Kursarbeit</string>
 
     <string name="settings_title">Einstellungen</string>
     <!-- Settings items -->
@@ -143,6 +147,7 @@
     <string name="push_enabled_failure">Push-Benachrichtigungen konnten nicht aktiviert werden</string>
     <string name="push_disabled_success">Push-Benachrichtigungen deaktiviert</string>
     <string name="push_disabled_failure">Push-Benachrichtigungen konnten nicht deaktiviert werden</string>
+    <string name="push_enabled_failure_timeout">Push-Benachrichtigungen konnten nicht aktiviert werden, da FirebaseApp nicht rechtzeitig initialisiert wurde. Versuche es bitte erneut.</string>
 
     <!--~~~~ Generics ~~~~-->
     <!-- General dialog buttons -->

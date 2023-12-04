@@ -17,9 +17,12 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
 
     <application
             android:name="de.xorg.gsapp.GSAppApplication"
@@ -50,7 +53,7 @@
             </intent-filter>
         </service>
         <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.
-     See README(https://goo.gl/l4GJaQ) for more. -->
+             See README(https://goo.gl/l4GJaQ) for more. -->
         <meta-data
                 android:name="com.google.firebase.messaging.default_notification_icon"
                 android:resource="@drawable/ic_launcher_mono" />
@@ -68,6 +71,19 @@
         <meta-data
                 android:name="firebase_analytics_collection_enabled"
                 android:value="false" />
+
+        <!-- Disable FirebaseInitProvider, we'll handle that ourselves. -->
+        <provider
+            android:name="com.google.firebase.provider.FirebaseInitProvider"
+            android:authorities="${applicationId}.firebaseinitprovider"
+            tools:node="remove" />
+        <receiver android:name=".service.BootCompletedReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
 
     </application>
 

@@ -144,6 +144,7 @@
     <string name="push_enabled_failure">Не вдалося включити сповіщення про заміни</string><!-- Failed to enable push notifications -->
     <string name="push_disabled_success">Сповіщення вимкнено</string><!-- Push notifications disabled -->
     <string name="push_disabled_failure">Не вдалося вимкнути сповіщення про заміни</string><!-- Failed to disable push notifications -->
+    <string name="push_enabled_failure_timeout">Не вдалося ввімкнути push-сповіщення, оскільки FirebaseApp не ініціалізувався вчасно. Будь-ласка спробуйте пізніше.</string>
 
     <!--~~~~ Generics ~~~~-->
     <!-- General dialog buttons -->

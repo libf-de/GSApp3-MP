@@ -151,8 +151,8 @@ fun SettingsScreen(
                     icon = { mod, tint -> Icon(Icons.Rounded.Info,
                         contentDescription = "",
                         modifier = mod, tint = tint) },
-                    title = "GSApp3 Multiplatform",
-                    subtitle = "Version 1.0.1-dev",
+                    title = "GSApp3 Multiplat(t)form",
+                    subtitle = "Version 1.0.3-dev",
                     onClick = { }
                 )
             }

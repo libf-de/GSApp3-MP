@@ -31,6 +31,7 @@ import dev.icerock.moko.resources.StringResource
 val screens = listOf(
     GSAppScreen.Substitutions,
     GSAppScreen.Foodplan,
+    GSAppScreen.FoodOrder,
     GSAppScreen.Exams
 )
 
@@ -50,6 +51,12 @@ sealed class GSAppScreen(
         route = GSAppRoutes.FOODPLAN,
         title = MR.strings.tab_foodplan,
         icon = MR.images.foodplan
+    )
+
+    data object FoodOrder : GSAppScreen(
+        route = GSAppRoutes.FOODORDER,
+        title = MR.strings.tab_foodorder,
+        icon = MR.images.foodorder
     )
 
     data object Exams : GSAppScreen(

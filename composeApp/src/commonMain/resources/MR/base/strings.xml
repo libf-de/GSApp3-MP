@@ -64,6 +64,7 @@
     <string name="app_name">GSApp</string>
     <string name="tab_substitutions">Substitutions</string>
     <string name="tab_foodplan">Food plan</string>
+    <string name="tab_foodorder">Food order</string>
     <string name="tab_exams">Exams</string>
 
     <!-- Substitution plan -->
@@ -88,7 +89,7 @@
     <string name="examplan_empty">No (more) exams :)</string>
     <string name="examplan_course_eleven">Course 11</string>
     <string name="examplan_course_twelve">Course 12</string>
-
+    <string name="examplan_explain_coursework">bold → coursework</string>
 
     <!--- Settings -->
     <string name="settings_title">Settings</string>
@@ -147,6 +148,7 @@
     <string name="push_enabled_failure">Failed to enable push notifications</string>
     <string name="push_disabled_success">Push notifications disabled</string>
     <string name="push_disabled_failure">Failed to disable push notifications</string>
+    <string name="push_enabled_failure_timeout">Failed to enable push notifications, as FirebaseApp did not initialize in time. Please try again later.</string>
 
     <!--~~~~ Generics ~~~~-->
     <!-- General dialog buttons -->

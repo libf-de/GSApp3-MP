@@ -21,11 +21,17 @@ package de.xorg.gsapp.ui.screens
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.Refresh
@@ -47,24 +53,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.data.enums.ExamCourse
 import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.components.ExamCard
+import de.xorg.gsapp.ui.components.ExamChip
 import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
 import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.ComponentState
-import de.xorg.gsapp.ui.state.isLoading
 import de.xorg.gsapp.ui.tools.DateUtil
+import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.ExamPlanViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
@@ -72,10 +84,13 @@ import moe.tlaster.precompose.navigation.Navigator
 /**
  * The exam plan-tab composable
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class,
+    ExperimentalLayoutApi::class
+)
 @Composable
 fun ExamsScreen(
-    navController: Navigator
+    navController: Navigator,
+    bottomPadding: Dp = 84.dp
 ) {
     val viewModel: ExamPlanViewModel = koinViewModel(vmClass = ExamPlanViewModel::class)
     //val viewModel: GSAppViewModel = koinInject()
@@ -100,14 +115,25 @@ fun ExamsScreen(
     Scaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .padding(bottom = 84.dp),
+            .padding(bottom = bottomPadding),
         topBar = {
-            MediumTopAppBar(
+            SupportMediumTopAppBar(
                 title = {
-                    Text(text = stringResource(MR.strings.tab_exams),
-                        fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
-                        style = MaterialTheme.typography.headlineMedium
-                    )
+                    Column {
+                        Text(text = stringResource(MR.strings.tab_exams),
+                            fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+
+                        Row {
+                            Text(
+                                text = stringResource(MR.strings.examplan_explain_coursework),
+                                fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                        }
+                    }
+
                 },
                 scrollBehavior = scrollBehavior,
                 actions = {
@@ -147,23 +173,33 @@ fun ExamsScreen(
                         .groupBy { it.date }
                         .forEach {
                             item {
-                                Text(
-                                    text = "${DateUtil.getWeekdayLong(it.key)}, " +
-                                            DateUtil.getDateAsString(it.key),
-                                    modifier = Modifier.padding(
-                                        start = 12.dp,
-                                        top = if(!isFirst) 12.dp else 0.dp
-                                    ),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.SemiBold
+                                ExamDateRow(
+                                    date = it.key,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = if (!isFirst) 18.dp else 0.dp)
                                 )
                             }
-                            items(it.value) { exam ->
-                                ExamCard(exam = exam)
+                            item {
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.padding(start = 8.dp)
+                                ) {
+                                    it.value.forEach {
+                                        ExamChip(
+                                            it,
+                                            modifier = Modifier
+                                        )
+                                    }
+                                }
                             }
                             isFirst = false
                         }
+
+                    item {
+                        // Bottom "overscroll" so no items are covered up by FAB
+                        Spacer(Modifier.height(72.dp))
+                    }
                 }
             }
 
@@ -210,4 +246,39 @@ private fun ExamCourseIcon(course: ExamCourse) {
         contentDescription = stringResource(course.descriptiveResource),
         modifier = Modifier.size(24.dp)
     )
+}
+
+//                top = if (!isFirst) 12.dp else 0.dp
+@Composable
+private fun ExamDateRow(date: LocalDate, modifier: Modifier = Modifier) {
+    Row(modifier) {
+        Text(
+            text = "${DateUtil.getWeekdayLong(date)}, " +
+                    DateUtil.getDateAsString(date),
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.titleMedium,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Text(text = date.todayUntilString())
+    }
+
+}
+
+private fun LocalDate.todayUntilString(): String {
+    val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+    val daysDiff = today.daysUntil(this)
+    val weeksDiff = daysDiff / 7
+
+    return if (daysDiff == 0)
+        "heute"
+    else if (daysDiff == 1)
+        "morgen"
+    else if (daysDiff > 7 && weeksDiff == 1)
+        "in 1 Woche"
+    else if (daysDiff > 7)
+        "in $weeksDiff Wochen"
+    else
+        "in $daysDiff Tagen"
 }

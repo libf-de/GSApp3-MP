@@ -26,6 +26,7 @@ import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import com.google.firebase.FirebaseApp
 import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.PushState
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +50,7 @@ class MainActivity : PreComposeActivity() {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
+    private val prefRepo: PreferencesRepository by inject()
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { }
@@ -78,6 +80,14 @@ class MainActivity : PreComposeActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         loadKoinModules(activityModule)
+
+        scope.launch {
+            if(prefRepo.getPush() != PushState.DISABLED) {
+                if(FirebaseApp.getApps(this@MainActivity).isEmpty()) {
+                    FirebaseApp.initializeApp(this@MainActivity)
+                }
+            }
+        }
 
         setContent {
             GSApp()

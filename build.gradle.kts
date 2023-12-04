@@ -22,3 +22,14 @@ buildscript {
         classpath(libs.kotlin.gradlePlugin)
     }
 }
+
+val buildInfo = tasks.register("createBuildInfoFile") {
+    doLast {
+        val buildInfoFile = File("$projectDir/composeApp/src/commonMain/kotlin/BuildInfo.kt")
+        buildInfoFile.writeText("object BuildInfo {\n" +
+                "    const val BUILD_VERSION = \"1.0.1\"\n" +
+                "    const val BUILD_NUMBER = 6000\n" +
+                "    const val IS_DEBUG = false\n" +
+                "}")
+    }
+}

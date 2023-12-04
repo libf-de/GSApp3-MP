@@ -7,9 +7,17 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     id(libs.plugins.mokoResources.get().pluginId)
-    /*alias(libs.plugins.mokoResources)*/
+    alias(libs.plugins.googleServices)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.sonarqube)
+}
+
+repositories {
+    mavenCentral()
+    google()
+    gradlePluginPortal()
+    // Multiplatform WebView for Desktop
+    maven("https://jogamp.org/deployment/maven")
 }
 
 kotlin {
@@ -115,6 +123,9 @@ kotlin {
             api(libs.precompose)
             api(libs.precompose.viewModel)
             api(libs.precompose.koin)
+
+            // WebView
+            api(libs.webview)
         }
 
         val javaMain by creating {
@@ -261,4 +272,17 @@ sqldelight {
         }
     }
     linkSqlite.set(true)
+}
+
+afterEvaluate {
+    tasks.withType<JavaExec> {
+        jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED")
+
+        if (System.getProperty("os.name").contains("Mac")) {
+            jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+            jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
+            jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
+        }
+    }
 }

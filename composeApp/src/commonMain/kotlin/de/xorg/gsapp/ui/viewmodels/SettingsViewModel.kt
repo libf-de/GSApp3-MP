@@ -257,8 +257,10 @@ class SettingsViewModel : ViewModel(), KoinComponent {
             pushUtil.ensurePushPermissions {  success ->
                 if(success) {
                     pushUtil.enablePushService {
-                        viewModelScope.launch {
-                            prefRepo.setPush(state)
+                        if(it) {
+                            viewModelScope.launch {
+                                prefRepo.setPush(state)
+                            }
                         }
                     }
                 }

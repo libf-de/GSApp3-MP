@@ -17,6 +17,7 @@ class AndroidPlatformImpl : PlatformInterface(), KoinComponent {
         Button(
             onClick = {
                 val intent = Intent(Intent.ACTION_SENDTO)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK;
                 intent.data = Uri.parse("mailto:xorgmc+gsapp3@gmail.com")
                 intent.putExtra(Intent.EXTRA_SUBJECT, "GSApp3-MP Fehlerreport")
                 intent.putExtra(
@@ -36,6 +37,7 @@ class AndroidPlatformImpl : PlatformInterface(), KoinComponent {
 
     override fun openUrl(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK;
         val context: Context by inject()
         context.startActivity(intent)
     }

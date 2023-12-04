@@ -38,14 +38,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Exam
 import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.materialtools.ColorRoles
 import de.xorg.gsapp.ui.materialtools.MaterialColors
 import dev.icerock.moko.resources.compose.fontFamilyResource
+import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -89,22 +93,23 @@ fun ExamCard(
 
             //=== SubjectCircle ===
             EncircledText(
-                value = exam.label,
+                text = {
+                    AdaptiveText(
+                        text = exam.label,
+                        maxWidth = 38.dp,
+                        defaultTextStyle = MaterialTheme.typography.titleMedium,
+                        color = Color(colorRoles.onAccent),
+                        modifier = Modifier/*.padding(bottom = 1.5f.dp)*/
+                    )
+                },
                 colorRoles = colorRoles,
-                modifier = Modifier.padding(end = 8.dp).alignByBaseline(),
-                fontFamily = fontFamilyResource(
-                    /*if(exam.label.length > 4) MR.fonts.SairaExtraCondensed.regular
-                    else if(exam.label.length > 2) MR.fonts.SairaSemiCondensed.regular
-                    else MR.fonts.Saira.regular*/
-                    if(exam.label.length > 4) MR.fonts.RobotoCondensed.regular
-                    else MR.fonts.Roboto.regular
-                )
+                modifier = Modifier.padding(end = 8.dp),
             )
 
-            Box(modifier = Modifier.weight(1f).alignByBaseline()) {
+            Box(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "$subjectTitle $subcourses",
-                    modifier = Modifier.padding(12.dp),
+                    modifier = Modifier/*.padding(12.dp)*/,
                     style = MaterialTheme.typography.titleLarge
                 )
             }
@@ -130,4 +135,70 @@ private fun LocalDate.todayUntilString(): String {
                 "in $weeksDiff Wochen"
            else
                 "in $daysDiff Tagen"
+}
+
+@Composable
+fun AdaptiveText(
+    text: String,
+    maxWidth: Dp, // Maximale Breite in dp
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    defaultTextStyle: TextStyle = MaterialTheme.typography.titleMedium,
+) {
+    SubcomposeLayout(modifier) { constraints ->
+        val maxPx = maxWidth.toPx()
+
+        // Subcompose und Messen des Textes mit der regulären Schriftart
+        val regularText = subcompose("regular") {
+            Text(
+                text = text,
+                style = defaultTextStyle,
+                color = color,
+                textAlign = TextAlign.Center,
+                softWrap = false,
+                modifier = Modifier
+            )
+        }.first().measure(constraints)
+
+        // Layout-Strategie basierend auf der Textlänge
+        layout(regularText.width, regularText.height) {
+            if (regularText.width >= maxPx) {
+                val condensedText = subcompose("condensed") {
+                    Text(
+                        text = text,
+                        color = color,
+                        style = defaultTextStyle.copy(
+                            fontFamily = fontFamilyResource(MR.fonts.SairaCondensed.medium),
+                        ),
+                        textAlign = TextAlign.Center,
+                        softWrap = false,
+                        modifier = Modifier
+                    )
+                }.first().measure(constraints)
+
+                if(condensedText.width >= maxPx) {
+                    subcompose("extracondensed") {
+                        Text(
+                            text = text,
+                            color = color,
+                            style = defaultTextStyle.copy(
+                                fontFamily = fontFamilyResource(MR.fonts.SairaExtraCondensed.medium),
+                            ),
+                            textAlign = TextAlign.Center,
+                            softWrap = false,
+                            modifier = Modifier
+                        )
+                    }.first().measure(constraints)
+                } else {
+                    condensedText
+                }.let {
+                    val x = (maxWidth.toPx() - it.width) / 2
+                    it.place(x.toInt(), 0)
+                }
+            } else {
+                // Platzieren des regulären Textes
+                regularText.place(0, 0)
+            }
+        }
+    }
 }

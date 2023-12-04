@@ -56,7 +56,6 @@ interface PreferencesRepository {
 
 
     fun getPushFlow(): Flow<PushState>
-    @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))
     suspend fun getPush(): PushState
     suspend fun setPush(value: PushState)
     @Deprecated("use flow instead", replaceWith = ReplaceWith("getPushFlow()"))

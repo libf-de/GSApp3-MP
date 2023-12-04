@@ -1,5 +1,5 @@
 PODS:
-  - composeApp (1.0.0):
+  - composeApp (1.0.3):
     - HTMLKit
     - sqlite3
   - HTMLKit (4.2.0)
@@ -20,7 +20,7 @@ EXTERNAL SOURCES:
     :path: "../composeApp"
 
 SPEC CHECKSUMS:
-  composeApp: 9477c7d4a24191a0994adca4956d945dab6c094b
+  composeApp: 72c5c8a84b67797350a22d267ebd2915ec2465af
   HTMLKit: e11ec9ed1a9be779e7dd65acdea5757fb113030e
   sqlite3: e0a0623a33a20a47cb5921552aebc6e9e437dc91
 

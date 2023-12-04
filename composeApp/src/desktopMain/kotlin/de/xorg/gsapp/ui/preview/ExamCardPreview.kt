@@ -16,23 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package de.xorg.gsapp.ui.theme
+package de.xorg.gsapp.ui.preview
 
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import de.xorg.gsapp.data.enums.ExamCourse
+import de.xorg.gsapp.data.model.Exam
+import de.xorg.gsapp.data.model.Subject
+import de.xorg.gsapp.ui.components.ExamCard
+import kotlinx.datetime.LocalDate
 
 @Composable
-actual fun GSAppTheme(
-    darkTheme: Boolean,
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean,
-    content: @Composable () -> Unit
-) {
-    val colorScheme = if(darkTheme) DarkColors else LightColors
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        /*typography = getTypography(),*/
-        content = content
-    )
+@Preview
+fun ExamCardPreview() {
+    ExamCard(exam = Exam(
+        "DE",
+        LocalDate(year = 2023, monthNumber = 11, dayOfMonth = 5),
+        ExamCourse.COURSE_12,
+        subject = Subject(
+            "De", "Deutsch", Color.Blue
+        )
+    ))
 }

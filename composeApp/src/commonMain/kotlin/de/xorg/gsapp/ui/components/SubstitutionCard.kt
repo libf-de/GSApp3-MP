@@ -68,7 +68,7 @@ fun SubstitutionCard(
         colorToHarmonize = value.origSubject.color.toArgb(),
         colorToHarmonizeWith = MaterialTheme.colorScheme.primary.toArgb())
     val colorRoles = MaterialColors.getColorRoles(color = harmonizedColor,
-        isLightTheme = isSystemInDarkTheme())
+        isLightTheme = !isSystemInDarkTheme())
 
 
     var isExpanded by remember { mutableStateOf(false) }
@@ -180,7 +180,14 @@ private fun SmallCardContent(
     ) {
         /**** begin LessonNumber | w=55.dp **/
         EncircledText(
-            value = value.lessonNrAsString(),
+            text = {
+                Text(text = value.lessonNrAsString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(colorRoles.onAccent),
+                    overflow = TextOverflow.Clip,
+                    softWrap = false,
+                    modifier = Modifier.padding(bottom = 1.5f.dp))
+            },
             colorRoles = colorRoles,
             modifier = Modifier
                 .padding(start = 15.dp,

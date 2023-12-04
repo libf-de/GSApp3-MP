@@ -98,53 +98,57 @@ val DarkColors = darkColorScheme(
 
 @Composable
 fun getTypography(): Typography {
-    return MaterialTheme.typography.copy(
+    /*return MaterialTheme.typography.copy(
         displayLarge = MaterialTheme.typography.displayLarge.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+            fontFamily = fontFamilyResource(MR.fonts.Saira.regular),
         ),
         displayMedium = MaterialTheme.typography.displayMedium.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+            fontFamily = fontFamilyResource(MR.fonts.Saira.regular),
         ),
         displaySmall = MaterialTheme.typography.displaySmall.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
-        ),
-        titleLarge = MaterialTheme.typography.titleLarge.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
-        ),
-        titleMedium = MaterialTheme.typography.titleMedium.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
-        ),
-        titleSmall = MaterialTheme.typography.titleSmall.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
-        ),
-        bodyLarge = MaterialTheme.typography.bodyLarge.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
-        ),
-        bodyMedium = MaterialTheme.typography.bodyMedium.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
-        ),
-        bodySmall = MaterialTheme.typography.bodySmall.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
-        ),
-        labelLarge = MaterialTheme.typography.labelLarge.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
-        ),
-        labelMedium = MaterialTheme.typography.labelMedium.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
-        ),
-        labelSmall = MaterialTheme.typography.labelSmall.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+            fontFamily = fontFamilyResource(MR.fonts.Saira.regular),
         ),
         headlineLarge = MaterialTheme.typography.headlineLarge.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+            fontFamily = fontFamilyResource(MR.fonts.Saira.regular),
         ),
         headlineMedium = MaterialTheme.typography.headlineMedium.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+            fontFamily = fontFamilyResource(MR.fonts.Saira.regular),
         ),
         headlineSmall = MaterialTheme.typography.headlineSmall.copy(
-            fontFamily = fontFamilyResource(MR.fonts.Saira.variable),
+            fontFamily = fontFamilyResource(MR.fonts.Saira.regular),
         ),
-    )
+        titleLarge = MaterialTheme.typography.titleLarge.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.regular),
+        ),
+        titleMedium = MaterialTheme.typography.titleMedium.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.medium),
+        ),
+        titleSmall = MaterialTheme.typography.titleSmall.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.medium),
+        ),
+        bodyLarge = MaterialTheme.typography.bodyLarge.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.regular),
+        ),
+        bodyMedium = MaterialTheme.typography.bodyMedium.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.regular),
+        ),
+        bodySmall = MaterialTheme.typography.bodySmall.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.regular),
+        ),
+        labelLarge = MaterialTheme.typography.labelLarge.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.medium),
+        ),
+
+        labelMedium = MaterialTheme.typography.labelMedium.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.medium),
+        ),
+        labelSmall = MaterialTheme.typography.labelSmall.copy(
+            fontFamily = fontFamilyResource(MR.fonts.Saira.medium),
+        ),
+
+    )*/
+
+    return MaterialTheme.typography
 }
 
 @Composable

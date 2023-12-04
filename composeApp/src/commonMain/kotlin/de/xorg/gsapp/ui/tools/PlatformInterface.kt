@@ -20,7 +20,7 @@ abstract class PlatformInterface {
     fun FeedbackButton(
         modifier: Modifier = Modifier
     ) {
-        IconButton(onClick = { openUrl("https://c.libf.de/") }) {
+        IconButton(onClick = { openUrl("https://agdsn.me/~xorg/gsapp3/feedback/") }) {
             Icon(painter = painterResource(MR.images.feedback),
                 contentDescription = "Feedback"
             )

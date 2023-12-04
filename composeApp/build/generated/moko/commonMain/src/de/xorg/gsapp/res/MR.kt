@@ -81,6 +81,8 @@ public expect object MR {
 
     public val tab_foodplan: StringResource
 
+    public val tab_foodorder: StringResource
+
     public val tab_exams: StringResource
 
     public val subplan_date_header_fmt: StringResource
@@ -116,6 +118,8 @@ public expect object MR {
     public val examplan_course_eleven: StringResource
 
     public val examplan_course_twelve: StringResource
+
+    public val examplan_explain_coursework: StringResource
 
     public val settings_title: StringResource
 
@@ -210,6 +214,8 @@ public expect object MR {
     public val push_disabled_success: StringResource
 
     public val push_disabled_failure: StringResource
+
+    public val push_enabled_failure_timeout: StringResource
 
     public val dialog_save: StringResource
 
@@ -319,6 +325,8 @@ public expect object MR {
 
     public val filter_value: ImageResource
 
+    public val foodorder: ImageResource
+
     public val foodplan: ImageResource
 
     public val groups: ImageResource
@@ -339,64 +347,26 @@ public expect object MR {
       public val regular: FontResource
     }
 
-    public object Roboto {
-      public val regular: FontResource
-    }
-
     public object RobotoCondensed {
-      public val regular: FontResource
+      public val medium: FontResource
     }
 
     public object Saira {
-      public val black: FontResource
-
-      public val blackItalic: FontResource
-
       public val bold: FontResource
 
-      public val boldItalic: FontResource
-
-      public val extraBold: FontResource
-
-      public val extraBoldItalic: FontResource
-
-      public val extraLight: FontResource
-
-      public val extraLightItalic: FontResource
-
-      public val italic: FontResource
-
-      public val light: FontResource
-
-      public val lightItalic: FontResource
-
       public val medium: FontResource
-
-      public val mediumItalic: FontResource
 
       public val regular: FontResource
 
       public val semiBold: FontResource
-
-      public val semiBoldItalic: FontResource
-
-      public val thin: FontResource
-
-      public val thinItalic: FontResource
-
-      public val variable: FontResource
     }
 
     public object SairaCondensed {
-      public val regular: FontResource
+      public val medium: FontResource
     }
 
     public object SairaExtraCondensed {
-      public val regular: FontResource
-    }
-
-    public object SairaSemiCondensed {
-      public val regular: FontResource
+      public val medium: FontResource
     }
   }
 

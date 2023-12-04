@@ -65,7 +65,7 @@ import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.compose.koinInject
 import androidx.compose.foundation.lazy.items
-
+import androidx.compose.ui.unit.Dp
 
 
 /**
@@ -74,7 +74,8 @@ import androidx.compose.foundation.lazy.items
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun SubstitutionsScreen(
-    navController: Navigator
+    navController: Navigator,
+    bottomPadding: Dp = 84.dp
 ) {
     val viewModel: SubstitutionPlanViewModel = koinViewModel(vmClass = SubstitutionPlanViewModel::class)
     //val viewModel: GSAppViewModel = koinInject()
@@ -98,7 +99,7 @@ fun SubstitutionsScreen(
     Scaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .padding(bottom = 84.dp),
+            .padding(bottom = bottomPadding),
         topBar = {
             SupportMediumTopAppBar(
                 title = {

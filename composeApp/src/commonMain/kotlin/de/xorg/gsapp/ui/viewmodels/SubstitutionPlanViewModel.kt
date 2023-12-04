@@ -3,9 +3,12 @@ package de.xorg.gsapp.ui.viewmodels
 import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.ui.state.ComponentState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
+import moe.tlaster.precompose.viewmodel.viewModelScope
 
 class SubstitutionPlanViewModel : GSAppViewModel() {
     private val _substitutionState =
@@ -30,7 +33,12 @@ class SubstitutionPlanViewModel : GSAppViewModel() {
 
     init {
         initState(subFlow, _substitutionState)
-        refresh()
+        viewModelScope.launch {
+            while(_substitutionState.value is ComponentState.Loading) {
+                delay(100)
+            }
+            refresh()
+        }
     }
 
     fun refresh() = refresh(
