@@ -45,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -88,6 +89,7 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -108,31 +110,31 @@ fun FoodplanScreen(
 ) {
     val viewModel: FoodplanViewModel = koinViewModel(vmClass = FoodplanViewModel::class)
     val platformInterface: PlatformInterface = koinInject()
-    //val viewModel: GSAppViewModel = koinInject()
 
+    // Used to set correct margins according to device size
     val windowSizeClass = calculateWindowSizeClass()
 
-    val listState = rememberLazyListState()
+    // Used for collapsing TopAppBar
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         rememberTopAppBarState()
     )
 
-    /*val foodplanState by viewModel.foodplanState.collectAsStateWithLifecycle()*/
+    // Composable state
     val foodplanState by viewModel.componentState.collectAsStateWithLifecycle()
 
+    // Used to preselect current day
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-
     val todayIndex = with(foodplanState.dataOrDefault(emptyMap())) {
         if(this.keys.contains(today))
             this.keys.indexOf(today)
         else 0
     }
-
     val pagerState = rememberPagerState(initialPage = todayIndex) {
         foodplanState.dataOrDefault(emptyMap()).size
     }
     var currentPageIndex by remember { mutableStateOf(todayIndex) }
 
+    // Matches the Days-Tabbar color to the TopAppBar color
     var appBarColor by remember { mutableStateOf(Color.Transparent) }
 
     with(pagerState) {
@@ -159,13 +161,7 @@ fun FoodplanScreen(
                     )
                 },
                 scrollBehavior = scrollBehavior,
-                colors = /*if(getPlatformName() != "Android") //TopAppBar currently does not color correctly on desktop/ios TODO: Remove when fixed
-                            SupportTopAppBarDefaults.supportMediumTopAppBarColors(
-                                containerColor = if (listState.firstVisibleItemIndex == 0)
-                                    MaterialTheme.colorScheme.background
-                                else
-                                    MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
-                         else */SupportTopAppBarDefaults.supportMediumTopAppBarColors(),
+                colors = SupportTopAppBarDefaults.supportMediumTopAppBarColors(),
                 actions = {
                     IconButton(onClick = {
                         platformInterface.openUrl("https://schulkueche-bestellung.de/")
@@ -196,42 +192,16 @@ fun FoodplanScreen(
                 LazyColumn(
                     modifier = Modifier
                         .padding(innerPadding),
-                    state = listState,
                     verticalArrangement = Arrangement.spacedBy(16.dp) ) {
                     // Tabs
                     stickyHeader {
                         Column {
-                            ScrollableTabRow(
-                                edgePadding = 20.dp,
-                                containerColor = appBarColor/*if (listState.firstVisibleItemIndex == 0)
-                                    MaterialTheme.colorScheme.background
-                                else
-                                    MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),*/,
-                                contentColor = MaterialTheme.colorScheme.onBackground,
+                            DayTabRow(
+                                days = foodplan.data.keys,
                                 selectedTabIndex = pagerState.currentPage,
-                                indicator = { tabPos ->
-                                    FancyIndicator(modifier = if(tabPos.size > pagerState.currentPage)
-                                        Modifier.tabIndicatorOffset(tabPos[pagerState.currentPage])
-                                    else Modifier
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                foodplan.data.entries.forEachIndexed { index, entry ->
-                                    Tab(
-                                        modifier = Modifier.wrapContentWidth(),
-                                        text = {
-                                            Text("${DateUtil.getWeekdayLong(entry.key)}\n" +
-                                                    DateUtil.getDateAsString(entry.key)
-                                            )
-                                        },
-                                        selected = pagerState.currentPage == index,
-                                        onClick = {
-                                            currentPageIndex = index
-                                        }
-                                    )
-                                }
-                            }
+                                onTabSelected = { currentPageIndex = it },
+                                containerColor = appBarColor
+                            )
                         }
                     }
                     item {
@@ -244,11 +214,7 @@ fun FoodplanScreen(
                             Column(
                                 modifier = Modifier
                                     .windowSizeMargins(windowSizeClass)
-                                    /*.padding(horizontal = 20.dp)*/
-                                    .verticalScroll(
-                                        rememberScrollState(),
-                                        /*enabled = isScrolledDownState.currentState*/
-                                    ),
+                                    .verticalScroll(rememberScrollState()),
                                 verticalArrangement = Arrangement.Top
                             ) {
                                 if(page >= foodplan.data.size) {
@@ -317,6 +283,41 @@ fun FoodplanScreen(
                         .windowSizeMargins(windowSizeClass)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun DayTabRow(
+    days: Set<LocalDate>,
+    selectedTabIndex: Int,
+    onTabSelected: (Int) -> Unit,
+    containerColor: Color
+) {
+    ScrollableTabRow(
+        edgePadding = 20.dp,
+        containerColor = containerColor,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        selectedTabIndex = selectedTabIndex,
+        indicator = { tabPos ->
+            FancyIndicator(modifier = if(tabPos.size > selectedTabIndex)
+                Modifier.tabIndicatorOffset(tabPos[selectedTabIndex])
+            else Modifier
+            )
+        },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        days.forEachIndexed { index, date ->
+            Tab(
+                modifier = Modifier.wrapContentWidth(),
+                text = {
+                    Text("${DateUtil.getWeekdayLong(date)}\n" +
+                            DateUtil.getDateAsString(date)
+                    )
+                },
+                selected = selectedTabIndex == index,
+                onClick = { onTabSelected(index) }
+            )
         }
     }
 }
