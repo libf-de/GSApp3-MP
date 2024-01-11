@@ -34,7 +34,6 @@ sonarqube = "4.4.1.3373"
 sqldelight = "2.0.0"
 precompose = "1.5.1"
 logging = "2.6.1"
-webview = "1.7.4"
 windowSizeClass = "0.3.1"
 
 
@@ -84,7 +83,6 @@ precompose = { module = "moe.tlaster:precompose", version.ref = "precompose" }
 precompose-viewModel = { module = "moe.tlaster:precompose-viewmodel", version.ref = "precompose" }
 precompose-koin = { module = "moe.tlaster:precompose-koin", version.ref = "precompose" }
 logging = { module = "io.github.aakira:napier", version.ref = "logging" }
-webview = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "webview"}
 windowSizeClass = { module = "dev.chrisbanes.material3:material3-window-size-class-multiplatform", version.ref = "windowSizeClass"}
 
 [plugins]

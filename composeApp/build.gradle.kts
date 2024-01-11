@@ -12,14 +12,6 @@ plugins {
     alias(libs.plugins.sonarqube)
 }
 
-repositories {
-    mavenCentral()
-    google()
-    gradlePluginPortal()
-    // Multiplatform WebView for Desktop
-    maven("https://jogamp.org/deployment/maven")
-}
-
 kotlin {
     kotlin.applyDefaultHierarchyTemplate()
 
@@ -123,9 +115,6 @@ kotlin {
             api(libs.precompose)
             api(libs.precompose.viewModel)
             api(libs.precompose.koin)
-
-            // WebView
-            api(libs.webview)
         }
 
         val javaMain by creating {

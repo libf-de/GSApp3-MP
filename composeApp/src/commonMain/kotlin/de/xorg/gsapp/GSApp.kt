@@ -34,10 +34,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.screens.ExamsScreen
-import de.xorg.gsapp.ui.screens.FoodOrderScreen
 import de.xorg.gsapp.ui.screens.FoodplanScreen
 import de.xorg.gsapp.ui.screens.SubstitutionsScreen
 import de.xorg.gsapp.ui.screens.screens
@@ -125,7 +123,7 @@ fun GSApp() {
                 NavHost(
                     navigator = navigator,
                     navTransition = NavTransition(),
-                    initialRoute = GSAppRoutes.SUBSTITUTIONS, //TODO: Revert back to SUBSTITUTIONS
+                    initialRoute = GSAppRoutes.SUBSTITUTIONS,
                 ) {
                     scene(
                         route = GSAppRoutes.SUBSTITUTIONS,
@@ -153,20 +151,6 @@ fun GSApp() {
                         hideNavBar = false
                         hideNavBarState.targetState = true
                         FoodplanScreen(navigator)
-                    }
-
-                    scene(
-                        route = GSAppRoutes.FOODORDER,
-                        navTransition = NavTransition(
-                            createTransition = fadeIn(),
-                            resumeTransition = fadeIn(),
-                            destroyTransition = fadeOut(),
-                            pauseTransition = fadeOut(),
-                        ),
-                    ) {
-                        hideNavBar = false
-                        hideNavBarState.targetState = true
-                        FoodOrderScreen(navigator)
                     }
 
                     scene(
