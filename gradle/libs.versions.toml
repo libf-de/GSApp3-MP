@@ -1,6 +1,6 @@
 [versions]
-gsapp-versionName = "1.0.3"
-gsapp-versionCode = "6103"
+gsapp-versionName = "1.0.4"
+gsapp-versionCode = "6104"
 agp = "8.1.3"
 android-minSdk = "24"
 android-compileSdk = "34"

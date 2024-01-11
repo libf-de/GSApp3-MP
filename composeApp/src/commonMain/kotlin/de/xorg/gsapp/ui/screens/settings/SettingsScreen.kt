@@ -152,7 +152,7 @@ fun SettingsScreen(
                         contentDescription = "",
                         modifier = mod, tint = tint) },
                     title = "GSApp3 Multiplat(t)form",
-                    subtitle = "Version 1.0.3-dev",
+                    subtitle = "Version 1.0.4-dev",
                     onClick = { }
                 )
             }
