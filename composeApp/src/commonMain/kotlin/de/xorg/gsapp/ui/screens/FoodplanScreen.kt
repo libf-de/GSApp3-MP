@@ -75,12 +75,14 @@ import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.state.dataOrDefault
 import de.xorg.gsapp.ui.state.isLoading
 import de.xorg.gsapp.ui.tools.DateUtil
+import de.xorg.gsapp.ui.tools.PlatformInterface
 import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
 import de.xorg.gsapp.ui.tools.SupportTopAppBarDefaults
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.FoodplanViewModel
 import dev.icerock.moko.resources.compose.fontFamilyResource
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -91,6 +93,7 @@ import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
+import org.koin.compose.koinInject
 
 /**
  * The foodplan-tab composable
@@ -104,6 +107,7 @@ fun FoodplanScreen(
     bottomPadding: Dp = 84.dp
 ) {
     val viewModel: FoodplanViewModel = koinViewModel(vmClass = FoodplanViewModel::class)
+    val platformInterface: PlatformInterface = koinInject()
     //val viewModel: GSAppViewModel = koinInject()
 
     val windowSizeClass = calculateWindowSizeClass()
@@ -163,6 +167,13 @@ fun FoodplanScreen(
                                     MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp))
                          else */SupportTopAppBarDefaults.supportMediumTopAppBarColors(),
                 actions = {
+                    IconButton(onClick = {
+                        platformInterface.openUrl("https://schulkueche-bestellung.de/")
+                    }) {
+                        Icon(painter = painterResource(MR.images.foodorder),
+                             contentDescription = stringResource(MR.strings.tab_foodorder))
+                    }
+
                     IconButton(onClick = { viewModel.refresh() }) {
                         Icon(imageVector = Icons.Rounded.Refresh,
                             contentDescription = null,
