@@ -1,7 +1,6 @@
 package de.xorg.gsapp.ui.components
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
@@ -14,20 +13,18 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Exam
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.materialtools.MaterialColors
-import dev.icerock.moko.resources.compose.stringResource
 
 @Composable
 fun ExamChip(
     exam: Exam,
     modifier: Modifier = Modifier
 ) {
-    val subjectTitle = remember {
+    val subjectTitle = remember(key1 = exam.hashCode()) {
         exam.subject?.longName ?: exam.label.filter { it.isLetter() }
     }
 
-    val subcourses = remember {
+    val subcourses = remember(key1 = exam.hashCode()) {
         exam.label
             .filter { it.isDigit() }
             .map { it.toString() }
