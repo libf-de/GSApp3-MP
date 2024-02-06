@@ -217,6 +217,8 @@ public expect object MR {
 
     public val push_enabled_failure_timeout: StringResource
 
+    public val push_firebase_loading: StringResource
+
     public val dialog_save: StringResource
 
     public val dialog_cancel: StringResource
@@ -250,6 +252,8 @@ public expect object MR {
     public val failed_send_dev: StringResource
 
     public val unknown_cause: StringResource
+
+    public val open_url_failed: StringResource
 
     public val subject_de: StringResource
 

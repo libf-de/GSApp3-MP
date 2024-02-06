@@ -71,18 +71,6 @@ class SettingsViewModel : ViewModel(), KoinComponent {
         replay = 1
     )
 
-    /*private val _rolePreference: MutableStateFlow<FilterRole> = MutableStateFlow(FilterRole.ALL)
-    var rolePreference = _rolePreference.asStateFlow()
-
-    private val _filterPreference: MutableStateFlow<String> = MutableStateFlow("")
-    var filterPreference = _filterPreference.asStateFlow()
-
-    private val _pushPreference: MutableStateFlow<PushState> = MutableStateFlow(PushState.DISABLED)
-    var pushPreference = _pushPreference.asStateFlow()*/
-
-
-    /*private val _teachers: MutableStateFlow<List<Teacher>> = MutableStateFlow(emptyList())
-    var teachers = _teachers.asStateFlow()*/
     val teachers = dataRepo.getTeachers().shareIn(
         viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -98,8 +86,7 @@ class SettingsViewModel : ViewModel(), KoinComponent {
         started = SharingStarted.WhileSubscribed(5000),
         replay = 1
     )
-    /*private val _subjects: MutableStateFlow<List<Subject>> = MutableStateFlow(emptyList())
-    var subjects = _subjects.asStateFlow()*/
+
     var subjectsState by mutableStateOf(UiState.LOADING)
         private set
     private val _subjectsError: MutableStateFlow<Throwable> = MutableStateFlow(NoException())
@@ -107,6 +94,9 @@ class SettingsViewModel : ViewModel(), KoinComponent {
 
     private val _colorpickerMode: MutableStateFlow<ColorPickerMode> = MutableStateFlow(ColorPickerMode.default)
     var colorpickerMode = _colorpickerMode.asStateFlow()
+
+    private val _firebaseLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    var firebaseLoading = _firebaseLoading.asStateFlow()
 
 
 
@@ -163,64 +153,6 @@ class SettingsViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    /*private fun loadSettings() {
-        viewModelScope.launch {
-            _rolePreference.value = dataRepo.getRole()
-            _filterPreference.value = dataRepo.getFilterValue()
-            _pushPreference.value = dataRepo.getPush()
-        }
-    }*/
-
-    /*private fun loadSubjects() {
-        subjectsState = UiState.LOADING
-
-        viewModelScope.launch {
-            appRepo.collect { subjectResult ->
-                if(subjectResult.isFailure) {
-                    subjectsState = UiState.FAILED
-                    _subjectsError.value = subjectResult.exceptionOrNull()!!
-                    return@collect
-                }
-
-                val subjectsList: List<Subject> = subjectResult.getOrNull()!!
-                if(subjectsList.isEmpty()) {
-                    subjectsState = UiState.EMPTY
-                    return@collect
-                }
-
-                subjectsState = UiState.NORMAL
-                _subjects.value = subjectsList
-            }
-        }
-    }*/
-
-    /*private fun loadTeachers() {
-        teacherState = UiState.LOADING
-        //_teacherState.value = UiState.LOADING
-
-        viewModelScope.launch {
-            appRepo.teachers.collect { teacherResult ->
-                if(teacherResult.isFailure) {
-                    teacherState = UiState.FAILED
-                    //_teacherState.value = UiState.FAILED
-                    _teacherError.value = teacherResult.exceptionOrNull()!!
-                    return@collect
-                }
-
-                val teacherList: List<Teacher> = teacherResult.getOrNull()!!
-                if(teacherList.isEmpty()) {
-                    teacherState = UiState.EMPTY
-                    //_teacherState.value = UiState.EMPTY
-                    return@collect
-                }
-
-                teacherState = UiState.NORMAL
-                //_teacherState.value = UiState.NORMAL
-                _teachers.value = teacherList
-            }
-        }
-    }*/
-
     fun addSubject(subject: Subject) {
         viewModelScope.launch {
             dataRepo.addSubject(subject)
@@ -256,10 +188,12 @@ class SettingsViewModel : ViewModel(), KoinComponent {
         if(state == PushState.ENABLED || state == PushState.LIKE_FILTER) {
             pushUtil.ensurePushPermissions {  success ->
                 if(success) {
+                    _firebaseLoading.value = true
                     pushUtil.enablePushService {
                         if(it) {
                             viewModelScope.launch {
                                 prefRepo.setPush(state)
+                                _firebaseLoading.value = false
                             }
                         }
                     }
@@ -267,9 +201,11 @@ class SettingsViewModel : ViewModel(), KoinComponent {
                 //TODO: Notify user of missing permissions!
             }
         } else {
+            _firebaseLoading.value = true
             pushUtil.disablePushService {
                 viewModelScope.launch {
                     prefRepo.setPush(state)
+                    _firebaseLoading.value = false
                 }
             }
         }
@@ -280,13 +216,6 @@ class SettingsViewModel : ViewModel(), KoinComponent {
             prefRepo.setFilter(filter)
         }
     }
-
-    /*fun setRoleAndFilter(role: Filter.Role, filter: String) {
-        viewModelScope.launch {
-            prefRepo.setRole(role)
-            prefRepo.setFilterValue(filter)
-        }
-    }*/
 
     fun setColorpickerMode(pickerMode: ColorPickerMode) {
         _colorpickerMode.value = pickerMode

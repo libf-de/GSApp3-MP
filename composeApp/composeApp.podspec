@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'composeApp'
-    spec.version                  = '1.0.4'
+    spec.version                  = '1.0.5'
     spec.homepage                 = 'https://libf.de/gsapp'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''

@@ -148,6 +148,7 @@
     <string name="push_disabled_success">Push-Benachrichtigungen deaktiviert</string>
     <string name="push_disabled_failure">Push-Benachrichtigungen konnten nicht deaktiviert werden</string>
     <string name="push_enabled_failure_timeout">Push-Benachrichtigungen konnten nicht aktiviert werden, da FirebaseApp nicht rechtzeitig initialisiert wurde. Versuche es bitte erneut.</string>
+    <string name="push_firebase_loading">Kommuniziere mit dem Server...</string>
 
     <!--~~~~ Generics ~~~~-->
     <!-- General dialog buttons -->
@@ -168,6 +169,7 @@
     <string name="failed_to_load">%s konnte nicht geladen werden</string>
     <string name="failed_send_dev">Bitte sende diesen Fehler an den Entwickler:</string>
     <string name="unknown_cause">Unbekannte Ursache</string>
+    <string name="open_url_failed">Es wurde kein Browser zum Öffnen des Links gefunden.</string>
 
     <!-- Subjects -->
     <string name="subject_de">Deutsch</string>

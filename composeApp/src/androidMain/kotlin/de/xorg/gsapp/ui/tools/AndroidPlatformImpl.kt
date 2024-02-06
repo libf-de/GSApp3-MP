@@ -1,12 +1,15 @@
 package de.xorg.gsapp.ui.tools
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import dev.icerock.moko.resources.format
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -39,6 +42,17 @@ class AndroidPlatformImpl : PlatformInterface(), KoinComponent {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK;
         val context: Context by inject()
-        context.startActivity(intent)
+        try {
+            context.startActivity(intent)
+        } catch(a: ActivityNotFoundException) {
+            a.printStackTrace()
+
+            Toast.makeText(
+                context,
+                de.xorg.gsapp.res.MR.strings.open_url_failed.getString(context),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
     }
 }

@@ -18,19 +18,28 @@
 
 package de.xorg.gsapp.ui.screens.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -38,7 +47,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.data.push.PushNotificationUtil
@@ -74,6 +88,7 @@ fun SettingsScreen(
     val filterState by viewModel.filterFlow.collectAsStateWithLifecycle(Filter.NONE)
 
     var showPushDialog by remember { mutableStateOf(false) }
+    val firebaseLoading by viewModel.firebaseLoading.collectAsStateWithLifecycle()
 
     Scaffold(modifier = modifier,
         topBar = {
@@ -88,6 +103,33 @@ fun SettingsScreen(
             },
         )
     }) {
+        if (firebaseLoading) {
+            Dialog(
+                onDismissRequest = {  },
+                DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+            ) {
+                Box(
+                    contentAlignment= Alignment.Center,
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceColorAtElevation(6.0.dp),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.padding(horizontal = 36.dp, vertical = 18.dp)
+                    ) {
+                        CircularProgressIndicator()
+                        Text(text = stringResource(MR.strings.push_firebase_loading))
+                    }
+
+                }
+            }
+        }
+
+
         if(showPushDialog) {
             SettingsRadioDialog(
                 icon = { Icon(imageVector = Icons.Rounded.Notifications, contentDescription = "")},
@@ -152,7 +194,7 @@ fun SettingsScreen(
                         contentDescription = "",
                         modifier = mod, tint = tint) },
                     title = "GSApp3 Multiplat(t)form",
-                    subtitle = "Version 1.0.4-dev",
+                    subtitle = "Version 1.0.5-dev",
                     onClick = { }
                 )
             }

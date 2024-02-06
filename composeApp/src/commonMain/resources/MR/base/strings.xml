@@ -149,6 +149,7 @@
     <string name="push_disabled_success">Push notifications disabled</string>
     <string name="push_disabled_failure">Failed to disable push notifications</string>
     <string name="push_enabled_failure_timeout">Failed to enable push notifications, as FirebaseApp did not initialize in time. Please try again later.</string>
+    <string name="push_firebase_loading">Communicating with push server...</string>
 
     <!--~~~~ Generics ~~~~-->
     <!-- General dialog buttons -->
@@ -171,6 +172,7 @@
     <string name="failed_to_load">Failed to load %s</string>
     <string name="failed_send_dev">Please send a report with this error to the developer:</string>
     <string name="unknown_cause">Unknown cause</string>
+    <string name="open_url_failed">No browser found to open the URL!</string>
 
     <!-- Subjects -->
     <string name="subject_de">German</string>

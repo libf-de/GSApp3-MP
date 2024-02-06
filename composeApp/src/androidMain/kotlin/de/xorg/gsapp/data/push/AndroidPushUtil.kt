@@ -35,6 +35,7 @@ import de.xorg.gsapp.res.MR
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -46,12 +47,28 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
 
     override val isSupported: Boolean = true
 
+    /*
+     * This is a workaround to check if FirebaseApp was deleted.
+     * See {@link disablePushService} for more information.
+     */
+    private fun isFirebaseDeleted(): Boolean {
+        return try {
+            FirebaseApp.getInstance().applicationContext
+            false
+        } catch (ex: IllegalStateException) {
+            true
+        }
+    }
+
     override fun enablePushService(callback: (success: Boolean) -> Unit) {
-        if(FirebaseApp.getApps(context).isEmpty()) {
+        if(isFirebaseDeleted() || FirebaseApp.getApps(context).isEmpty()) {
             FirebaseApp.initializeApp(context)
         }
 
         try {
+            // This is used to ensure FirebaseApp is not deleted, see {@link disablePushService}
+            FirebaseApp.getInstance().applicationContext
+
             Firebase.messaging.isAutoInitEnabled = true
             Firebase.messaging.subscribeToTopic("substitutions")
                 .addOnCompleteListener { task ->
@@ -62,6 +79,12 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
                     }
                     Log.d(TAG, msg)
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    callback(false)
+                }
+                .addOnCanceledListener {
+                    callback(false)
                 }
         } catch(ex: IllegalStateException) {
             Toast.makeText(
@@ -78,6 +101,14 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
 
     override fun disablePushService(callback: (success: Boolean) -> Unit) {
         try {
+            // This is used to check if FirebaseApp is not deleted
+            // I don't think there is a public method to check this, and the
+            // app crashes in Firebase code if the instance was deleted, without
+            // any way to catch the exception. So just try to access the context,
+            // which fails (HERE) with a IllegalStateException if the instance was
+            // deleted.
+            FirebaseApp.getInstance().applicationContext
+
             // Delete Firebase Instance ID
             Firebase.messaging.deleteToken()
 
@@ -86,6 +117,9 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
 
             Firebase.messaging.unsubscribeFromTopic("substitutions")
                 .addOnCompleteListener { task ->
+                    // Uninitialize FirebaseApp
+                    FirebaseApp.getInstance().delete()
+
                     callback(task.isSuccessful)
                     var msg = MR.strings.push_disabled_success.getString(context)
                     if (!task.isSuccessful) {
@@ -94,9 +128,12 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
                     Log.d(TAG, msg)
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 }
-
-            // Uninitialize FirebaseApp
-            FirebaseApp.getInstance().delete()
+                .addOnFailureListener {
+                    callback(false)
+                }
+                .addOnCanceledListener {
+                    callback(false)
+                }
         } catch(ex: IllegalStateException) {
             Log.e(TAG, "FirebaseApp did not initialize in time :/")
             ex.printStackTrace()
