@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.compose.ExperimentalComposeLibrary
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -39,6 +40,17 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        moduleName = "composeApp"
+        browser {
+            commonWebpackConfig {
+                outputFileName = "composeApp.js"
+            }
+        }
+        binaries.executable()
+    }
 
     cocoapods {
         version = libs.versions.gsapp.versionName.get()
@@ -91,18 +103,14 @@ kotlin {
 
             // Ktor -> used to do web requests
             implementation(libs.ktor)
-            implementation(libs.ktor.cio)
+
 
             // Multiplatform Settings
             implementation(libs.multiplatformSettings)
-            implementation(libs.multiplatformSettings.coroutines)
 
             // Multiplatform Resources (moko resources)
-            api(libs.moko.resources)
-            api(libs.moko.resources.compose)
-
-            // Sqldelight coroutines extension
-            implementation(libs.sqldelight.coroutines)
+            /*api(libs.moko.resources)
+            api(libs.moko.resources.compose)*/
 
             // Window size classes
             implementation(libs.windowSizeClass)
@@ -117,6 +125,20 @@ kotlin {
             api(libs.precompose.koin)
         }
 
+        val nonWebMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                // Sqldelight coroutines extension
+                implementation(libs.sqldelight.coroutines)
+
+                // Multiplatform Settings Coroutines extension
+                implementation(libs.multiplatformSettings.coroutines)
+
+                // Ktor CIO engine
+                implementation(libs.ktor.cio)
+            }
+        }
+
         val javaMain by creating {
             dependsOn(commonMain.get())
             dependencies {
@@ -126,6 +148,7 @@ kotlin {
         }
 
         val androidMain by getting {
+            dependsOn(nonWebMain)
             dependsOn(javaMain)
             dependencies {
                 implementation(libs.compose.ui)
@@ -154,15 +177,20 @@ kotlin {
             }
         }
 
-        iosMain.dependencies {
-            //Sqldelight iOS database driver
-            implementation(libs.sqldelight.driver.native)
+        iosMain {
+            dependsOn(nonWebMain)
 
-            //Ktor iOS client - needed for TLS sessions
-            implementation(libs.ktor.darwin)
+            dependencies {
+                //Sqldelight iOS database driver
+                implementation(libs.sqldelight.driver.native)
+
+                //Ktor iOS client - needed for TLS sessions
+                implementation(libs.ktor.darwin)
+            }
         }
 
         val desktopMain by getting {
+            dependsOn(nonWebMain)
             dependsOn(javaMain)
             dependencies {
                 // Compose Multiplatform dependencies
@@ -274,4 +302,8 @@ afterEvaluate {
             jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
         }
     }
+}
+
+compose.experimental {
+    web.application {}
 }
