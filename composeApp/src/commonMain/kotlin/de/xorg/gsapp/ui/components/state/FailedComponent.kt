@@ -8,11 +8,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import de.xorg.gsapp.ui.tools.PlatformInterface
-import de.xorg.gsapp.res.MR
-import dev.icerock.moko.resources.StringResource
-import dev.icerock.moko.resources.compose.stringResource
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.failed_send_dev
+import gsapp.composeapp.generated.resources.failed_to_load
+import gsapp.composeapp.generated.resources.unknown_cause
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.koin.compose.koinInject
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun FailedComponent(
     exception: Throwable,
@@ -22,6 +27,7 @@ fun FailedComponent(
     FailedComponent(exception, stringResource(where), modifier)
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun FailedComponent(
     exception: Throwable,
@@ -34,11 +40,11 @@ fun FailedComponent(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = stringResource(MR.strings.failed_to_load, where),
+            text = stringResource(Res.string.failed_to_load, where),
             style = MaterialTheme.typography.titleMedium
         )
-        Text(exception.message ?: stringResource(MR.strings.unknown_cause))
-        Text(stringResource(MR.strings.failed_send_dev))
+        Text(exception.message ?: stringResource(Res.string.unknown_cause))
+        Text(stringResource(Res.string.failed_send_dev))
 
         platformInterface.SendErrorReportButton(exception)
     }

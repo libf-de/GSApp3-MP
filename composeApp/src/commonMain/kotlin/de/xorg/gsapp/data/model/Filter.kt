@@ -19,8 +19,15 @@
 package de.xorg.gsapp.data.model
 
 import de.xorg.gsapp.data.enums.StringResEnum
-import de.xorg.gsapp.res.MR
-import dev.icerock.moko.resources.StringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.filter_all
+import gsapp.composeapp.generated.resources.filter_student
+import gsapp.composeapp.generated.resources.filter_teacher
+import gsapp.composeapp.generated.resources.pref_filter_all
+import gsapp.composeapp.generated.resources.pref_filter_student
+import gsapp.composeapp.generated.resources.pref_filter_teacher
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.StringResource
 
 data class Filter(
     val role: Role,
@@ -44,18 +51,19 @@ data class Filter(
      * or only showing the specified Teacher (TEACHER) / Class (STUDENT).
      * Also contains human-readable labels and descriptions for the associated settings dialog.
      */
+    @OptIn(ExperimentalResourceApi::class)
     enum class Role(val value: Int): StringResEnum {
         ALL(0) {
-            override val labelResource: StringResource = MR.strings.filter_all
-            override val descriptiveResource: StringResource = MR.strings.pref_filter_all
+            override val labelResource: StringResource = Res.string.filter_all
+            override val descriptiveResource: StringResource = Res.string.pref_filter_all
         },
         TEACHER(1) {
-            override val labelResource: StringResource = MR.strings.filter_teacher
-            override val descriptiveResource: StringResource = MR.strings.pref_filter_teacher
+            override val labelResource: StringResource = Res.string.filter_teacher
+            override val descriptiveResource: StringResource = Res.string.pref_filter_teacher
         },
         STUDENT(2) {
-            override val labelResource: StringResource = MR.strings.filter_student
-            override val descriptiveResource: StringResource = MR.strings.pref_filter_student
+            override val labelResource: StringResource = Res.string.filter_student
+            override val descriptiveResource: StringResource = Res.string.pref_filter_student
         };
 
         companion object {

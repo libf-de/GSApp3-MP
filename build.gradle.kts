@@ -17,7 +17,6 @@ buildscript {
     }
 
     dependencies {
-        classpath(libs.moko.resources.generator)
         classpath(libs.google.services)
         classpath(libs.kotlin.gradlePlugin)
     }

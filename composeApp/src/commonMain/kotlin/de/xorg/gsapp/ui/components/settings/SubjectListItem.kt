@@ -72,11 +72,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.materialtools.MaterialColors
 import de.xorg.gsapp.ui.tools.foregroundColorForBackground
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.dialog_cancel
+import gsapp.composeapp.generated.resources.dialog_delete_confirm
+import gsapp.composeapp.generated.resources.dialog_save
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun SubjectListItem(
     modifier: Modifier = Modifier,
@@ -85,7 +90,7 @@ fun SubjectListItem(
     onNameEdited: (sub: Subject, newName: String) -> Unit,
     onDelete: (sub: Subject) -> Unit
 ) {
-    val deleteAction = stringResource(MR.strings.dialog_delete_confirm)
+    val deleteAction = stringResource(Res.string.dialog_delete_confirm)
 
     var isEditing by rememberSaveable { mutableStateOf(false) }
     var editValue by rememberSaveable { mutableStateOf(subject.longName) }
@@ -191,7 +196,7 @@ fun SubjectListItem(
                             }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Done,
-                                    contentDescription = stringResource(MR.strings.dialog_save),
+                                    contentDescription = stringResource(Res.string.dialog_save),
                                     tint = Color(
                                         MaterialColors.harmonize(
                                             Color.Green.toArgb(),
@@ -213,7 +218,7 @@ fun SubjectListItem(
                                 focusManager.clearFocus()
                             }) {
                                 Icon(imageVector = Icons.Rounded.Clear,
-                                    contentDescription = stringResource(MR.strings.dialog_cancel),
+                                    contentDescription = stringResource(Res.string.dialog_cancel),
                                     tint = MaterialTheme.colorScheme.error)
                             }
                         }

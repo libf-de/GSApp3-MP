@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.data.model.Teacher
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.settings.ClassListItem
 import de.xorg.gsapp.ui.components.settings.SkeletonClassListItem
 import de.xorg.gsapp.ui.state.UiState
@@ -55,16 +54,21 @@ import de.xorg.gsapp.ui.tools.LETTERS
 import de.xorg.gsapp.ui.tools.classList
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.filter_dialog_description
+import gsapp.composeapp.generated.resources.filter_dialog_teacher_short
+import gsapp.composeapp.generated.resources.filter_dialog_title
+import org.jetbrains.compose.resources.stringResource
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.koin.compose.koinInject
 
 /**
  * This composable is the "substitution plan filter" settings dialog.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalMaterial3WindowSizeClassApi::class
+    ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalResourceApi::class
 )
 @Composable
 fun FilterSettingsScreen(
@@ -149,7 +153,7 @@ fun FilterSettingsScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = stringResource(MR.strings.filter_dialog_title))
+                    Text(text = stringResource(Res.string.filter_dialog_title))
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.goBack() }) {
@@ -165,7 +169,7 @@ fun FilterSettingsScreen(
                 .windowSizeMargins(windowSizeClass)
                 /*.imePadding()*/
         ) {
-            Text(text = stringResource(MR.strings.filter_dialog_description),
+            Text(text = stringResource(Res.string.filter_dialog_description),
                  textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 8.dp))
             Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
@@ -221,7 +225,7 @@ fun FilterSettingsScreen(
                 }
 
                 item {
-                    Divider(modifier = Modifier.fillMaxWidth().height(1.dp))
+                    HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
                 }
 
                 when {
@@ -280,6 +284,7 @@ fun FilterSettingsScreen(
     }
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun TeacherTextField(
     longValue: String,
@@ -316,7 +321,7 @@ fun TeacherTextField(
             OutlinedTextField(
                 value = shortValue,
                 onValueChange = onShortValueChange,
-                label = { Text(text = stringResource(MR.strings.filter_dialog_teacher_short)) },
+                label = { Text(text = stringResource(Res.string.filter_dialog_teacher_short)) },
                 interactionSource = interactionSource,
                 isError = !isValid,
                 maxLines = 1,
@@ -365,7 +370,7 @@ private fun TextItem(
                 MaterialTheme.colorScheme.primary
             else Color.Unspecified
         )
-        Divider(
+        HorizontalDivider(
             modifier = Modifier.fillMaxWidth()
                 .height(1.dp)
         )

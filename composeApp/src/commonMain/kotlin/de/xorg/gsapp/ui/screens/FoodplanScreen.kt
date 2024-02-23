@@ -21,7 +21,6 @@ package de.xorg.gsapp.ui.screens
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,7 +29,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -45,7 +43,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -62,19 +59,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.GSAppRoutes
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.FancyIndicator
 import de.xorg.gsapp.ui.components.FoodplanCard
 import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
 import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.ComponentState
-import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.state.dataOrDefault
-import de.xorg.gsapp.ui.state.isLoading
 import de.xorg.gsapp.ui.tools.DateUtil
 import de.xorg.gsapp.ui.tools.PlatformInterface
 import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
@@ -82,11 +77,14 @@ import de.xorg.gsapp.ui.tools.SupportTopAppBarDefaults
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.FoodplanViewModel
-import dev.icerock.moko.resources.compose.fontFamilyResource
-import dev.icerock.moko.resources.compose.painterResource
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.OrelegaOne_Regular
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.foodorder
+import gsapp.composeapp.generated.resources.foodplan_empty
+import gsapp.composeapp.generated.resources.settings_title
+import gsapp.composeapp.generated.resources.tab_foodorder
+import gsapp.composeapp.generated.resources.tab_foodplan
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
@@ -95,13 +93,17 @@ import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 
 /**
  * The foodplan-tab composable
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalMaterial3WindowSizeClassApi::class
+    ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalResourceApi::class
 )
 @Composable
 fun FoodplanScreen(
@@ -155,8 +157,8 @@ fun FoodplanScreen(
         topBar = {
             SupportMediumTopAppBar(
                 title = {
-                    Text(text = stringResource(MR.strings.tab_foodplan),
-                        fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
+                    Text(text = stringResource(Res.string.tab_foodplan),
+                        fontFamily = FontFamily(Font(Res.font.OrelegaOne_Regular)),
                         style = MaterialTheme.typography.headlineMedium
                     )
                 },
@@ -166,8 +168,8 @@ fun FoodplanScreen(
                     IconButton(onClick = {
                         platformInterface.openUrl("https://schulkueche-bestellung.de/")
                     }) {
-                        Icon(painter = painterResource(MR.images.foodorder),
-                             contentDescription = stringResource(MR.strings.tab_foodorder))
+                        Icon(imageVector = vectorResource(Res.drawable.foodorder),
+                             contentDescription = stringResource(Res.string.tab_foodorder))
                     }
 
                     IconButton(onClick = { viewModel.refresh() }) {
@@ -180,7 +182,7 @@ fun FoodplanScreen(
 
                     IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
                         Icon(imageVector = Icons.Filled.Settings,
-                            contentDescription = stringResource(MR.strings.settings_title))
+                            contentDescription = stringResource(Res.string.settings_title))
                     }
                 },
                 onBackgroundColorChanged = { color -> appBarColor = color }
@@ -258,14 +260,14 @@ fun FoodplanScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = stringResource(MR.strings.foodplan_empty)
+                        text = stringResource(Res.string.foodplan_empty)
                     )
                 }
             }
 
             is ComponentState.EmptyLocal -> {
                 EmptyLocalComponent(
-                    where = MR.strings.tab_foodplan,
+                    where = Res.string.tab_foodplan,
                     windowSizeClass = windowSizeClass
                 )
             }
@@ -277,7 +279,7 @@ fun FoodplanScreen(
             is ComponentState.Failed -> {
                 FailedComponent(
                     exception = foodplan.error,
-                    where = MR.strings.tab_foodplan,
+                    where = Res.string.tab_foodplan,
                     modifier = Modifier
                         .fillMaxSize()
                         .windowSizeMargins(windowSizeClass)

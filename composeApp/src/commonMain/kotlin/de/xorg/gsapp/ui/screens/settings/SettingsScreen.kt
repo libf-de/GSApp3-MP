@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -49,31 +48,47 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.data.push.PushNotificationUtil
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.dialogs.SettingsRadioDialog
 import de.xorg.gsapp.ui.components.settings.SettingsItem
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
-import dev.icerock.moko.resources.compose.painterResource
-import dev.icerock.moko.resources.compose.stringResource
 import getPlatformName
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.dialog_cancel
+import gsapp.composeapp.generated.resources.dialog_save
+import gsapp.composeapp.generated.resources.filter_value
+import gsapp.composeapp.generated.resources.pref_filter
+import gsapp.composeapp.generated.resources.pref_push
+import gsapp.composeapp.generated.resources.pref_subjects
+import gsapp.composeapp.generated.resources.pref_subjects_desc
+import gsapp.composeapp.generated.resources.push_dialog_description
+import gsapp.composeapp.generated.resources.push_dialog_title
+import gsapp.composeapp.generated.resources.push_firebase_loading
+import gsapp.composeapp.generated.resources.push_unavailable
+import gsapp.composeapp.generated.resources.settings_title
+import gsapp.composeapp.generated.resources.subjects
 import kotlinx.collections.immutable.toImmutableList
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 
 /**
  * The app settings composable
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class,
+    ExperimentalResourceApi::class
+)
 @Composable
 fun SettingsScreen(
     navController: Navigator,
@@ -94,7 +109,7 @@ fun SettingsScreen(
         topBar = {
         TopAppBar(
             title = {
-                Text(text = stringResource(MR.strings.settings_title))
+                Text(text = stringResource(Res.string.settings_title))
             },
             navigationIcon = {
                 IconButton(onClick = { navController.goBack() }) {
@@ -122,7 +137,7 @@ fun SettingsScreen(
                         modifier = Modifier.padding(horizontal = 36.dp, vertical = 18.dp)
                     ) {
                         CircularProgressIndicator()
-                        Text(text = stringResource(MR.strings.push_firebase_loading))
+                        Text(text = stringResource(Res.string.push_firebase_loading))
                     }
 
                 }
@@ -133,10 +148,10 @@ fun SettingsScreen(
         if(showPushDialog) {
             SettingsRadioDialog(
                 icon = { Icon(imageVector = Icons.Rounded.Notifications, contentDescription = "")},
-                title = stringResource(MR.strings.push_dialog_title),
-                message = stringResource(MR.strings.push_dialog_description),
-                dismissText = stringResource(MR.strings.dialog_cancel),
-                confirmText = stringResource(MR.strings.dialog_save),
+                title = stringResource(Res.string.push_dialog_title),
+                message = stringResource(Res.string.push_dialog_description),
+                dismissText = stringResource(Res.string.dialog_cancel),
+                confirmText = stringResource(Res.string.dialog_save),
                 items = PushState.entries.toImmutableList(),
                 selectedValue = pushState,
                 onDismiss = { showPushDialog = false },
@@ -155,10 +170,10 @@ fun SettingsScreen(
                 .windowSizeMargins(windowSizeClass)) {
             item {
                 SettingsItem(
-                    icon = { mod, tint -> Icon(painter = painterResource(MR.images.filter_value),
+                    icon = { mod, tint -> Icon(imageVector = vectorResource(Res.drawable.filter_value),
                         contentDescription = "",
                         modifier = mod, tint = tint) },
-                    title = stringResource(MR.strings.pref_filter),
+                    title = stringResource(Res.string.pref_filter),
                     subtitle = stringResource(filterState.role.descriptiveResource, filterState.value),
                     onClick = { navController.navigate(GSAppRoutes.SETTINGS_FILTER) }
                 )
@@ -170,20 +185,20 @@ fun SettingsScreen(
                     icon = { mod, tint -> Icon(imageVector = Icons.Rounded.Notifications,
                                                contentDescription = "",
                                                modifier = mod, tint = tint) },
-                    title = stringResource(MR.strings.pref_push),
+                    title = stringResource(Res.string.pref_push),
                     subtitle = if(pushUtil.isSupported) stringResource(pushState.labelResource)
-                               else stringResource(MR.strings.push_unavailable, getPlatformName()),
+                               else stringResource(Res.string.push_unavailable, getPlatformName()),
                     onClick = { if(pushUtil.isSupported) showPushDialog = true }
                 )
             }
 
             item {
                 SettingsItem(
-                    icon = { mod, tint -> Icon(painter = painterResource(MR.images.subjects),
+                    icon = { mod, tint -> Icon(painter = painterResource(Res.drawable.subjects),
                         contentDescription = "",
                         modifier = mod, tint = tint) },
-                    title = stringResource(MR.strings.pref_subjects),
-                    subtitle = stringResource(MR.strings.pref_subjects_desc),
+                    title = stringResource(Res.string.pref_subjects),
+                    subtitle = stringResource(Res.string.pref_subjects_desc),
                     onClick = { navController.navigate(GSAppRoutes.SETTINGS_SUBJECTS) }
                 )
             }

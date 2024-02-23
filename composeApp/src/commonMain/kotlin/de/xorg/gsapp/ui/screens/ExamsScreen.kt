@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,7 +39,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -52,13 +50,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.xorg.gsapp.GSAppRoutes
 import de.xorg.gsapp.data.enums.ExamCourse
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.ExamChip
 import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
 import de.xorg.gsapp.ui.components.state.FailedComponent
@@ -69,9 +67,12 @@ import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.ExamPlanViewModel
-import dev.icerock.moko.resources.compose.fontFamilyResource
-import dev.icerock.moko.resources.compose.painterResource
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.OrelegaOne_Regular
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.examplan_empty
+import gsapp.composeapp.generated.resources.examplan_explain_coursework
+import gsapp.composeapp.generated.resources.settings_title
+import gsapp.composeapp.generated.resources.tab_exams
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -80,12 +81,16 @@ import kotlinx.datetime.todayIn
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 /**
  * The exam plan-tab composable
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class,
-    ExperimentalLayoutApi::class
+    ExperimentalLayoutApi::class, ExperimentalResourceApi::class
 )
 @Composable
 fun ExamsScreen(
@@ -120,15 +125,15 @@ fun ExamsScreen(
             SupportMediumTopAppBar(
                 title = {
                     Column {
-                        Text(text = stringResource(MR.strings.tab_exams),
-                            fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
+                        Text(text = stringResource(Res.string.tab_exams),
+                            fontFamily = FontFamily(Font(Res.font.OrelegaOne_Regular)),
                             style = MaterialTheme.typography.headlineMedium
                         )
 
                         Row {
                             Text(
-                                text = stringResource(MR.strings.examplan_explain_coursework),
-                                fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
+                                text = stringResource(Res.string.examplan_explain_coursework),
+                                fontFamily = FontFamily(Font(Res.font.OrelegaOne_Regular)),
                                 style = MaterialTheme.typography.titleSmall
                             )
                         }
@@ -147,7 +152,7 @@ fun ExamsScreen(
 
                     IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
                         Icon(imageVector = Icons.Filled.Settings,
-                            contentDescription = stringResource(MR.strings.settings_title))
+                            contentDescription = stringResource(Res.string.settings_title))
                     }
                 }
             )
@@ -209,7 +214,7 @@ fun ExamsScreen(
 
             is ComponentState.EmptyLocal -> {
                 EmptyLocalComponent(
-                    where = MR.strings.tab_exams
+                    where = Res.string.tab_exams
                 )
             }
 
@@ -221,7 +226,7 @@ fun ExamsScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = stringResource(MR.strings.examplan_empty)
+                        text = stringResource(Res.string.examplan_empty)
                     )
                 }
             }
@@ -229,7 +234,7 @@ fun ExamsScreen(
             is ComponentState.Failed -> {
                 FailedComponent(
                     exception = exams.error,
-                    where = MR.strings.tab_exams,
+                    where = Res.string.tab_exams,
                     modifier = Modifier
                         .fillMaxSize()
                         .windowSizeMargins(windowSizeClass)
@@ -239,10 +244,11 @@ fun ExamsScreen(
     }
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun ExamCourseIcon(course: ExamCourse) {
     Icon(
-        painter = painterResource(course.iconResource),
+        imageVector = vectorResource(course.iconResource),
         contentDescription = stringResource(course.descriptiveResource),
         modifier = Modifier.size(24.dp)
     )

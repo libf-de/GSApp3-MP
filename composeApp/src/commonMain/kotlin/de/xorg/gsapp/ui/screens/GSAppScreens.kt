@@ -19,9 +19,16 @@
 package de.xorg.gsapp.ui.screens
 
 import de.xorg.gsapp.GSAppRoutes
-import de.xorg.gsapp.res.MR
-import dev.icerock.moko.resources.ImageResource
-import dev.icerock.moko.resources.StringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.exams
+import gsapp.composeapp.generated.resources.foodplan
+import gsapp.composeapp.generated.resources.substitutions
+import gsapp.composeapp.generated.resources.tab_exams
+import gsapp.composeapp.generated.resources.tab_foodplan
+import gsapp.composeapp.generated.resources.tab_substitutions
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.StringResource
 
 /**
  * This class contains the composables that will be displayed as tabs in the main application.
@@ -34,28 +41,29 @@ val screens = listOf(
     GSAppScreen.Exams
 )
 
+@OptIn(ExperimentalResourceApi::class)
 sealed class GSAppScreen(
     val route: String,
     val title: StringResource,
-    val icon: ImageResource,
+    val icon: DrawableResource,
     val showNavbar: Boolean = true
 ) {
     data object Substitutions : GSAppScreen(
         route = GSAppRoutes.SUBSTITUTIONS,
-        title = MR.strings.tab_substitutions,
-        icon = MR.images.substitutions
+        title = Res.string.tab_substitutions,
+        icon = Res.drawable.substitutions
     )
 
     data object Foodplan : GSAppScreen(
         route = GSAppRoutes.FOODPLAN,
-        title = MR.strings.tab_foodplan,
-        icon = MR.images.foodplan
+        title = Res.string.tab_foodplan,
+        icon = Res.drawable.foodplan
     )
 
     data object Exams : GSAppScreen(
         route = GSAppRoutes.EXAMS,
-        title = MR.strings.tab_exams,
-        icon = MR.images.exams
+        title = Res.string.tab_exams,
+        icon = Res.drawable.exams
     )
 
 }

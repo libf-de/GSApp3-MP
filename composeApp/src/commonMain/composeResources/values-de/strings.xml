@@ -54,8 +54,8 @@
     <string name="rel_today">heute</string>
     <string name="rel_tomorrow">morgen</string>
     <string name="rel_after_tomorrow">übermorgen</string>
-    <string name="rel_next_weekday">nächsten %s</string>
-    <string name="rel_absolute">am %s</string>
+    <string name="rel_next_weekday">nächsten %1$s</string>
+    <string name="rel_absolute">am %1$s</string>
 
     <!-- Date format (d=day, m=month, y=year) -->
     <string name="date_format">d.m.y</string>
@@ -69,14 +69,14 @@
 
     <!-- Substitution plan -->
     <string name="subplan_date_header_fmt">für %w, den %d. %m %y</string>
-    <string name="subplan_date_header_for">für %s</string>
+    <string name="subplan_date_header_for">für %1$s</string>
     <string name="subplan_date_header_new">NEU</string>
-    <string name="subplan_workorder_samesubject">%s Arbeitsauftrag</string>
-    <string name="subplan_workorder">%s ➜ %s Arbeitsauftrag</string>
-    <string name="subplan_cancellation">%s ➜ Ausfall</string>
-    <string name="subplan_breastfeed">%s ➜ Stillbeschäftigung</string>
-    <string name="subplan_samesubject">%s</string>
-    <string name="subplan_normal">%s ➜ %s</string>
+    <string name="subplan_workorder_samesubject">%1$s Arbeitsauftrag</string>
+    <string name="subplan_workorder">%1$s ➜ %2$s Arbeitsauftrag</string>
+    <string name="subplan_cancellation">%1$s ➜ Ausfall</string>
+    <string name="subplan_breastfeed">%1$s ➜ Stillbeschäftigung</string>
+    <string name="subplan_samesubject">%1$s</string>
+    <string name="subplan_normal">%1$s ➜ %2$s</string>
     <string name="subplan_dsc_location">Ort</string>
     <string name="subplan_dsc_teacher">Vertretender Lehrer:in</string>
     <string name="subplan_empty">Keine Vertretungen :)</string>
@@ -94,8 +94,8 @@
     <string name="settings_title">Einstellungen</string>
     <!-- Settings items -->
     <string name="pref_filter">Vertretungsplan-Filter</string>
-    <string name="pref_filter_teacher">Lehrerkürzel %s</string>
-    <string name="pref_filter_student">Klasse %s</string>
+    <string name="pref_filter_teacher">Lehrerkürzel %1$s</string>
+    <string name="pref_filter_student">Klasse %1$s</string>
     <string name="pref_filter_all">Keiner (alle anzeigen)</string>
     <string name="pref_push">Push-Benachrichtigung</string>
     <string name="pref_subjects">Fächer bearbeiten</string>
@@ -117,7 +117,7 @@
     <string name="subject_manager_subjects">Fächer</string>
     <string name="subject_manager_empty_title">Keine Fächer</string>
     <string name="subject_manager_empty_text">Verwende den "+"-Knopf unten um Fächer zu erstellen.</string>
-    <string name="subject_manager_colorpicker_title">Wähle Farbe für %s</string>
+    <string name="subject_manager_colorpicker_title">Wähle Farbe für %1$s</string>
     <string name="subject_manager_colorpicker_nullsubject">ein Fach</string>
     <string name="subject_manager_add_title">Fach hinzufügen</string>
     <string name="subject_manager_add_desc">Gib das Kürzel des Fachs ein, wie es im Vertretungsplan steht.\nLanger Name und Farbe können anschließend geändert werden.</string>
@@ -133,12 +133,12 @@
     <string name="push_enabled">Immer benachrichtigen</string>
     <string name="push_dialog_title">Push-Nachrichten</string>
     <string name="push_dialog_description">Wähle aus ob du keine, nur wenn es dich betrifft oder immer über neue Vertretungspläne benachrichtigt werden möchtest.</string>
-    <string name="push_unavailable">(Nicht verfügbar auf %s)</string>
+    <string name="push_unavailable">(Nicht verfügbar auf %1$s)</string>
     <string name="push_channel_name">Vertretungsplan-Nachrichten</string>
     <string name="push_channel_desc">Benachrichtigt dich sobald ein neuer Vertretungsplan verfügbar ist</string>
     <string name="push_notification_title">Neuer Vertretungsplan!</string>
     <string name="push_notification_body">Es ist ein neuer Vertretungsplan verfügbar!</string>
-    <string name="push_notification_detail_amount">Du hast %s %d Vertretungen.</string>
+    <string name="push_notification_detail_amount">Du hast %2$s %1$d Vertretungen.</string>
     <string name="push_no_permission_title">Fehlende Berechtigung</string>
     <string name="push_no_permission_body">Du hast Push-Benachrichtigungen aktiviert, aber die Berechtigung für Benachrichtigungen verweigert.\nBitte gehe zu den Einstellungen und aktiviere Benachrichtigungen, um keinen neuen Vertretungsplan zu verpassen.\nFalls du dies nicht möchtest, kannst du Push-Benachrichtigungen auch in den App-Einstellungen deaktivieren.</string>
     <string name="push_no_permission_fix">Zu den Einstellungen</string>
@@ -159,14 +159,14 @@
     <string name="dialog_color_advanced">Erweitert</string>
     <string name="dialog_color_advanced_desc">Wähle mittels Farbton, Sättigung und Helligkeit oder Hex-Code</string>
     <string name="dialog_delete_title">Fach löschen?</string>
-    <string name="dialog_delete_text">Möchtest du das Fach "%s" ("%s") wirklich löschen?</string>
+    <string name="dialog_delete_text">Möchtest du das Fach "%1$s" ("%1$s") wirklich löschen?</string>
     <string name="dialog_delete_confirm">Löschen</string>
 
     <!-- Generic strings -->
     <string name="generic_loading">Wird geladen…</string>
     <string name="back">Zurück gehen</string>
-    <string name="empty_local">Es wurde (noch) kein(e) %s heruntergeladen.\nFalls nichts passiert, überprüfe deine Internetverbindung.</string>
-    <string name="failed_to_load">%s konnte nicht geladen werden</string>
+    <string name="empty_local">Es wurde (noch) kein(e) %1$s heruntergeladen.\nFalls nichts passiert, überprüfe deine Internetverbindung.</string>
+    <string name="failed_to_load">%1$s konnte nicht geladen werden</string>
     <string name="failed_send_dev">Bitte sende diesen Fehler an den Entwickler:</string>
     <string name="unknown_cause">Unbekannte Ursache</string>
     <string name="open_url_failed">Es wurde kein Browser zum Öffnen des Links gefunden.</string>

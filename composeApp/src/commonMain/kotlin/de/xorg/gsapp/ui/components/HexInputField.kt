@@ -30,11 +30,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.tools.toHexString
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.dialog_color_hex
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.min
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun HexInputField(
     colorState: MutableState<Color?>
@@ -43,7 +46,7 @@ fun HexInputField(
     var validHex by remember { mutableStateOf(false) }
 
     OutlinedTextField(
-        label = { Text(stringResource(MR.strings.dialog_color_hex)) },
+        label = { Text(stringResource(Res.string.dialog_color_hex)) },
         modifier = Modifier.width(IntrinsicSize.Max),
         value = textValue,
         isError = !validHex,

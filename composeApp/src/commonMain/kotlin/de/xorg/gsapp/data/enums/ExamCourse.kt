@@ -18,20 +18,27 @@
 
 package de.xorg.gsapp.data.enums
 
-import dev.icerock.moko.resources.ImageResource
-import dev.icerock.moko.resources.StringResource
-import de.xorg.gsapp.res.MR
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.course_eleven
+import gsapp.composeapp.generated.resources.course_twelve
+import gsapp.composeapp.generated.resources.examplan_course_eleven
+import gsapp.composeapp.generated.resources.examplan_course_twelve
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.StringResource
 
+@OptIn(ExperimentalResourceApi::class)
 enum class ExamCourse : ExamEnum {
     COURSE_11 {
-        override val iconResource = MR.images.course_eleven
-        override val descriptiveResource = MR.strings.examplan_course_eleven
+
+        override val iconResource = Res.drawable.course_eleven
+        override val descriptiveResource = Res.string.examplan_course_eleven
     },
 
     COURSE_12
     {
-        override val iconResource = MR.images.course_twelve
-        override val descriptiveResource = MR.strings.examplan_course_twelve
+        override val iconResource = Res.drawable.course_twelve
+        override val descriptiveResource = Res.string.examplan_course_twelve
     };
 
     companion object {
@@ -39,7 +46,8 @@ enum class ExamCourse : ExamEnum {
     }
 }
 
+@OptIn(ExperimentalResourceApi::class)
 private interface ExamEnum {
-    val iconResource: ImageResource
+    val iconResource: DrawableResource
     val descriptiveResource: StringResource
 }

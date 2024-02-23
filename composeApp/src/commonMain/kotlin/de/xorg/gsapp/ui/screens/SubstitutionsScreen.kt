@@ -20,6 +20,7 @@ package de.xorg.gsapp.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.Refresh
@@ -37,41 +38,59 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.xorg.gsapp.GSAppRoutes
-import de.xorg.gsapp.data.model.SubstitutionSet
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.NoteCard
 import de.xorg.gsapp.ui.components.SubstitutionCard
 import de.xorg.gsapp.ui.components.state.EmptyLocalComponent
 import de.xorg.gsapp.ui.components.state.FailedComponent
 import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.ComponentState
-import de.xorg.gsapp.ui.state.UiState
-import de.xorg.gsapp.ui.state.isLoading
 import de.xorg.gsapp.ui.tools.DateUtil.Companion.getWeekdayLongRes
 import de.xorg.gsapp.ui.tools.PlatformInterface
 import de.xorg.gsapp.ui.tools.SupportMediumTopAppBar
 import de.xorg.gsapp.ui.tools.spinAnimation
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.SubstitutionPlanViewModel
-import dev.icerock.moko.resources.compose.fontFamilyResource
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.OrelegaOne_Regular
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.apr
+import gsapp.composeapp.generated.resources.aug
+import gsapp.composeapp.generated.resources.dec
+import gsapp.composeapp.generated.resources.feb
+import gsapp.composeapp.generated.resources.jan
+import gsapp.composeapp.generated.resources.jul
+import gsapp.composeapp.generated.resources.jun
+import gsapp.composeapp.generated.resources.mar
+import gsapp.composeapp.generated.resources.may
+import gsapp.composeapp.generated.resources.nov
+import gsapp.composeapp.generated.resources.oct
+import gsapp.composeapp.generated.resources.sep
+import gsapp.composeapp.generated.resources.settings_title
+import gsapp.composeapp.generated.resources.subplan_date_header_fmt
+import gsapp.composeapp.generated.resources.subplan_date_header_for
+import gsapp.composeapp.generated.resources.subplan_empty
+import gsapp.composeapp.generated.resources.tab_substitutions
 import kotlinx.datetime.LocalDate
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
 import moe.tlaster.precompose.navigation.Navigator
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import androidx.compose.foundation.lazy.items
-import androidx.compose.ui.unit.Dp
 
 
 /**
  * This is the substitution plan-tab composable
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class,
+    ExperimentalResourceApi::class
+)
 @Composable
 fun SubstitutionsScreen(
     navController: Navigator,
@@ -104,18 +123,18 @@ fun SubstitutionsScreen(
             SupportMediumTopAppBar(
                 title = {
                     Column {
-                        Text(text = stringResource(MR.strings.tab_substitutions),
-                            fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
+                        Text(text = stringResource(Res.string.tab_substitutions),
+                            fontFamily = FontFamily(Font(Res.font.OrelegaOne_Regular)),
                             style = MaterialTheme.typography.headlineMedium
                         )
 
                         subState.whenDataAvailable { data ->
                             Text(
                                 text = stringResource(
-                                    MR.strings.subplan_date_header_for,
+                                    Res.string.subplan_date_header_for,
                                     data.dateStr
                                 ),
-                                fontFamily = fontFamilyResource(MR.fonts.OrelegaOne.regular),
+                                fontFamily = FontFamily(Font(Res.font.OrelegaOne_Regular)),
                                 style = MaterialTheme.typography.titleSmall
                             )
                         }
@@ -136,7 +155,7 @@ fun SubstitutionsScreen(
 
                     IconButton(onClick = { navController.navigate(GSAppRoutes.SETTINGS) }) {
                         Icon(imageVector = Icons.Filled.Settings,
-                            contentDescription = stringResource(MR.strings.settings_title))
+                            contentDescription = stringResource(Res.string.settings_title))
                     }
                 }
             )
@@ -199,14 +218,14 @@ fun SubstitutionsScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = stringResource(MR.strings.subplan_empty)
+                        text = stringResource(Res.string.subplan_empty)
                     )
                 }
             }
 
             is ComponentState.EmptyLocal -> {
                 EmptyLocalComponent(
-                    where = MR.strings.tab_substitutions,
+                    where = Res.string.tab_substitutions,
                     windowSizeClass = windowSizeClass
                 )
             }
@@ -214,7 +233,7 @@ fun SubstitutionsScreen(
             is ComponentState.Failed -> {
                 FailedComponent(
                     exception = sds.error,
-                    where = MR.strings.tab_substitutions,
+                    where = Res.string.tab_substitutions,
                     modifier = Modifier
                         .fillMaxSize()
                         .windowSizeMargins(windowSizeClass)
@@ -224,24 +243,25 @@ fun SubstitutionsScreen(
     }
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun getDateAsStringForHeader(date: LocalDate): String {
     val monthString = when(date.monthNumber) {
-        1 -> stringResource(MR.strings.jan)
-        2 -> stringResource(MR.strings.feb)
-        3 -> stringResource(MR.strings.mar)
-        4 -> stringResource(MR.strings.apr)
-        5 -> stringResource(MR.strings.may)
-        6 -> stringResource(MR.strings.jun)
-        7 -> stringResource(MR.strings.jul)
-        8 -> stringResource(MR.strings.aug)
-        9 -> stringResource(MR.strings.sep)
-        10 -> stringResource(MR.strings.oct)
-        11 -> stringResource(MR.strings.nov)
-        12 -> stringResource(MR.strings.dec)
+        1 -> stringResource(Res.string.jan)
+        2 -> stringResource(Res.string.feb)
+        3 -> stringResource(Res.string.mar)
+        4 -> stringResource(Res.string.apr)
+        5 -> stringResource(Res.string.may)
+        6 -> stringResource(Res.string.jun)
+        7 -> stringResource(Res.string.jul)
+        8 -> stringResource(Res.string.aug)
+        9 -> stringResource(Res.string.sep)
+        10 -> stringResource(Res.string.oct)
+        11 -> stringResource(Res.string.nov)
+        12 -> stringResource(Res.string.dec)
         else -> ""
     }
-    return stringResource(MR.strings.subplan_date_header_fmt)
+    return stringResource(Res.string.subplan_date_header_fmt)
         .replace("%w", stringResource(getWeekdayLongRes(date)) )
         .replace("%d", date.dayOfMonth.toString())
         .replace("%m", monthString)

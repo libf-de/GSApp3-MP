@@ -32,7 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -50,15 +50,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Food
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.materialtools.MaterialColors
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.foodplan_menu_no
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * A card that displays a single food in the foodplan,
  * showing the menu number, the name of the food and, expandable,
  * the list of additives.
  */
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun FoodplanCard(
     food: Food,
@@ -110,7 +113,7 @@ fun FoodplanCard(
                 ) {
                     Text(modifier = Modifier,
                         style = MaterialTheme.typography.titleSmall,
-                        text = stringResource(MR.strings.foodplan_menu_no, menuNumber), //1. Menü
+                        text = stringResource(Res.string.foodplan_menu_no, menuNumber), //1. Menü
                         color = Color(colorRoles.onAccentContainer))
                     Text(
                         modifier = Modifier,
@@ -131,14 +134,17 @@ fun FoodplanCard(
                     }
                 )
             }
-            if(expanded) {
-                Divider(color = Color(colorRoles.accent), modifier = Modifier)
-                Text(text = food.additives.sorted().joinToString(", "),
-                     modifier = Modifier.padding(start = 12.dp,
-                                                 end = 12.dp,
-                                                 top = 4.dp,
-                                                 bottom = 6.dp),
-                     color = Color(colorRoles.onAccentContainer),
+            if (expanded) {
+                HorizontalDivider(modifier = Modifier, color = Color(colorRoles.accent))
+                Text(
+                    text = food.additives.sorted().joinToString(", "),
+                    modifier = Modifier.padding(
+                        start = 12.dp,
+                        end = 12.dp,
+                        top = 4.dp,
+                        bottom = 6.dp
+                    ),
+                    color = Color(colorRoles.onAccentContainer),
                     style = MaterialTheme.typography.bodySmall,
                 )
             }

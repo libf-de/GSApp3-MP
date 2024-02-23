@@ -19,8 +19,12 @@
 package de.xorg.gsapp.ui.state
 
 import de.xorg.gsapp.data.enums.StringResEnum
-import de.xorg.gsapp.res.MR
-import dev.icerock.moko.resources.StringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.push_disabled
+import gsapp.composeapp.generated.resources.push_enabled
+import gsapp.composeapp.generated.resources.push_filter
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.StringResource
 
 /**
  * The possible Push Notification settings. Either no push notifications (DISABLED), or only
@@ -28,17 +32,18 @@ import dev.icerock.moko.resources.StringResource
  * notifying (ENABLED).
  * Also contains human-readable labels and descriptions for the associated settings dialog.
  */
+@OptIn(ExperimentalResourceApi::class)
 enum class PushState(val value: Int) : StringResEnum {
     DISABLED(0) {
-        override val labelResource: StringResource = MR.strings.push_disabled
+        override val labelResource: StringResource = Res.string.push_disabled
         override val descriptiveResource: StringResource = labelResource
     },
     LIKE_FILTER(1) {
-        override val labelResource: StringResource = MR.strings.push_filter
+        override val labelResource: StringResource = Res.string.push_filter
         override val descriptiveResource: StringResource = labelResource
     },
     ENABLED(2) {
-        override val labelResource: StringResource = MR.strings.push_enabled
+        override val labelResource: StringResource = Res.string.push_enabled
         override val descriptiveResource: StringResource = labelResource
     };
 

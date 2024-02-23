@@ -18,8 +18,10 @@
 
 package de.xorg.gsapp.data.enums
 
-import dev.icerock.moko.resources.StringResource
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.StringResource
 
+@OptIn(ExperimentalResourceApi::class)
 interface StringResEnum {
     val labelResource: StringResource
     val descriptiveResource: StringResource

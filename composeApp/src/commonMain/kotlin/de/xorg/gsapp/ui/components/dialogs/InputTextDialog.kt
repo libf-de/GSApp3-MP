@@ -34,9 +34,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
-import de.xorg.gsapp.res.MR
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.dialog_cancel
+import gsapp.composeapp.generated.resources.dialog_save
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun InputTextDialog(
     visible: Boolean,
@@ -81,7 +85,7 @@ fun InputTextDialog(
                     }
                 ) {
                     Text(
-                        text = stringResource(MR.strings.dialog_save)
+                        text = stringResource(Res.string.dialog_save)
                     )
                 }
             },
@@ -92,7 +96,7 @@ fun InputTextDialog(
                     }
                 ) {
                     Text(
-                        text = stringResource(MR.strings.dialog_cancel)
+                        text = stringResource(Res.string.dialog_cancel)
                     )
                 }
             },

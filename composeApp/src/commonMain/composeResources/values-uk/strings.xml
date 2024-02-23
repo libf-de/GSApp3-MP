@@ -54,8 +54,8 @@
     <string name="rel_today">сьогодні</string> <!-- today -->
     <string name="rel_tomorrow">завтра</string> <!-- tomorrow -->
     <string name="rel_after_tomorrow">післязавтра</string> <!-- the day after tomorrow -->
-    <string name="rel_next_weekday">наступний %s</string> <!-- next %s -->
-    <string name="rel_absolute">на %s</string> <!-- on %s -->
+    <string name="rel_next_weekday">наступний %1$s</string> <!-- next %1$s -->
+    <string name="rel_absolute">на %1$s</string> <!-- on %1$s -->
 
     <!-- Date format (d=day, m=month, y=year) -->
     <string name="date_format">д.м.р</string> <!-- m.d.y -->
@@ -68,20 +68,20 @@
 
     <!-- Substitution plan -->
     <string name="subplan_date_header_fmt">для %w, %d %m, %y</string> <!-- for %w, %m %d, %y -->
-    <string name="subplan_date_header_for">за %s</string> <!-- for %s -->
+    <string name="subplan_date_header_for">за %1$s</string> <!-- for %1$s -->
     <string name="subplan_date_header_new">НОВИНКА</string> <!-- NEW -->
-    <string name="subplan_workorder_samesubject">%s робоче завдання</string> <!-- %s work order -->
-    <string name="subplan_workorder">%s ➜ %s робоче завдання</string> <!-- %s ➜ %s work order -->
-    <string name="subplan_cancellation">%s ➜ скасовано</string> <!-- %s ➜ cancelled -->
-    <string name="subplan_breastfeed">%s ➜ тиха діяльність</string> <!-- %s ➜ quiet activity -->
-    <string name="subplan_samesubject">%s</string>
-    <string name="subplan_normal">%s ➜ %s</string>
+    <string name="subplan_workorder_samesubject">%1$s робоче завдання</string> <!-- %1$s work order -->
+    <string name="subplan_workorder">%1$s ➜ %2$s робоче завдання</string> <!-- %1$s ➜ %2$s work order -->
+    <string name="subplan_cancellation">%1$s ➜ скасовано</string> <!-- %1$s ➜ cancelled -->
+    <string name="subplan_breastfeed">%1$s ➜ тиха діяльність</string> <!-- %1$s ➜ quiet activity -->
+    <string name="subplan_samesubject">%1$s</string>
+    <string name="subplan_normal">%1$s ➜ %2$s</string>
     <string name="subplan_dsc_location">Місцезнаходження</string> <!-- Location -->
     <string name="subplan_dsc_teacher">Вчитель-замінник</string> <!-- Replacement teacher -->
     <string name="subplan_empty">Немає замін :)</string> <!-- No substitutions :) -->
 
     <!-- Foodplan -->
-    <string name="foodplan_menu_no">Меню №%d</string> <!-- Menu #%d -->
+    <string name="foodplan_menu_no">Меню №%1$d</string> <!-- Menu #%d -->
     <string name="foodplan_empty">(немає обіду)</string> <!-- (no meal service) -->
 
     <!-- Exam plan -->
@@ -91,8 +91,8 @@
     <string name="settings_title">Налаштування</string> <!-- Settings -->
     <!-- Settings items -->
     <string name="pref_filter">Фільтр замін</string> <!-- Substitution plan filter -->
-    <string name="pref_filter_teacher">Код вчителя %s</string> <!-- Teacher code %s -->
-    <string name="pref_filter_student">Клас %s</string> <!-- Class %s -->
+    <string name="pref_filter_teacher">Код вчителя %1$s</string> <!-- Teacher code %1$s -->
+    <string name="pref_filter_student">Клас %1$s</string> <!-- Class %1$s -->
     <string name="pref_filter_all">Жоден (показати все)</string> <!-- None (show all) -->
     <string name="pref_push">Сповіщення Push</string> <!-- Push notifications -->
     <string name="pref_subjects">Редагувати предмети</string> <!-- Edit subjects -->
@@ -114,7 +114,7 @@
     <string name="subject_manager_subjects">Предмети</string> <!-- Subjects -->
     <string name="subject_manager_empty_title">Немає предметів</string> <!-- No subjects -->
     <string name="subject_manager_empty_text">Натисніть кнопку + внизу, щоб додати предмет.</string> <!-- Click the + button at the bottom to add one. -->
-    <string name="subject_manager_colorpicker_title">Виберіть колір для %s</string> <!-- Choose color for %s -->
+    <string name="subject_manager_colorpicker_title">Виберіть колір для %1$s</string> <!-- Choose color for %1$s -->
     <string name="subject_manager_colorpicker_nullsubject">предмет</string> <!-- a subject -->
     <string name="subject_manager_add_title">Додати предмет</string> <!-- Add subject -->
     <string name="subject_manager_add_desc">Введіть скорочення предмета, як воно вказано в плані замін. Довга назва та колір можуть бути змінені пізніше.</string> <!-- Enter the abbreviation of the subject as it appears in the substitution plan. Long name and color can be changed afterwards. -->
@@ -130,12 +130,12 @@
     <string name="push_enabled">Завжди повідомляти</string> <!-- Always notify -->
     <string name="push_dialog_title">Повідомлення Push</string> <!-- Push notifications -->
     <string name="push_dialog_description">Виберіть, чи бажаєте отримувати жодних повідомлень, повідомлення лише тоді, коли вони стосуються вас, або завжди повідомлення про нові плани замін.</string> <!-- Choose whether you want to receive no notification, notification only when it affects you, or always notification of new substitution plans. -->
-    <string name="push_unavailable">(недоступно на %s)</string> <!-- (not available on %s) -->
+    <string name="push_unavailable">(недоступно на %1$s)</string> <!-- (not available on %1$s) -->
     <string name="push_channel_name">Повідомлення про плани замін</string> <!-- Substitution plan notifications -->
     <string name="push_channel_desc">Сповіщає вас про наявність нового плану замін.</string> <!-- Notifies you when a new substitution plan is available -->
     <string name="push_notification_title">Новий план замін!</string> <!-- New substitution plan! -->
     <string name="push_notification_body">Є новий план замін!</string> <!-- There is a new substitution plan available! -->
-    <string name="push_notification_detail_amount">У вас є %d заміни %s.</string> <!-- You have %d substitutions %s. -->
+    <string name="push_notification_detail_amount">У вас є %d заміни %1$s.</string> <!-- You have %d substitutions %1$s. -->
     <string name="push_no_permission_title">Відсутній дозвіл</string> <!-- Missing permission -->
     <string name="push_no_permission_body">Ви увімкнули сповіщення Push, але відмовили в дозволі на сповіщення.\nБудь ласка, перейдіть до налаштувань та увімкніть сповіщення, щоб не пропустити нові плани замін.\nЯкщо ви не хочете цього, ви також можете вимкнути сповіщення Push в налаштуваннях додатку.</string> <!-- You have enabled push notifications, but denied permission for notifications. Please go to settings and enable notifications to not miss new substitution plans. If you don't want this, you can also disable push notifications in the app settings. -->
     <string name="push_no_permission_fix">Перейти до налаштувань</string><!-- Go to settings -->
@@ -156,14 +156,14 @@
     <string name="dialog_color_advanced_desc">Виберіть за допомогою відтінку, насиченості та яскравості або за допомогою шістнадцяткового рядка</string><!-- Choose using hue, saturation and brightness or using a hex string -->
     <string name="dialog_color_hex">Шістнадцятковий код:</string><!-- Hex: -->
     <string name="dialog_delete_title">Видалити предмет?</string><!-- Delete subject? -->
-    <string name="dialog_delete_text">Ви справді бажаєте видалити предмет "%s" ("%s")?</string><!-- Do you really want to delete the subject "%s" ("%s")? -->
+    <string name="dialog_delete_text">Ви справді бажаєте видалити предмет "%1$s" ("%2$s")?</string><!-- Do you really want to delete the subject "%1$s" ("%2$s")? -->
 
     <!-- Generic strings -->
     <string name="generic_loading">Завантаження, зачекайте…</string><!-- Loading, please wait… -->
     <string name="generic_error_null">(помилка "нуль")</string><!-- (null-error) -->
-    <string name="empty_local">Не було завантажено жодних %s (поки що).\nЯкщо нічого не відбувається, перевірте підключення до Інтернету.</string><!-- No %s has been downloaded (yet).\nIf nothing happens, check your internet connection. -->
+    <string name="empty_local">Не було завантажено жодних %1$s (поки що).\nЯкщо нічого не відбувається, перевірте підключення до Інтернету.</string><!-- No %1$s has been downloaded (yet).\nIf nothing happens, check your internet connection. -->
     <string name="back">Повернутися</string><!-- Go back -->
-    <string name="failed_to_load">Не вдалося завантажити %s</string><!-- Failed to load %s -->
+    <string name="failed_to_load">Не вдалося завантажити %1$s</string><!-- Failed to load %1$s -->
     <string name="failed_send_dev">Будь ласка, надішліть повідомлення з цією помилкою розробнику:</string><!-- Please send a report with this error to the developer: -->
     <string name="unknown_cause">Невідома причина</string><!-- Unknown cause -->
 

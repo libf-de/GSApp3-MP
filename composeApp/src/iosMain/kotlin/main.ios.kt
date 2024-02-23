@@ -16,12 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import androidx.compose.ui.window.ComposeUIViewController
 import de.xorg.gsapp.GSApp
 import moe.tlaster.precompose.PreComposeApplication
 
 actual fun getPlatformName(): String = "iOS"
 actual val runtimePlatform: Platform = Platform.Ios
 
-fun MainViewController() = PreComposeApplication {
+fun MainViewController() = ComposeUIViewController {
     GSApp()
 }

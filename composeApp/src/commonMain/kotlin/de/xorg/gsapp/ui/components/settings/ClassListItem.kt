@@ -29,7 +29,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -66,7 +66,7 @@ fun ClassListItem(
             color = if (highlight) MaterialTheme.colorScheme.primary else Color.Unspecified,
             style = MaterialTheme.typography.bodyLarge
         )
-        Divider(
+        HorizontalDivider(
             modifier = Modifier.fillMaxWidth().height(1.dp)
         )
     }
@@ -78,11 +78,13 @@ fun SkeletonClassListItem(
 ) {
     val skelHeight = with(LocalDensity.current) { MaterialTheme.typography.bodyLarge.fontSize.toDp()}
     Column {
-        Box(modifier = modifier
-            .padding(12.dp)
-            .size(width=64.dp, height=skelHeight)
-            .shimmerBackground(isSystemInDarkTheme(),  RoundedCornerShape(2.dp)),)
-        Divider(
+        Box(
+            modifier = modifier
+                .padding(12.dp)
+                .size(width = 64.dp, height = skelHeight)
+                .shimmerBackground(isSystemInDarkTheme(), RoundedCornerShape(2.dp)),
+        )
+        HorizontalDivider(
             modifier = Modifier.fillMaxWidth().height(1.dp)
         )
     }
