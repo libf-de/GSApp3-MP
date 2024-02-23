@@ -21,11 +21,9 @@ package de.xorg.gsapp.ui.components
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
@@ -35,7 +33,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
@@ -51,11 +48,25 @@ import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Substitution
 import de.xorg.gsapp.data.model.SubstitutionType
 import de.xorg.gsapp.data.model.Teacher
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.materialtools.ColorRoles
 import de.xorg.gsapp.ui.materialtools.MaterialColors
-import dev.icerock.moko.resources.compose.painterResource
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.class_lesson
+import gsapp.composeapp.generated.resources.groups
+import gsapp.composeapp.generated.resources.original_subject
+import gsapp.composeapp.generated.resources.replacement_subject
+import gsapp.composeapp.generated.resources.subplan_breastfeed
+import gsapp.composeapp.generated.resources.subplan_cancellation
+import gsapp.composeapp.generated.resources.subplan_dsc_location
+import gsapp.composeapp.generated.resources.subplan_dsc_teacher
+import gsapp.composeapp.generated.resources.subplan_normal
+import gsapp.composeapp.generated.resources.subplan_samesubject
+import gsapp.composeapp.generated.resources.subplan_workorder
+import gsapp.composeapp.generated.resources.subplan_workorder_samesubject
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 
 @OptIn(ExperimentalAnimationApi::class)
 @ExperimentalMaterial3Api
@@ -99,6 +110,7 @@ fun SubstitutionCard(
     }
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun LargeCardContent(
     value: Substitution,
@@ -114,7 +126,7 @@ private fun LargeCardContent(
 
         IconAndText(
             text = "${value.klass}, ${value.lessonNr}. Stunde",
-            icon = painterResource(MR.images.class_lesson),
+            icon = vectorResource(Res.drawable.class_lesson),
             contentDescription = "Klasse / Stunde",
             tint = Color(colorRoles.onAccentContainer),
             style = style,
@@ -123,7 +135,7 @@ private fun LargeCardContent(
 
         IconAndText(
             text = value.origSubject.longName,
-            icon = painterResource(MR.images.original_subject),
+            icon = vectorResource(Res.drawable.original_subject),
             contentDescription = "zu vertretendes Fach",
             tint = Color(colorRoles.onAccentContainer),
             style = style,
@@ -132,7 +144,7 @@ private fun LargeCardContent(
 
         IconAndText(
             text = value.substSubject.longName,
-            icon = painterResource(MR.images.replacement_subject),
+            icon = vectorResource(Res.drawable.replacement_subject),
             contentDescription = "Ersatzfach",
             tint = Color(colorRoles.onAccentContainer),
             style = style,
@@ -257,6 +269,7 @@ private fun SmallCardContent(
     } /** end Card RowLayout ****/
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun LargeContentBox(
     value: Substitution,
@@ -268,7 +281,7 @@ private fun LargeContentBox(
     ) {
         Row {
             Icon(
-                painter = painterResource(MR.images.groups),
+                imageVector = vectorResource(Res.drawable.groups),
                 contentDescription = "Klasse",
                 modifier = Modifier.alignByBaseline().size(24.dp),
                 tint = Color(colorRoles.onAccentContainer)
@@ -283,7 +296,7 @@ private fun LargeContentBox(
         }
         Row {
             Icon(
-                painter = painterResource(MR.images.original_subject),
+                imageVector = vectorResource(Res.drawable.original_subject),
                 contentDescription = "zu vertretendes Fach",
                 modifier = Modifier.alignByBaseline().size(24.dp),
                 tint = Color(colorRoles.onAccentContainer)
@@ -297,7 +310,7 @@ private fun LargeContentBox(
         }
         Row {
             Icon(
-                painter = painterResource(MR.images.replacement_subject),
+                imageVector = vectorResource(Res.drawable.replacement_subject),
                 contentDescription = "Ersatzfach",
                 modifier = Modifier.alignByBaseline().size(24.dp),
                 tint = Color(colorRoles.onAccentContainer)
@@ -326,7 +339,7 @@ private fun LargeContentBox(
         if(value.hasSubstTeacher) {
             Row {
                 Icon(imageVector = Icons.Outlined.Person,
-                    contentDescription = stringResource(MR.strings.subplan_dsc_teacher),
+                    contentDescription = stringResource(Res.string.subplan_dsc_teacher),
                     modifier = Modifier.alignByBaseline().size(24.dp),
                     tint = Color(colorRoles.onAccentContainer))
 
@@ -434,6 +447,7 @@ private fun IconAndText(
     }
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun LocationItem(
     value: Substitution,
@@ -448,7 +462,7 @@ private fun LocationItem(
         icon = Icons.Outlined.LocationOn,
         tint = tint,
         style = style,
-        contentDescription = stringResource(MR.strings.subplan_dsc_location),
+        contentDescription = stringResource(Res.string.subplan_dsc_location),
         fontWeight = if (value.type == SubstitutionType.ROOMSWAP)
             FontWeight.ExtraBold
         else
@@ -459,6 +473,7 @@ private fun LocationItem(
     )
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun TeacherItem(
     value: Teacher,
@@ -475,7 +490,7 @@ private fun TeacherItem(
             tint = tint,
             style = style,
             spacedBy = spacedBy,
-            contentDescription = stringResource(MR.strings.subplan_dsc_teacher),
+            contentDescription = stringResource(Res.string.subplan_dsc_teacher),
             modifier = modifier,
             isSmall = isSmall
         )
@@ -493,26 +508,32 @@ fun NotesBox(
         modifier = modifier) {
 
         /* NotesBox -> Divider */
-        Divider(color = Color(colorRoles.accent),
+        HorizontalDivider(
             modifier = Modifier
                 .padding(vertical = 10.dp)
                 .fillMaxHeight()
-                .width(1.dp) )
+                .width(1.dp), color = Color(colorRoles.accent)
+        )
 
 
         /* NotesBox -> Notes */
-        Box(modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center) {
-            Text(text = value.notes,
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = value.notes,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodySmall,
                 color = Color(colorRoles.accent),
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
-                    .padding(start = 8.dp,
+                    .padding(
+                        start = 8.dp,
                         top = 13.dp,
                         end = 15.dp,
-                        bottom = 12.dp)
+                        bottom = 12.dp
+                    )
                     .wrapContentSize()
             )
         }
@@ -537,28 +558,29 @@ private fun Substitution.lessonNrAsString(): String {
     return (if(this.lessonNr.length == 1) " " else "") + this.lessonNr + "."
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 private fun Substitution.getCardTitle(): String {
     return stringResource(when {
         this.origSubject == this.substSubject
-        -> MR.strings.subplan_samesubject  //Deutsch
+        -> Res.string.subplan_samesubject  //Deutsch
 
         this.type == SubstitutionType.WORKORDER
                 && this.origSubject == this.substSubject
-        -> MR.strings.subplan_workorder_samesubject  //Deutsch Arbeitsauftrag
+        -> Res.string.subplan_workorder_samesubject  //Deutsch Arbeitsauftrag
 
         this.type == SubstitutionType.WORKORDER
                 && this.origSubject != this.substSubject
-        -> MR.strings.subplan_workorder //Deutsch ➜ Mathe Arbeitsauftrag
+        -> Res.string.subplan_workorder //Deutsch ➜ Mathe Arbeitsauftrag
 
         this.type == SubstitutionType.CANCELLATION
-        -> MR.strings.subplan_cancellation //Deutsch ➜ Ausfall
+        -> Res.string.subplan_cancellation //Deutsch ➜ Ausfall
 
         this.type == SubstitutionType.BREASTFEED
-        -> MR.strings.subplan_breastfeed //Deutsch ➜ Stillbeschäftigung"
+        -> Res.string.subplan_breastfeed //Deutsch ➜ Stillbeschäftigung"
 
         else
-        -> MR.strings.subplan_normal //Deutsch ➜ Mathe
+        -> Res.string.subplan_normal //Deutsch ➜ Mathe
     }, this.origSubject.longName, this.substSubject.longName)
 }
 

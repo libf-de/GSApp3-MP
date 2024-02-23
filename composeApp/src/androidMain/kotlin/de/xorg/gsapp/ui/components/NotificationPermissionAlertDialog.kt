@@ -17,13 +17,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import de.xorg.gsapp.data.repositories.PreferencesRepository
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.theme.GSAppTheme
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.push_no_permission_body
+import gsapp.composeapp.generated.resources.push_no_permission_fix
+import gsapp.composeapp.generated.resources.push_no_permission_later
+import gsapp.composeapp.generated.resources.push_no_permission_title
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @Composable
@@ -59,10 +63,10 @@ fun NotificationPermissionAlertDialog() {
             AlertDialog(
                 onDismissRequest = { },
                 title = {
-                    Text(stringResource(MR.strings.push_no_permission_title))
+                    Text(stringResource(Res.string.push_no_permission_title))
                 },
                 text = {
-                    Text(stringResource(MR.strings.push_no_permission_body))
+                    Text(stringResource(Res.string.push_no_permission_body))
                 },
                 confirmButton = {
                     TextButton(
@@ -78,7 +82,7 @@ fun NotificationPermissionAlertDialog() {
                         }
                     ) {
                         Text(
-                            text = stringResource(MR.strings.push_no_permission_fix)
+                            text = stringResource(Res.string.push_no_permission_fix)
                         )
                     }
                 },
@@ -89,7 +93,7 @@ fun NotificationPermissionAlertDialog() {
                         }
                     ) {
                         Text(
-                            text = stringResource(MR.strings.push_no_permission_later)
+                            text = stringResource(Res.string.push_no_permission_later)
                         )
                     }
                 }

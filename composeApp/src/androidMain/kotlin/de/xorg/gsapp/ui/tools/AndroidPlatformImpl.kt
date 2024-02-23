@@ -4,12 +4,12 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import dev.icerock.moko.resources.format
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.open_url_failed
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -47,11 +47,10 @@ class AndroidPlatformImpl : PlatformInterface(), KoinComponent {
         } catch(a: ActivityNotFoundException) {
             a.printStackTrace()
 
-            Toast.makeText(
-                context,
-                de.xorg.gsapp.res.MR.strings.open_url_failed.getString(context),
-                Toast.LENGTH_SHORT
-            ).show()
+            MakeToast(
+                context = context,
+                message = Res.string.open_url_failed
+            )
         }
 
     }

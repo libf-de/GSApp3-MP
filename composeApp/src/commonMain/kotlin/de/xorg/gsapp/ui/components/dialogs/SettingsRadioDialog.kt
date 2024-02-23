@@ -24,7 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,14 +36,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.enums.StringResEnum
-import dev.icerock.moko.resources.compose.stringResource
+import org.jetbrains.compose.resources.stringResource
 import kotlinx.collections.immutable.ImmutableList
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 /**
  * This is an AlertDialog with a title, message and some radio buttons.
  * Currently used for push settings.
  */
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun SettingsRadioDialog(
     icon: @Composable () -> Unit,
@@ -72,7 +74,7 @@ fun SettingsRadioDialog(
         text = {
             Column {
                 Text(text = message)
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
                 )
                 Column {
@@ -99,7 +101,7 @@ fun SettingsRadioDialog(
                         }
                     }
                 }
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }

@@ -1,12 +1,11 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.compose.ExperimentalComposeLibrary
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     id(libs.plugins.kotlinCocoapods.get().pluginId)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
-    id(libs.plugins.mokoResources.get().pluginId)
     alias(libs.plugins.googleServices)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.sonarqube)
@@ -54,17 +53,19 @@ kotlin {
             isStatic = true
 
             linkerOpts.add("-lsqlite3")  // TODO: Find out which linker flags are actually needed
-
-            // Used to provide (localized) resources on iOS
-            export(libs.moko.resources)
-            export(libs.moko.graphics) // toUIColor here
         }
 
         //extraSpecAttributes["resources"] = "['src/commonMain/resources/**', 'src/iosMain/resources/**']"
-        extraSpecAttributes["resources"] = "['src/commonMain/resources/**']"
+        //extraSpecAttributes["resources"] = "['src/commonMain/resources/**']"
     }
     
     sourceSets {
+        all {
+            languageSettings {
+                optIn("org.jetbrains.compose.resources.ExperimentalResourceApi")
+            }
+        }
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -98,8 +99,9 @@ kotlin {
             implementation(libs.multiplatformSettings.coroutines)
 
             // Multiplatform Resources (moko resources)
-            api(libs.moko.resources)
-            api(libs.moko.resources.compose)
+            /*api(libs.moko.resources)
+            api(libs.moko.resources.compose)*/
+            implementation(compose.components.resources)
 
             // Sqldelight coroutines extension
             implementation(libs.sqldelight.coroutines)
@@ -249,10 +251,6 @@ compose.desktop {
     }
 }
 
-multiplatformResources {
-    multiplatformResourcesPackage = "de.xorg.gsapp.res"
-    disableStaticFrameworkWarning = true
-}
 
 sqldelight {
     databases {

@@ -26,11 +26,14 @@ import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.tools.windowSizeMargins
-import dev.icerock.moko.resources.StringResource
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.empty_local
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun EmptyLocalComponent(
     where: StringResource,
@@ -41,6 +44,7 @@ fun EmptyLocalComponent(
 }
 
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun EmptyLocalComponent(
     where: StringResource,
@@ -49,6 +53,7 @@ fun EmptyLocalComponent(
     EmptyLocalComponent(stringResource(where), modifier)
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun EmptyLocalComponent(
     where: String,
@@ -60,7 +65,7 @@ fun EmptyLocalComponent(
         horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = stringResource(
-                MR.strings.empty_local,
+                Res.string.empty_local,
                 where
             )
         )

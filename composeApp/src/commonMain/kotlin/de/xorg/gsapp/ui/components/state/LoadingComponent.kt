@@ -25,8 +25,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import de.xorg.gsapp.res.MR
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.generic_loading
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * A (generic) loading animation, used throughout the app.
@@ -34,6 +36,7 @@ import dev.icerock.moko.resources.compose.stringResource
  * TODO: Use Lottie :(
  */
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun LoadingComponent(
     modifier: Modifier = Modifier
@@ -42,7 +45,7 @@ fun LoadingComponent(
            verticalArrangement = Arrangement.Center,
            horizontalAlignment = Alignment.CenterHorizontally) {
         CircularProgressIndicator()
-        Text(stringResource(MR.strings.generic_loading))
+        Text(stringResource(Res.string.generic_loading))
     }
 
 }

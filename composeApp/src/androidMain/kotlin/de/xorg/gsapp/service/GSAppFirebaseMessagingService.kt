@@ -38,11 +38,18 @@ import de.xorg.gsapp.data.model.Filter
 import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.state.PushState
 import de.xorg.gsapp.ui.tools.DateUtil
-import dev.icerock.moko.resources.desc.desc
-import dev.icerock.moko.resources.format
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.date_format
+import gsapp.composeapp.generated.resources.push_notification_body
+import gsapp.composeapp.generated.resources.push_notification_detail_amount
+import gsapp.composeapp.generated.resources.push_notification_title
+import gsapp.composeapp.generated.resources.rel_absolute
+import gsapp.composeapp.generated.resources.rel_after_tomorrow
+import gsapp.composeapp.generated.resources.rel_next_weekday
+import gsapp.composeapp.generated.resources.rel_today
+import gsapp.composeapp.generated.resources.rel_tomorrow
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +61,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.todayIn
+import org.jetbrains.compose.resources.getString
 import org.koin.android.ext.android.inject
 import org.koin.core.component.KoinComponent
 
@@ -76,14 +84,13 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             // Don't need to create the channel if it already exists
-            if (notificationManager
-                    .notificationChannels
-                    .firstOrNull { it.id == CHANNEL_ID } != null
-            ) return
+            if(notificationManager.notificationChannels.any { it.id == CHANNEL_ID }) return
 
-
-            val name = MR.strings.push_channel_name.desc().toString(this)
-            val descriptionText = MR.strings.push_channel_desc.desc().toString(this)
+            //TODO: Localize when there is a non-suspending option for getting strings
+            //val name = Res.string.push_channel_name.desc().toString(this)
+            //val descriptionText = Res.string.push_channel_desc.desc().toString(this)
+            val name = "GSApp Push Notifications"
+            val descriptionText = "GSApp Substitution Plan Notifications"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
@@ -117,8 +124,7 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
         println("in handleMessage")
         val pushState = prefRepo.getPush()
         val filter = prefRepo.getFilter()
-        //val pushState = prefRepo.getPushFlow().lastOrNull() ?: PushState.default
-        //val filter = prefRepo.getFilterFlow().lastOrNull() ?: Filter.NONE
+
         println("in after load settings")
 
         if (pushState == PushState.DISABLED) {
@@ -171,7 +177,7 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
 
     }
 
-    private fun postSubstitutionNotification(
+    private suspend fun postSubstitutionNotification(
         context: Context,
         substitutionSet: SubstitutionSet? = null,
         filter: Filter? = null
@@ -204,7 +210,7 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
 
         var builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.notification_icon)
-            .setContentTitle(MR.strings.push_notification_title.desc().toString(context))
+            .setContentTitle(getString(Res.string.push_notification_title))
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
@@ -213,20 +219,21 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
             val dayDelta = today.daysUntil(substitutionSet.date)
 
             val relLabel: String = when (dayDelta) {
-                0 -> MR.strings.rel_today.getString(context)
-                1 -> MR.strings.rel_tomorrow.getString(context)
-                2 -> MR.strings.rel_after_tomorrow.getString(context)
+                0 -> getString(Res.string.rel_today)
+                1 -> getString(Res.string.rel_tomorrow)
+                2 -> getString(Res.string.rel_after_tomorrow)
                 3, 4, 5, 6, 7 -> {
-                    val localizedDay = DateUtil
-                        .getWeekdayLongRes(substitutionSet.date)
-                        .desc()
-                        .toString(context)
-                    MR.strings.rel_next_weekday.format(localizedDay).toString(context)
+                    val localizedDay = getString(DateUtil.getWeekdayLongRes(substitutionSet.date))
+                    getString(Res.string.rel_next_weekday, localizedDay)
                 }
 
-                else -> MR.strings.rel_absolute.format(
-                    DateUtil.getDateAsString(substitutionSet.date) { it.desc().toString(context) }
-                ).toString(context)
+                else -> {
+                    val date = getString(Res.string.date_format)
+                        .replace("d", substitutionSet.date.dayOfMonth.toString())
+                        .replace("m", substitutionSet.date.monthNumber.toString())
+                        .replace("y", substitutionSet.date.year.toString())
+                    getString(Res.string.rel_absolute, date)
+                }
             }
 
             val subList = if (filter.role == Filter.Role.STUDENT) {
@@ -239,14 +246,15 @@ class GSAppFirebaseMessagingService : FirebaseMessagingService(), KoinComponent 
                 }
             }
 
-            MR.strings.push_notification_detail_amount.format(
-                subList.size,
-                relLabel
-            ).toString(context).also {
-                builder = builder.setContentText(it)
-            }
+            builder = builder.setContentText(
+                getString(
+                    Res.string.push_notification_detail_amount,
+                    subList.size,
+                    relLabel
+                )
+            )
         } else {
-            builder = builder.setContentText(MR.strings.push_notification_body.desc().toString(context))
+            builder = builder.setContentText(getString(Res.string.push_notification_body))
         }
 
         with(NotificationManagerCompat.from(context)) {

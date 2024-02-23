@@ -18,43 +18,38 @@
 
 package de.xorg.gsapp.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Exam
-import de.xorg.gsapp.res.MR
-import de.xorg.gsapp.ui.materialtools.ColorRoles
 import de.xorg.gsapp.ui.materialtools.MaterialColors
-import dev.icerock.moko.resources.compose.fontFamilyResource
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.SairaCondensed_Medium
+import gsapp.composeapp.generated.resources.SairaExtraCondensed_Medium
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.todayIn
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.Font
 
 
 @Composable
@@ -137,6 +132,7 @@ private fun LocalDate.todayUntilString(): String {
                 "in $daysDiff Tagen"
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun AdaptiveText(
     text: String,
@@ -168,7 +164,7 @@ fun AdaptiveText(
                         text = text,
                         color = color,
                         style = defaultTextStyle.copy(
-                            fontFamily = fontFamilyResource(MR.fonts.SairaCondensed.medium),
+                            fontFamily = FontFamily(Font(Res.font.SairaCondensed_Medium)),
                         ),
                         textAlign = TextAlign.Center,
                         softWrap = false,
@@ -182,7 +178,7 @@ fun AdaptiveText(
                             text = text,
                             color = color,
                             style = defaultTextStyle.copy(
-                                fontFamily = fontFamilyResource(MR.fonts.SairaExtraCondensed.medium),
+                                fontFamily = FontFamily(Font(Res.font.SairaExtraCondensed_Medium)),
                             ),
                             textAlign = TextAlign.Center,
                             softWrap = false,

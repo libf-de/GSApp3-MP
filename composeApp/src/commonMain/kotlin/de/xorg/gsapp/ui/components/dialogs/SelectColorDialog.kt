@@ -45,7 +45,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.settings.ColorListPicker
 import de.xorg.gsapp.ui.components.settings.ColorPicker
 import de.xorg.gsapp.ui.materialtools.MaterialColors
@@ -53,8 +52,13 @@ import de.xorg.gsapp.ui.state.ColorPickerMode
 import de.xorg.gsapp.ui.tools.ScreenOrientation
 import de.xorg.gsapp.ui.tools.foregroundColorForBackground
 import de.xorg.gsapp.ui.tools.getOrientation
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.dialog_cancel
+import gsapp.composeapp.generated.resources.dialog_save
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun SelectColorDialog(
     visible: Boolean,
@@ -170,7 +174,7 @@ fun SelectColorDialog(
                         }
                     ) {
                         Text(
-                            text = stringResource(MR.strings.dialog_save)
+                            text = stringResource(Res.string.dialog_save)
                         )
                     }
                 }
@@ -182,7 +186,7 @@ fun SelectColorDialog(
                     }
                 ) {
                     Text(
-                        text = stringResource(MR.strings.dialog_cancel)
+                        text = stringResource(Res.string.dialog_cancel)
                     )
                 }
             }

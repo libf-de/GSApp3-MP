@@ -33,17 +33,36 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.xorg.gsapp.data.model.Subject
-import de.xorg.gsapp.res.MR
 import de.xorg.gsapp.ui.components.dialogs.InputTextDialog
 import de.xorg.gsapp.ui.components.dialogs.SelectColorDialog
 import de.xorg.gsapp.ui.components.settings.SubjectListItem
@@ -52,17 +71,37 @@ import de.xorg.gsapp.ui.components.state.LoadingComponent
 import de.xorg.gsapp.ui.state.UiState
 import de.xorg.gsapp.ui.tools.windowSizeMargins
 import de.xorg.gsapp.ui.viewmodels.SettingsViewModel
-import dev.icerock.moko.resources.compose.painterResource
-import dev.icerock.moko.resources.compose.stringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.back
+import gsapp.composeapp.generated.resources.dialog_cancel
+import gsapp.composeapp.generated.resources.dialog_delete_confirm
+import gsapp.composeapp.generated.resources.dialog_delete_text
+import gsapp.composeapp.generated.resources.dialog_delete_title
+import gsapp.composeapp.generated.resources.reset
+import gsapp.composeapp.generated.resources.settings_title
+import gsapp.composeapp.generated.resources.subject_manager_add_desc
+import gsapp.composeapp.generated.resources.subject_manager_add_title
+import gsapp.composeapp.generated.resources.subject_manager_colorpicker_nullsubject
+import gsapp.composeapp.generated.resources.subject_manager_colorpicker_title
+import gsapp.composeapp.generated.resources.subject_manager_empty_text
+import gsapp.composeapp.generated.resources.subject_manager_empty_title
+import gsapp.composeapp.generated.resources.subject_manager_reset_dialog_adddefault
+import gsapp.composeapp.generated.resources.subject_manager_reset_dialog_replace
+import gsapp.composeapp.generated.resources.subject_manager_reset_dialog_text
+import gsapp.composeapp.generated.resources.subject_manager_reset_dialog_title
+import gsapp.composeapp.generated.resources.subject_manager_subjects
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.navigation.Navigator
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 
 /**
  * The app settings composable
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalMaterial3WindowSizeClassApi::class
+    ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalResourceApi::class
 )
 @Composable
 fun SubjectManager(
@@ -98,12 +137,12 @@ fun SubjectManager(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = stringResource(MR.strings.settings_title))
+                    Text(text = stringResource(Res.string.settings_title))
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.goBack() }) {
-                        Icon(imageVector = Icons.Rounded.ArrowBack,
-                             contentDescription = stringResource(MR.strings.back))
+                        Icon(imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                             contentDescription = stringResource(Res.string.back))
                     }
                 },
                 actions = {
@@ -117,8 +156,8 @@ fun SubjectManager(
                     IconButton(onClick = {
                             showResetDialog.value = true
                     }) {
-                        Icon(painter = painterResource(MR.images.reset),
-                             contentDescription = stringResource(MR.strings.subject_manager_reset_dialog_title))
+                        Icon(imageVector = vectorResource(Res.drawable.reset),
+                             contentDescription = stringResource(Res.string.subject_manager_reset_dialog_title))
                     }
                 }
             )
@@ -128,7 +167,7 @@ fun SubjectManager(
                 onClick = { showAddNewDialog = true },
             ) {
                 Icon(imageVector = Icons.Rounded.Add,
-                     contentDescription = stringResource(MR.strings.subject_manager_add_title))
+                     contentDescription = stringResource(Res.string.subject_manager_add_title))
             }
         }
     ) {
@@ -144,8 +183,8 @@ fun SubjectManager(
                 colorEditShow = false
             },
             preselectedColor = colorEditSubject?.color,
-            title = stringResource(MR.strings.subject_manager_colorpicker_title,
-                colorEditSubject?.longName ?: stringResource(MR.strings.subject_manager_colorpicker_nullsubject)
+            title = stringResource(Res.string.subject_manager_colorpicker_title,
+                colorEditSubject?.longName ?: stringResource(Res.string.subject_manager_colorpicker_nullsubject)
             ),
             pickMode = viewModel.colorpickerMode.value,
             onPickModeChanged = { pickerMode -> viewModel.setColorpickerMode(pickerMode) }
@@ -158,8 +197,8 @@ fun SubjectManager(
                 showAddNewDialog = false
             },
             onCancel = { showAddNewDialog = false },
-            title = stringResource(MR.strings.subject_manager_add_title),
-            message = stringResource(MR.strings.subject_manager_add_desc),
+            title = stringResource(Res.string.subject_manager_add_title),
+            message = stringResource(Res.string.subject_manager_add_desc),
 
             modifier = Modifier.width(300.dp)
         )
@@ -190,7 +229,7 @@ fun SubjectManager(
             UiState.FAILED -> {
                 FailedComponent(
                     exception = viewModel.subjectsError.value,
-                    where = MR.strings.subject_manager_subjects,
+                    where = Res.string.subject_manager_subjects,
                     modifier = Modifier
                         .fillMaxSize()
                         .windowSizeMargins(windowSizeClass),
@@ -206,11 +245,11 @@ fun SubjectManager(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = stringResource(MR.strings.subject_manager_empty_title),
+                        text = stringResource(Res.string.subject_manager_empty_title),
                         style = MaterialTheme.typography.displayMedium
                     )
                     Text(
-                        text = stringResource(MR.strings.subject_manager_empty_text)
+                        text = stringResource(Res.string.subject_manager_empty_text)
                     )
                 }
             }
@@ -228,10 +267,10 @@ fun SubjectManager(
                             Column {
                                 FailedComponent(
                                     exception = viewModel.subjectsError.value,
-                                    where = MR.strings.subject_manager_subjects,
+                                    where = Res.string.subject_manager_subjects,
                                 )
                                 Text(viewModel.subjectsError.value.message.toString())
-                                Divider(Modifier.height(1.dp).fillMaxWidth())
+                                HorizontalDivider(Modifier.height(1.dp).fillMaxWidth())
                             }
                         }
                     }
@@ -268,6 +307,7 @@ fun SubjectManager(
 }
 
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun DeleteSubjectDialog(
     visibleState: MutableState<Boolean>,
@@ -284,13 +324,13 @@ fun DeleteSubjectDialog(
             },
             title = {
                 Text(
-                    text = stringResource(MR.strings.dialog_delete_title)
+                    text = stringResource(Res.string.dialog_delete_title)
                 )
             },
             text = {
                 Text(
                     text = stringResource(
-                        MR.strings.dialog_delete_text,
+                        Res.string.dialog_delete_text,
                         subjectToDelete.shortName,
                         subjectToDelete.longName)
                 )
@@ -303,7 +343,7 @@ fun DeleteSubjectDialog(
                     }
                 ) {
                     Text(
-                        text = stringResource(MR.strings.dialog_delete_confirm),
+                        text = stringResource(Res.string.dialog_delete_confirm),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -316,7 +356,7 @@ fun DeleteSubjectDialog(
                     }
                 ) {
                     Text(
-                        text = stringResource(MR.strings.dialog_cancel)
+                        text = stringResource(Res.string.dialog_cancel)
                     )
                 }
             },
@@ -326,15 +366,15 @@ fun DeleteSubjectDialog(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
 @Composable
 fun ResetSubjectsDialog(
     visibleState: MutableState<Boolean>,
     onResetPressed: () -> Unit,
     onUpdatePressed: () -> Unit,
 ) {
-    if(visibleState.value) {
-        AlertDialog(onDismissRequest = {
+    if (visibleState.value) {
+        BasicAlertDialog(onDismissRequest = {
             visibleState.value = false
         }) {
             Surface(
@@ -345,26 +385,28 @@ fun ResetSubjectsDialog(
                     modifier = Modifier.padding(all = 24.dp)
                 ) {
                     Text(
-                        text = stringResource(MR.strings.subject_manager_reset_dialog_title),
+                        text = stringResource(Res.string.subject_manager_reset_dialog_title),
                         style = MaterialTheme.typography.headlineMedium,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
                     Text(
-                        text = stringResource(MR.strings.subject_manager_reset_dialog_text),
+                        text = stringResource(Res.string.subject_manager_reset_dialog_text),
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
 
                     Button(
                         onClick = { onResetPressed(); visibleState.value = false },
-                        shape = RoundedCornerShape(bottomStart = 4.dp,
+                        shape = RoundedCornerShape(
+                            bottomStart = 4.dp,
                             bottomEnd = 4.dp,
                             topStart = 12.dp,
-                            topEnd = 12.dp),
+                            topEnd = 12.dp
+                        ),
                         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
                     ) {
                         Text(
-                            text = stringResource(MR.strings.subject_manager_reset_dialog_replace),
+                            text = stringResource(Res.string.subject_manager_reset_dialog_replace),
                             style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.padding(8.dp)
                         )
@@ -376,7 +418,7 @@ fun ResetSubjectsDialog(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
                     ) {
                         Text(
-                            text = stringResource(MR.strings.subject_manager_reset_dialog_adddefault),
+                            text = stringResource(Res.string.subject_manager_reset_dialog_adddefault),
                             style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.padding(8.dp)
                         )
@@ -384,14 +426,16 @@ fun ResetSubjectsDialog(
 
                     Button(
                         onClick = { visibleState.value = false },
-                        shape = RoundedCornerShape(topStart = 4.dp,
+                        shape = RoundedCornerShape(
+                            topStart = 4.dp,
                             topEnd = 4.dp,
                             bottomStart = 12.dp,
-                            bottomEnd = 12.dp),
+                            bottomEnd = 12.dp
+                        ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = stringResource(MR.strings.dialog_cancel),
+                            text = stringResource(Res.string.dialog_cancel),
                             style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.padding(8.dp)
                         )

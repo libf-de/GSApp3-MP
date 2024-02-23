@@ -54,11 +54,13 @@ fun ExamChip(
         ),
         border = if(exam.isCoursework)
             SuggestionChipDefaults.suggestionChipBorder(
+                enabled = true,
                 borderColor = Color(colorRoles.onAccentContainer),
                 borderWidth = 4.dp
             )
         else
             SuggestionChipDefaults.suggestionChipBorder(
+                enabled = true,
                 borderColor = Color(colorRoles.onAccentContainer)
             )
     )

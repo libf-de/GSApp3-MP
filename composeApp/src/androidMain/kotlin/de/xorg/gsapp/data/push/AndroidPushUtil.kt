@@ -27,15 +27,19 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.google.firebase.FirebaseApp
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.ktx.initialize
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.ktx.messaging
 import de.xorg.gsapp.data.repositories.PreferencesRepository
-import de.xorg.gsapp.res.MR
+import de.xorg.gsapp.ui.tools.MakeToast
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.push_disabled_failure
+import gsapp.composeapp.generated.resources.push_disabled_success
+import gsapp.composeapp.generated.resources.push_enabled_failure
+import gsapp.composeapp.generated.resources.push_enabled_failure_timeout
+import gsapp.composeapp.generated.resources.push_enabled_success
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
+import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -73,12 +77,29 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
             Firebase.messaging.subscribeToTopic("substitutions")
                 .addOnCompleteListener { task ->
                     callback(task.isSuccessful)
-                    var msg = MR.strings.push_enabled_success.getString(context)
-                    if (!task.isSuccessful) {
-                        msg = MR.strings.push_enabled_failure.getString(context)
+
+                    Log.d(TAG, "Push enabled done - success=${task.isSuccessful}")
+
+                    MakeToast(
+                        context = context,
+                        message = if(task.isSuccessful)
+                            Res.string.push_enabled_success
+                        else
+                            Res.string.push_enabled_failure
+                    )
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val msg = getString(
+                            if(task.isSuccessful)
+                                Res.string.push_enabled_success
+                            else
+                                Res.string.push_enabled_failure
+                        )
+
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     }
-                    Log.d(TAG, msg)
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+
+
                 }
                 .addOnFailureListener {
                     callback(false)
@@ -87,11 +108,11 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
                     callback(false)
                 }
         } catch(ex: IllegalStateException) {
-            Toast.makeText(
-                context,
-                MR.strings.push_enabled_failure_timeout.getString(context),
-                Toast.LENGTH_SHORT
-            ).show()
+            MakeToast(
+                context = context,
+                message = Res.string.push_enabled_failure_timeout
+            )
+
             Log.e(TAG, "FirebaseApp did not initialize in time :/")
             ex.printStackTrace()
             callback(false)
@@ -121,12 +142,16 @@ class AndroidPushUtil : PushNotificationUtil, KoinComponent {
                     FirebaseApp.getInstance().delete()
 
                     callback(task.isSuccessful)
-                    var msg = MR.strings.push_disabled_success.getString(context)
-                    if (!task.isSuccessful) {
-                        msg = MR.strings.push_disabled_failure.getString(context)
-                    }
-                    Log.d(TAG, msg)
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+
+                    Log.d(TAG, "Push disabled done - success=${task.isSuccessful}")
+
+                    MakeToast(
+                        context = context,
+                        message = if(task.isSuccessful)
+                            Res.string.push_disabled_success
+                        else
+                            Res.string.push_disabled_failure
+                    )
                 }
                 .addOnFailureListener {
                     callback(false)

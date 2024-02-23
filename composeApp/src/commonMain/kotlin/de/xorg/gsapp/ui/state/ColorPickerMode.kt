@@ -19,20 +19,26 @@
 package de.xorg.gsapp.ui.state
 
 import de.xorg.gsapp.data.enums.StringResEnum
-import de.xorg.gsapp.res.MR
-import dev.icerock.moko.resources.StringResource
+import gsapp.composeapp.generated.resources.Res
+import gsapp.composeapp.generated.resources.dialog_color_advanced
+import gsapp.composeapp.generated.resources.dialog_color_advanced_desc
+import gsapp.composeapp.generated.resources.dialog_color_simple
+import gsapp.composeapp.generated.resources.dialog_color_simple_desc
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.StringResource
 
 /**
  * Stores the selection mode available in the SelectColorDialog
  */
+@OptIn(ExperimentalResourceApi::class)
 enum class ColorPickerMode(val value: Int): StringResEnum {
     SIMPLE(0) {
-        override val labelResource: StringResource = MR.strings.dialog_color_simple
-        override val descriptiveResource: StringResource = MR.strings.dialog_color_simple_desc
+        override val labelResource: StringResource = Res.string.dialog_color_simple
+        override val descriptiveResource: StringResource = Res.string.dialog_color_simple_desc
     },
     ADVANCED(1) {
-        override val labelResource: StringResource = MR.strings.dialog_color_advanced
-        override val descriptiveResource: StringResource = MR.strings.dialog_color_advanced_desc
+        override val labelResource: StringResource = Res.string.dialog_color_advanced
+        override val descriptiveResource: StringResource = Res.string.dialog_color_advanced_desc
     };
 
     companion object {
