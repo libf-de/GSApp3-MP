@@ -1,5 +1,6 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 import org.jetbrains.compose.ExperimentalComposeLibrary
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
@@ -8,7 +9,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.googleServices)
-    alias(libs.plugins.sqldelight)
+    /*alias(libs.plugins.sqldelight)*/
     alias(libs.plugins.sonarqube)
 }
 
@@ -79,6 +80,17 @@ kotlin {
         }
 
         commonMain.dependencies {
+            // The sqldelight gradle plugin automatically adds it's runtime to commonMain, but it
+            // currently doesn't support wasm. Therefore it is excluded here, and is manually added
+            // to nonWebMain
+            /*configurations.first {
+                it.name.contains("commonMain")
+            }.exclude(
+                group = "app.cash.sqldelight",
+                module = "runtime"
+            )*/
+
+            // Compose dependencies
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.animation)
@@ -126,11 +138,19 @@ kotlin {
             api(libs.precompose.koin)
         }
 
+        @OptIn(ExperimentalWasmDsl::class)
+        wasmJs {
+            dependencies {
+
+            }
+        }
+
         val nonWebMain by creating {
             dependsOn(commonMain.get())
             dependencies {
                 // Sqldelight coroutines extension
-                implementation(libs.sqldelight.coroutines)
+                /*implementation(libs.sqldelight.runtime)
+                implementation(libs.sqldelight.coroutines)*/
 
                 // Multiplatform Settings Coroutines extension
                 implementation(libs.multiplatformSettings.coroutines)
@@ -152,6 +172,7 @@ kotlin {
             dependsOn(nonWebMain)
             dependsOn(javaMain)
             dependencies {
+                // Compose UI
                 implementation(libs.compose.ui)
                 implementation(libs.compose.ui.tooling.preview)
 
@@ -161,7 +182,7 @@ kotlin {
                 api(libs.androidx.core.ktx)
 
                 // Android Database Driver
-                implementation(libs.sqldelight.driver.android)
+                //implementation(libs.sqldelight.driver.android)
 
                 // Firebase Messaging
                 implementation(libs.firebase.messaging)
@@ -183,7 +204,7 @@ kotlin {
 
             dependencies {
                 //Sqldelight iOS database driver
-                implementation(libs.sqldelight.driver.native)
+                //implementation(libs.sqldelight.driver.native)
 
                 //Ktor iOS client - needed for TLS sessions
                 implementation(libs.ktor.darwin)
@@ -200,7 +221,7 @@ kotlin {
                 implementation(compose.preview)
 
                 // Sqldeight Desktop Driver
-                implementation(libs.sqldelight.driver.sqlite)
+                //implementation(libs.sqldelight.driver.sqlite)
 
                 // Kotlinx coroutines
                 implementation(libs.kotlinx.coroutines.swing)
@@ -279,14 +300,14 @@ compose.desktop {
 }
 
 
-sqldelight {
+/*sqldelight {
     databases {
         create("GsAppDatabase") {
             packageName.set("de.xorg.gsapp.data.sql")
         }
     }
     linkSqlite.set(true)
-}
+}*/
 
 afterEvaluate {
     tasks.withType<JavaExec> {

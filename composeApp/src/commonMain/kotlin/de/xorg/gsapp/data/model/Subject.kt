@@ -19,7 +19,6 @@
 package de.xorg.gsapp.data.model
 
 import androidx.compose.ui.graphics.Color
-import de.xorg.gsapp.data.DbSubject
 
 /**
  * Data class to hold a single subject
@@ -41,10 +40,6 @@ data class Subject(
      * Also has no long name, so the shortName will be displayed
      */
     constructor(shortName: String) : this(shortName, shortName, Color.Magenta)
-
-    constructor(dbSubject: DbSubject) : this(shortName = dbSubject.shortName,
-                                             longName = dbSubject.longName,
-                                             color = dbSubject.color ?: Color.Unspecified)
 
     /**
      * Checks if a given Subject is not the empty Subject (=blank shortName)

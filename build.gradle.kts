@@ -14,6 +14,7 @@ buildscript {
     repositories {
         gradlePluginPortal()
         mavenCentral()
+        mavenLocal()
     }
 
     dependencies {

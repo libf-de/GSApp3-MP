@@ -23,7 +23,7 @@ koin = "3.6.0-wasm-alpha2"
 koin-compose = "3.6.0-wasm-alpha2"
 kotlin = "1.9.22"
 kotlinx-coroutines = "1.7.3"
-kotlinx-immutableCollections = "0.3.5"
+kotlinx-immutableCollections = "0.3.7"
 kotlinx-datetime = "0.5.0"
 ktor = "3.0.0-wasm2"
 moko-resources = "0.23.0"
@@ -32,7 +32,7 @@ multiplatformSettings = "1.1.0"
 skrapeit = "1.2.2"
 sonarqube = "4.4.1.3373"
 sqldelight = "2.0.1"
-precompose = "1.5.8"
+precompose = "1.6.0-beta02"
 logging = "2.7.1"
 windowSizeClass = "0.5.0-rc01"
 
@@ -76,6 +76,7 @@ multiplatformSettings-coroutines = { module = "com.russhwolf:multiplatform-setti
 multiplatformSettings-datastore = { module = "com.russhwolf:multiplatform-settings-datastore", version.ref = "multiplatformSettings" }
 skrapeit = { module = "it.skrape:skrapeit", version.ref = "skrapeit" }
 sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
+sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
 sqldelight-driver-android = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
 sqldelight-driver-native = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
 sqldelight-driver-sqlite = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }

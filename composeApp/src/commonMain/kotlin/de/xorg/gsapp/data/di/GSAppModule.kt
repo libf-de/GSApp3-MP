@@ -18,25 +18,16 @@
 
 package de.xorg.gsapp.data.di
 
-import app.cash.sqldelight.EnumColumnAdapter
-import de.xorg.gsapp.data.DbExam
-import de.xorg.gsapp.data.DbFood
-import de.xorg.gsapp.data.DbSubject
-import de.xorg.gsapp.data.DbSubstitutionSet
 import de.xorg.gsapp.data.repositories.AppRepository
 import de.xorg.gsapp.data.repositories.GSAppRepository
-import de.xorg.gsapp.data.repositories.MPSettingsRepository
+import de.xorg.gsapp.data.repositories.MockSettingsRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.data.sources.defaults.DefaultsDataSource
 import de.xorg.gsapp.data.sources.defaults.GsDefaultsSource
 import de.xorg.gsapp.data.sources.local.LocalDataSource
-import de.xorg.gsapp.data.sources.local.SqldelightDataSource
+import de.xorg.gsapp.data.sources.local.MockDataSource
+import de.xorg.gsapp.data.sources.remote.DebugDataSource
 import de.xorg.gsapp.data.sources.remote.RemoteDataSource
-import de.xorg.gsapp.data.sources.remote.WebsiteDataSource
-import de.xorg.gsapp.data.sql.GsAppDatabase
-import de.xorg.gsapp.data.sql_adapters.ColorAdapter
-import de.xorg.gsapp.data.sql_adapters.CommaSeparatedListAdapter
-import de.xorg.gsapp.data.sql_adapters.DateAdapter
 import de.xorg.gsapp.ui.tools.JobTool
 import de.xorg.gsapp.ui.viewmodels.ExamPlanViewModel
 import de.xorg.gsapp.ui.viewmodels.FoodplanViewModel
@@ -58,35 +49,15 @@ val dataRepositoryModule = module {
 
     single { JobTool() }
 
-    single {
-        GsAppDatabase(
-            driver = get(),
-            DbFoodAdapter = DbFood.Adapter(
-                dateAdapter = DateAdapter,
-                additivesAdapter = CommaSeparatedListAdapter
-            ),
-            DbSubjectAdapter = DbSubject.Adapter(
-                colorAdapter = ColorAdapter
-            ),
-            DbExamAdapter = DbExam.Adapter(
-                courseAdapter = EnumColumnAdapter(),
-                dateAdapter = DateAdapter
-            ),
-            DbSubstitutionSetAdapter = DbSubstitutionSet.Adapter(
-                dateAdapter = DateAdapter
-            )
-        )
-    }
-
-    single<LocalDataSource> { SqldelightDataSource() }
-    single<RemoteDataSource> { WebsiteDataSource() }
-    //single<RemoteDataSource> { DebugDataSource() }
+    single<LocalDataSource> { MockDataSource() }
+    //single<RemoteDataSource> { WebsiteDataSource() }
+    single<RemoteDataSource> { DebugDataSource() }
     single<DefaultsDataSource> { GsDefaultsSource() }
     single<GSAppRepository> { AppRepository() }
 }
 
 val preferencesRepositoryModule = module {
-    single<PreferencesRepository> { MPSettingsRepository() }
+    single<PreferencesRepository> { MockSettingsRepository() }
 }
 
 val commonModule = module {

@@ -47,7 +47,6 @@ import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.PreComposeApp
 import moe.tlaster.precompose.navigation.NavHost
@@ -77,7 +76,7 @@ fun GSApp() {
     PreComposeApp {
         KoinContext {
             val prefRepo = koinInject<PreferencesRepository>()
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.Default).launch {
                 prefRepo.setDatabaseDefaultsVersion(0) //TODO: Remove in release!
             }
 

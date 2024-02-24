@@ -23,24 +23,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import de.xorg.gsapp.LAUNCH_VERSION
-import de.xorg.gsapp.data.di.JOB_MAP
 import de.xorg.gsapp.data.exceptions.AppStuckInLoadingException
-import de.xorg.gsapp.data.exceptions.NoLocalDataException
-import de.xorg.gsapp.data.model.SubstitutionSet
 import de.xorg.gsapp.data.repositories.GSAppRepository
 import de.xorg.gsapp.data.repositories.PreferencesRepository
 import de.xorg.gsapp.ui.state.AppState
 import de.xorg.gsapp.ui.state.ComponentState
 import de.xorg.gsapp.ui.tools.JobTool
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
@@ -49,7 +41,6 @@ import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.core.qualifier.named
 
 /**
  * View model for the main app tabs
@@ -57,7 +48,6 @@ import org.koin.core.qualifier.named
 open class GSAppViewModel : ViewModel(), KoinComponent {
     protected val appRepo: GSAppRepository by inject()
     protected val prefsRepo: PreferencesRepository by inject()
-    protected val repoScope = CoroutineScope(Dispatchers.IO)
 
     protected val jobTool: JobTool by inject()
 
