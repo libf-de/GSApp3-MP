@@ -57,7 +57,7 @@ abstract class GsWebsiteParser {
     fun parseSubstitutionDate(dateStr: String?): LocalDate {
         if(dateStr == null) return LocalDate.fromEpochDays(0)
 
-        val titleDateRegex = Regex("[a-zA-Z]+,\\s+den\\s+([0-9]+).\\s+([a-zA-Z]+)\\s+([0-9]+)")
+        val titleDateRegex = Regex("[a-zA-Z]+,\\s+den\\s+([0-9]+).\\s+([a-zA-ZäÄ]+)\\s+([0-9]+)")
         val dateParts = titleDateRegex.find(dateStr)?.groupValues ?: listOf(
             "",
             "01",
